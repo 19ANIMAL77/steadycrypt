@@ -55,7 +55,7 @@ public class SteadyApplication extends JFrame implements FileDroppedListener {
 			log.debug("sc-files folder exists");
 			
 			/**
-			 * User got 3 changes to enter correct password. After that the application exits.
+			 * User got 3 chances to enter correct password. After that the application exits.
 			 * Small protection against brute-force.
 			 */
 			while(loginCount < 4)
@@ -113,7 +113,7 @@ public class SteadyApplication extends JFrame implements FileDroppedListener {
 	
 	/**
 	 * Default constructor, runs at application start
-	 * and initialize GUI
+	 * and initializes GUI
 	 */
 	public SteadyApplication() {
 		
@@ -168,7 +168,7 @@ public class SteadyApplication extends JFrame implements FileDroppedListener {
 	}
 	
 	/**
-	 * Final station to refresh or inform all components that are interessted
+	 * Final station to refresh or inform all components that are interested
 	 * in knowing when a file has been dropped.
 	 * As Parameter no Event is given, because in this case a simple notification
 	 * is okay. Normally "fire" sends also a Event-Object, which includes information
