@@ -9,6 +9,7 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -41,8 +42,10 @@ public class JSteadyLogin extends JDialog {
 	private JPanel panelBottom;
 	
 	private JPasswordField txtInput;
+	private JPasswordField txtInputConfirm;
 	
 	private JLabel lblInput;
+	private JLabel lblInputConfirm;
 	private JLabel bannerTop;
 	
 	private String regLog;
@@ -88,11 +91,15 @@ public class JSteadyLogin extends JDialog {
 		
 		txtInput = new JPasswordField();
 		txtInput.setPreferredSize(new Dimension(130, 25));
+		txtInputConfirm = new JPasswordField();
+		txtInputConfirm.setPreferredSize(new Dimension(130, 25));
 		
 		if(registerOrLogin=="login")
 			lblInput = new JLabel("Passwort eigeben:");
-		else if(registerOrLogin=="register")
+		else if(registerOrLogin=="register"){
 			lblInput = new JLabel("WICHTIG - Passwort jetzt festlegen:");
+			lblInputConfirm = new JLabel("                       Passwort wiederholen:");	
+		}
 		
 		BorderLayout layout = new BorderLayout();
 		FlowLayout flowTop = new FlowLayout();
@@ -106,6 +113,11 @@ public class JSteadyLogin extends JDialog {
 		panelCenter.setLayout(flowCenter);
 		panelCenter.add(lblInput);
 		panelCenter.add(txtInput);
+		
+		if(registerOrLogin=="register"){
+			panelCenter.add(lblInputConfirm);
+			panelCenter.add(txtInputConfirm);
+		}
 		
 		panelBottom.setLayout(flowBottom);
 		panelBottom.add(btnLogin);
