@@ -19,7 +19,12 @@ public class PasswordInterpreter {
 		while (output.length() < 24) {
 		
 			for ( int i=0; i < input.length(); i++) {
-				output = output+output.length()+(input.substring(i,i+1)).toUpperCase()+(input.substring(i, input.length())).toLowerCase();
+				if (i%2 == 0) {
+					output = output+output.length()+(input.substring(i,i+1)).toUpperCase()+input.substring(i, input.length());					
+				}
+				else {
+					output = output+output.length()+(input.substring(i,i+1)).toLowerCase()+input.substring(i, input.length());
+				}
 			}
 		
 		}
