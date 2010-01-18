@@ -161,20 +161,24 @@ public class JSteadyLogin extends JDialog {
     	if(regLog == "register" && txtInput.getPassword().length < 6){
     		JOptionPane.showMessageDialog(this,
     			    "Passwort sollte mindestens 6 Zeichen lang sein.",
-    			    "Passwort kleiner als 6 Zeichen",
+    			    "Fehler bei Passworteingabe",
+    			    JOptionPane.WARNING_MESSAGE);
+    	}
+    	else if(regLog == "login" && txtInput.getPassword().length == 0){
+    		JOptionPane.showMessageDialog(this,
+    			    "Bitte Passwort eingeben.",
+    			    "Fehler bei Passworteingabe",
+    			    JOptionPane.WARNING_MESSAGE);
+    	}
+    	else if(regLog == "register" && !(String.valueOf(txtInput.getPassword()).equals(String.valueOf(txtInputConfirm.getPassword()))) ){
+    		JOptionPane.showMessageDialog(this,
+    			    "Passwort und BestŠtigung stimmten nicht Ÿberein.",
+    			    "Fehler bei Passworteingabe",
     			    JOptionPane.WARNING_MESSAGE);
     	}
     	else {
-    		if(txtInput.getPassword().length != 0){
-        		typedPassword = txtInput.getPassword();
-        		setVisible(false);
-    		}
-    		else {
-        		JOptionPane.showMessageDialog(this,
-        			    "Bitte Passwort eingeben.",
-        			    "Kein Passwort eingegeben",
-        			    JOptionPane.WARNING_MESSAGE);
-    		}
+    		typedPassword = txtInput.getPassword();
+    		setVisible(false);
     	}
     }
     
