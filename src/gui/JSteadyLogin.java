@@ -172,7 +172,7 @@ public class JSteadyLogin extends JDialog {
     	}
     	else if(regLog == "register" && !(String.valueOf(txtInput.getPassword()).equals(String.valueOf(txtInputConfirm.getPassword()))) ){
     		JOptionPane.showMessageDialog(this,
-    			    "Passwort und Bestätigung stimmten nicht überein.",
+    			    "Passwort und Bestaetigung stimmten nicht ueberein.",
     			    "Fehler bei Passworteingabe",
     			    JOptionPane.WARNING_MESSAGE);
     	}
