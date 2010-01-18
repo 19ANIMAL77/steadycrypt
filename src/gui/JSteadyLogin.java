@@ -89,26 +89,29 @@ public class JSteadyLogin extends JDialog {
 		panelCenter = new JPanel();
 		panelBottom = new JPanel();
 		
-		txtInput = new JPasswordField();
-		txtInput.setLocation(250, 20);
-		txtInput.setPreferredSize(new Dimension(130, 25));
-		txtInput.setSize(130, 25);
-		txtInputConfirm = new JPasswordField();
-		txtInputConfirm.setLocation(250, 55);
-		txtInputConfirm.setPreferredSize(new Dimension(130, 25));
-		txtInputConfirm.setSize(130, 25);
-		
 		if(registerOrLogin=="login") {
+			txtInput = new JPasswordField();
+			txtInput.setLocation(220, 35);
+			txtInput.setPreferredSize(new Dimension(130, 25));
+			txtInput.setSize(130, 25);
 			lblInput = new JLabel("Passwort eingeben:");
-			lblInput.setLocation(10, 20);
+			lblInput.setLocation(40, 35);
 			lblInput.setSize(240, 25);
 		}
 		else if(registerOrLogin=="register"){
+			txtInput = new JPasswordField();
+			txtInput.setLocation(250, 20);
+			txtInput.setPreferredSize(new Dimension(130, 25));
+			txtInput.setSize(130, 25);
+			txtInputConfirm = new JPasswordField();
+			txtInputConfirm.setLocation(250, 55);
+			txtInputConfirm.setPreferredSize(new Dimension(130, 25));
+			txtInputConfirm.setSize(130, 25);
 			lblInput = new JLabel("WICHTIG - Passwort jetzt festlegen:");
 			lblInput.setLocation(10, 20);
 			lblInput.setSize(240, 25);
 			lblInputConfirm = new JLabel("Passwort wiederholen:");
-			lblInputConfirm.setLocation(95, 55);
+			lblInputConfirm.setLocation(10, 55);
 			lblInputConfirm.setSize(240, 25);
 		}
 		
