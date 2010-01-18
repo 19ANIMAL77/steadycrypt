@@ -65,7 +65,7 @@ public class JSteadyLogin extends JDialog {
 	        }
 		});
 		
-		setPreferredSize(new Dimension(400, 200));
+		setPreferredSize(new Dimension(400, 230));
 		
 		bannerTop = new JLabel(new ImageIcon("img/"+registerOrLogin+".jpg"));
 		
@@ -90,27 +90,37 @@ public class JSteadyLogin extends JDialog {
 		panelBottom = new JPanel();
 		
 		txtInput = new JPasswordField();
+		txtInput.setLocation(250, 20);
 		txtInput.setPreferredSize(new Dimension(130, 25));
+		txtInput.setSize(130, 25);
 		txtInputConfirm = new JPasswordField();
+		txtInputConfirm.setLocation(250, 55);
 		txtInputConfirm.setPreferredSize(new Dimension(130, 25));
+		txtInputConfirm.setSize(130, 25);
 		
-		if(registerOrLogin=="login")
-			lblInput = new JLabel("Passwort eigeben:");
+		if(registerOrLogin=="login") {
+			lblInput = new JLabel("Passwort eingeben:");
+			lblInput.setLocation(10, 20);
+			lblInput.setSize(240, 25);
+		}
 		else if(registerOrLogin=="register"){
 			lblInput = new JLabel("WICHTIG - Passwort jetzt festlegen:");
-			lblInputConfirm = new JLabel("                       Passwort wiederholen:");	
+			lblInput.setLocation(10, 20);
+			lblInput.setSize(240, 25);
+			lblInputConfirm = new JLabel("Passwort wiederholen:");
+			lblInputConfirm.setLocation(95, 55);
+			lblInputConfirm.setSize(240, 25);
 		}
 		
 		BorderLayout layout = new BorderLayout();
 		FlowLayout flowTop = new FlowLayout();
-		FlowLayout flowCenter = new FlowLayout();
 		FlowLayout flowBottom = new FlowLayout();
 		setLayout(layout);
 		
 		panelTop.setLayout(flowTop);
 		panelTop.add(bannerTop);
 		
-		panelCenter.setLayout(flowCenter);
+		panelCenter.setLayout(null);
 		panelCenter.add(lblInput);
 		panelCenter.add(txtInput);
 		
