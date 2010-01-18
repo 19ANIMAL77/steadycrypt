@@ -68,7 +68,7 @@ public class JSteadyLogin extends JDialog {
 		
 		bannerTop = new JLabel(new ImageIcon("img/"+registerOrLogin+".jpg"));
 		
-		btnLogin = new JButton("Login");
+		btnLogin = new JButton("Anmelden");
 		btnLogin.setPreferredSize(new Dimension(130, 30));
 		btnLogin.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
