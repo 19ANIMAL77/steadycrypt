@@ -52,8 +52,8 @@ public class DecryptHandler {
 	
 	/**
 	 * Method implements decryption process
-	 * @param EncryptedFile: Location of the encrypted file
-	 * @param OutputPath: Destination folder
+	 * @param EncryptedFile
+	 * @param OutputPath
 	 */
 	public void decrypt (String EncryptedFile, String OutputPath) {
 		
