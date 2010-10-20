@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SteadyCrypt v2
 Bundle-SymbolicName: de.steadycrypt.v2; singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.0.1
 Bundle-Activator: de.steadycrypt.v2.Activator
-Bundle-Vendor: TestProvider
+Bundle-Vendor: HH
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
