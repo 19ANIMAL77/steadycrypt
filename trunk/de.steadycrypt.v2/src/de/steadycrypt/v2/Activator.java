@@ -1,3 +1,9 @@
+/**
+ * Date: 26.10.2010
+ * SteadyCrypt v2 Project by Joerg Harr and Marvin Hoffmann
+ *
+ */
+
 package de.steadycrypt.v2;
 
 import org.eclipse.jface.resource.ImageDescriptor;

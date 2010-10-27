@@ -1,6 +1,6 @@
 /**
  * Date: 26.10.2010
- * SteadyCrypt Project by Joerg Harr and Marvin Hoffmann
+ * SteadyCrypt v2 Project by Joerg Harr and Marvin Hoffmann
  *
  */
 
@@ -8,7 +8,7 @@ package de.steadycrypt.v2;
 
 import org.eclipse.osgi.util.NLS;
 
-import de.steadycrypt.v2.views.model.CryptedFilesTableIdentifier;
+import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
 
 public class Messages extends NLS
 {
@@ -27,7 +27,7 @@ public class Messages extends NLS
 
     // =========================================================================
 
-    public static String getCryptedFilesTableColumnTitle(CryptedFilesTableIdentifier identifier)
+    public static String getSteadyTableColumnTitle(SteadyTableIdentifier identifier)
     {
         String title = null;
         switch(identifier)
@@ -52,8 +52,7 @@ public class Messages extends NLS
                 break;
 
             default:
-                assert false : "Unbekannter Identifier: " //$NON-NLS-1$
-                    + identifier;
+                assert false : identifier + " is not a legal identifier!"; //$NON-NLS-1$
         }
 
         return title;
