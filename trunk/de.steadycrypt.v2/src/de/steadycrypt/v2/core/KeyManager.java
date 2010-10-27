@@ -1,6 +1,6 @@
 /**
- * Date: 26.10.2010
- * SteadyCrypt v2 Project by Joerg Harr and Marvin Hoffmann
+ * Date: 17.11.2009
+ * SteadyCrypt Project by Joerg Harr & Marvin Hoffmann
  *
  */
 
@@ -18,16 +18,19 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
+import org.apache.log4j.Logger;
+
 public class KeyManager {
 	
 	private SteadyKey steadykey = null;
+	private static org.apache.log4j.Logger log = Logger.getLogger(KeyManager.class);
 	private static KeyManager INSTANCE = null;
 	
 	final EntityManagerFactory emf = Persistence.createEntityManagerFactory("hibernate");
 	final EntityManager em = emf.createEntityManager();
 	
 	private KeyManager(){
-		System.out.println("KeyManager instantiated");
+		log.debug("KeyManager instantiated");
 	}
 	
 	/**
@@ -74,7 +77,6 @@ public class KeyManager {
 			writeKeyToDB();
 		}		
 		
-		@SuppressWarnings("rawtypes")
 		final List keys = em.createQuery("select sk from SteadyKey as sk").getResultList();
 		System.out.println(keys.size() + " key(s) found");
 		for (final Object sk : keys) {
