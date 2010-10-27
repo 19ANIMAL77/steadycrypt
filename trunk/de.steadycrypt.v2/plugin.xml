@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="splashExtension" name="Splash Extensions" schema="schema/splashExtension.exsd"/>
-
    <extension
          id="application"
          point="org.eclipse.core.runtime.applications">
@@ -55,40 +53,12 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            class="de.steadycrypt.v2.TableView"
+            class="de.steadycrypt.v2.views.TableView"
             icon="icons/alt_window_16.gif"
             id="de.steadycrypt.v2.view.table"
             name="Table"
             restorable="true">
       </view>
-   </extension>
-   <extension
-         point="de.steadycrypt.v2.splashExtension">
-      <splashExtension
-            icon="icons/af.png"
-            id="af"
-            tooltip="Application Framework">
-      </splashExtension>
-      <splashExtension
-            icon="icons/embedded.png"
-            id="embedded"
-            tooltip="Embedded">
-      </splashExtension>
-      <splashExtension
-            icon="icons/enterprise.png"
-            id="enterprise"
-            tooltip="Enterprise">
-      </splashExtension>
-      <splashExtension
-            icon="icons/languages.png"
-            id="languages"
-            tooltip="Languages">
-      </splashExtension>
-      <splashExtension
-            icon="icons/rcp.png"
-            id="rcp"
-            tooltip="RCP">
-      </splashExtension>
    </extension>
 
 </plugin>
