@@ -1,6 +1,6 @@
 /**
- * Date: 20.11.2009
- * SteadyCrypt Project by Joerg Harr & Marvin Hoffmann
+ * Date: 26.10.2010
+ * SteadyCrypt v2 Project by Joerg Harr & Marvin Hoffmann
  *
  */
 
@@ -85,18 +85,17 @@ public class DbManager {
      * @throws SQLException 
      */
     public void initiateDb(String username, String password) throws SQLException {
-//    	Properties props = new Properties();
-//        props.put("derby.connection.requireAuthentication", "true");
-//        props.put("derby.authentication.provider", "BUILTIN");
-//        props.put("user", username);
-//        props.put("password", password);
-//        props.put("encryptionProvider", "org.bouncycastle.jce.provider.BouncyCastleProvider");
-//        props.put("encryptionAlgorithm", "AES/CBC/NoPadding");        
+    	Properties props = new Properties();
+        props.put("derby.connection.requireAuthentication", "true");
+        props.put("derby.authentication.provider", "BUILTIN");
+        props.put("user", username);
+        props.put("password", password);
+        props.put("encryptionProvider", "org.bouncycastle.jce.provider.BouncyCastleProvider");
+        props.put("encryptionAlgorithm", "AES/CBC/NoPadding");        
             
         // The directory steadyDB will be created under the current directory
 
-//        DbManager.conn = DriverManager.getConnection(protocol + ";create=true;dataEncryption=true;" + "bootPassword="+password, props);
-        DbManager.conn = DriverManager.getConnection(protocol+";create=true;dataEncryption=false");
+        DbManager.conn = DriverManager.getConnection(protocol + ";create=true;dataEncryption=true;" + "bootPassword="+password, props);
         log.trace("Connected to and created database");
         DbManager.conn.setAutoCommit(false);
         
@@ -128,16 +127,15 @@ public class DbManager {
      * Establishes a database connection
      */
     public void connectToDb(String username, String password) throws SQLException {
-//    	Properties props = new Properties();
-//        props.put("derby.connection.requireAuthentication", "true");
-//        props.put("derby.authentication.provider", "BUILTIN");
-//        props.put("user", username);
-//        props.put("password", password);
-//        props.put("encryptionProvider", "org.bouncycastle.jce.provider.BouncyCastleProvider");
-//        props.put("encryptionAlgorithm", "AES/CBC/NoPadding");
+    	Properties props = new Properties();
+        props.put("derby.connection.requireAuthentication", "true");
+        props.put("derby.authentication.provider", "BUILTIN");
+        props.put("user", username);
+        props.put("password", password);
+        props.put("encryptionProvider", "org.bouncycastle.jce.provider.BouncyCastleProvider");
+        props.put("encryptionAlgorithm", "AES/CBC/NoPadding");
 
-//        DbManager.conn = DriverManager.getConnection(protocol + ";dataEncryption=true;" + "bootPassword="+password, props);
-        DbManager.conn = DriverManager.getConnection(protocol);
+        DbManager.conn = DriverManager.getConnection(protocol + ";dataEncryption=true;" + "bootPassword="+password, props);
         log.trace("Connected to database");
         DbManager.conn.setAutoCommit(false);
     }

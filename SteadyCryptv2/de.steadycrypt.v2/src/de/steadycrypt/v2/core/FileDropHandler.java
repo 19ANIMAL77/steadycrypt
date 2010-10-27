@@ -1,5 +1,5 @@
 /**
- * Date: 06.11.2009
+ * Date: 26.10.2010
  * SteadyCrypt Project by Joerg Harr and Marvin Hoffmann
  *
  */
@@ -59,7 +59,7 @@ public class FileDropHandler extends TransferHandler {
 		return supp.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
 	}
 	
-	@SuppressWarnings("unchecked") //for List data, because List is a raw-type
+	@SuppressWarnings("rawtypes")
 	public boolean importData(TransferSupport supp) {
         if (!canImport(supp)) {
             return false;

@@ -1,6 +1,6 @@
 /**
- * Date: 06.11.2009
- * SteadyCrypt Project by Joerg Harr & Marvin Hoffmann
+ * Date: 26.10.2010
+ * SteadyCrypt v2 Project by Joerg Harr & Marvin Hoffmann
  *
  */
 
@@ -11,15 +11,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.log4j.Logger;
-
 /**
  * Analyzer checks whether the file has already been encrypted
  * or other analytics.
  */
 public class Analyzer {
-	
-	private static org.apache.log4j.Logger log = Logger.getLogger(Analyzer.class);
 
 	/**
 	 * Makes a database query, asking for a data set which matches in name and size.
