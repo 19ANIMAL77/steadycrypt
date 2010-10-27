@@ -1,6 +1,6 @@
 /**
- * Date: 13.12.2009
- * SteadyCrypt Project by Joerg Harr and Marvin Hoffmann
+ * Date: 26.10.2010
+ * SteadyCrypt v2 Project by Joerg Harr and Marvin Hoffmann
  *
  */
 
