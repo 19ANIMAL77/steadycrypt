@@ -1,6 +1,6 @@
 /**
- * Date: 27.11.2009
- * SteadyCrypt Project by Joerg Harr & Marvin Hoffmann
+ * Date: 26.10.2010
+ * SteadyCrypt Project by Joerg Harr and Marvin Hoffmann
  *
  */
 
@@ -16,11 +16,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import org.apache.log4j.Logger;
-
 @Entity
 public class SteadyKey {
 	
+	@SuppressWarnings("unused")
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name = "STEADYKEY_ID")
@@ -29,8 +28,6 @@ public class SteadyKey {
 	@Column(name="SECRETKEY")
 	private SecretKey key = null;
 	
-	private static org.apache.log4j.Logger log = Logger.getLogger(SteadyKey.class);
-
 	public SteadyKey(){
 		
 		/** 

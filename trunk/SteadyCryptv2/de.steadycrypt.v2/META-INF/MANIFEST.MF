@@ -7,6 +7,7 @@ Bundle-Activator: de.steadycrypt.v2.Activator
 Bundle-Vendor: HH
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.apache.derby.core;bundle-version="10.6.2"
+ org.apache.derby.core;bundle-version="10.6.2",
+ com.springsource.org.apache.log4j;bundle-version="1.2.16"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
