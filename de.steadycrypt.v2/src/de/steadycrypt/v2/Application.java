@@ -27,23 +27,23 @@ public class Application implements IApplication {
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
-//		DbManager manager = DbManager.getInstance();
-//		manager.startDb();
-//
-//		File f = new File(System.getProperty("user.dir")+"/sc-files/");
-//		
-//		if (f.exists()) {
-//			manager.connectToDb("steady", PasswordInterpreter.createPassword("crypt"));
-//		}
-//		else {
-//			try {
-//				manager.initiateDb("steady", PasswordInterpreter.createPassword("crypt"));
-//			}
-//			catch (SQLException sqle) {
-//				DbManager.printSQLException(sqle);
-//			}
-//			f.mkdir();
-//		}
+		DbManager manager = DbManager.getInstance();
+		manager.startDb();
+
+		File f = new File(System.getProperty("user.dir")+"/sc-files/");
+		
+		if (f.exists()) {
+			manager.connectToDb("steady", PasswordInterpreter.createPassword("crypt"));
+		}
+		else {
+			try {
+				manager.initiateDb("steady", PasswordInterpreter.createPassword("crypt"));
+				f.mkdir();
+			}
+			catch (SQLException sqle) {
+				DbManager.printSQLException(sqle);
+			}
+		}
 		
 		Display display = PlatformUI.createDisplay();
 		try {
