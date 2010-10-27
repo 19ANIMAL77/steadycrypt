@@ -5,7 +5,7 @@
 		<property name="hibernate.connection.driver_class" value="org.apache.derby.jdbc.EmbeddedDriver" />
 		<property name="hibernate.connection.url" value="jdbc:derby:steadyDB" />
 		<property name="hibernate.connection.username" value="steady" />
-		<property name="hibernate.connection.password" value="" />
+		<property name="hibernate.connection.password" value="crypt" />
 		<property name="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect" />
 	</properties>
 </persistence-unit>

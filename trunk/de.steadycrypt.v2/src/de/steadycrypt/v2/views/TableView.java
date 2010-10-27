@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -22,10 +21,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -47,6 +44,8 @@ public class TableView extends ViewPart {
 
     public SimpleDateFormat sdf;
     List<EncryptedFile> files;
+
+    // =========================================================================
 
 	public TableView()
 	{
@@ -80,9 +79,6 @@ public class TableView extends ViewPart {
         content.setLayout(new GridLayout(1, false));
         scrolledComposite.setContent(content);
 
-        Label separatorLabel = new Label(content, SWT.SEPARATOR | SWT.HORIZONTAL);
-        separatorLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        
         Table table = new Table(content, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.V_SCROLL);
         table.setHeaderVisible(true);
         GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -125,9 +121,9 @@ public class TableView extends ViewPart {
                     case TYPE:
                         text = file.getType();
                         break;
+                        
                     default:
-                        assert false : "Unbekannter Identifier: " //$NON-NLS-1$
-                            + identifier;
+                        assert false : identifier + " is not a legal identifier!"; //$NON-NLS-1$
                 }
                 return text;
             }
