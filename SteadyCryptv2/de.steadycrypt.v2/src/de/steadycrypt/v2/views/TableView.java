@@ -6,6 +6,9 @@
 
 package de.steadycrypt.v2.views;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +20,12 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,6 +38,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.businessmodel.EncryptedFile;
+import de.steadycrypt.v2.core.FileInfo;
 import de.steadycrypt.v2.core.SteadyTableLabelProvider;
 import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
 
@@ -79,7 +89,7 @@ public class TableView extends ViewPart {
         content.setLayout(new GridLayout(1, false));
         scrolledComposite.setContent(content);
 
-        Table table = new Table(content, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.V_SCROLL);
+        final Table table = new Table(content, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.V_SCROLL);
         table.setHeaderVisible(true);
         GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         gridData.heightHint = 200;
@@ -133,43 +143,93 @@ public class TableView extends ViewPart {
                 return null;
             }
         });
-        this.tableViewer.setContentProvider(new IStructuredContentProvider()
-        {
+        
+        this.tableViewer.setContentProvider(new IStructuredContentProvider() {
             public Object[] getElements(Object inputElement)
             {                	
                 return files.toArray();
             }
 
-            /** {@inheritDoc} */
-            public void inputChanged(Viewer viewer, Object oldInput,
-                                            Object newInput)
-            {
-            }
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 
-            /** {@inheritDoc} */
-            public void dispose()
-            {
-            }
+            public void dispose() { }
         });
+        
         this.tableViewer.setInput(files.toArray());
+		
+	    DropTarget dropTarget = new DropTarget(table, DND.DROP_COPY | DND.DROP_DEFAULT);    
+	        
+	    dropTarget.setTransfer(new Transfer[] {FileTransfer.getInstance() });
+	    dropTarget.addDropListener(new DropTargetAdapter()
+	    {
+	    	FileTransfer fileTransfer = FileTransfer.getInstance();
+	 
+	    	public void dragEnter(DropTargetEvent event)
+	    	{
+	    		if (event.detail == DND.DROP_DEFAULT)
+	    			event.detail = DND.DROP_COPY;
+	    	}
+	    	    
+		    public void dragOperationChanged(DropTargetEvent event)
+		    {
+		    	if (event.detail == DND.DROP_DEFAULT)
+		    		event.detail = DND.DROP_COPY;
+		    }          
+	 
+	        public void dragOver(DropTargetEvent event)
+	        {
+	        	
+	        }	      
+	      
+	        public void drop(DropTargetEvent event)
+	        {      
+	        	if (fileTransfer.isSupportedType(event.currentDataType))
+	            {
+	            	String[] newFiles = (String[]) event.data;
+	             
+	                for (int i = 0 ; i < newFiles.length ; i++)
+		            {
+		            	File file = new File(newFiles[i]);
+		            	System.out.println(file.getAbsolutePath());
+		            	
+		            	FileInfo fileInfo = new FileInfo(file.getAbsolutePath());
+		            	
+		            	EncryptedFile nef = new EncryptedFile();
+		            	nef.setDate(new Date(System.currentTimeMillis()));
+		            	nef.setName(fileInfo.getName());
+		            	nef.setSize(fileInfo.length());
+		            	try {
+							nef.setType(fileInfo.getFileType());
+						} catch (MalformedURLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						files.add(nef);
+		            }
+	            }
+	        	tableViewer.refresh();
+	        }
+	    });
 	}
 
 	@Override
-	public void setFocus() {
+	public void setFocus()
+	{
 		// TODO Auto-generated method stub
-
 	}
 
     // -------------------------------------------------------------------------
 
     private void makeActions()
     {
-        newInvoiceAction = new Action()
-        {
-            public void run()
-            {
-            }
+        newInvoiceAction = new Action() {
+        	public void run() { }
         };
+        
         newInvoiceAction.setText("Hallo");
         newInvoiceAction.setToolTipText("Tooltip");
         newInvoiceAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(
