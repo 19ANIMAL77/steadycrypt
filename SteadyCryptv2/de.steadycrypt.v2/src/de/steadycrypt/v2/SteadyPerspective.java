@@ -12,7 +12,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 
 import de.steadycrypt.v2.views.TableView;
 
-public class Perspective implements IPerspectiveFactory {
+public class SteadyPerspective implements IPerspectiveFactory {
 
 	public void createInitialLayout(IPageLayout layout) {
 		
