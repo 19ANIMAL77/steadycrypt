@@ -14,8 +14,8 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             name="RCP Perspective"
-            class="de.steadycrypt.v2.Perspective"
-            id="de.steadycrypt.v2.perspective">
+            class="de.steadycrypt.v2.SteadyPerspective"
+            id="de.steadycrypt.v2.steadyPerspective">
       </perspective>
    </extension>
    <extension
