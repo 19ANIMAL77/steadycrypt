@@ -7,13 +7,12 @@
 package de.steadycrypt.v2.views;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -38,43 +37,36 @@ import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.EncryptedFile;
-import de.steadycrypt.v2.core.FileInfo;
+import de.steadycrypt.v2.core.Crypter;
+import de.steadycrypt.v2.core.KeyManager;
 import de.steadycrypt.v2.core.SteadyTableLabelProvider;
+import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
 
 public class TableView extends ViewPart {
 	
+	private static Logger log = Logger.getLogger(TableView.class);
 	public static String ID = "de.steadycrypt.v2.view.table";
 
     // =========================================================================
 
+	public SimpleDateFormat sdf;
+	
+	private KeyManager keyman;
+	private Crypter crypter;
+	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+
     private Action newInvoiceAction;
 
     private TableViewer tableViewer;
-
-    public SimpleDateFormat sdf;
-    List<EncryptedFile> files;
 
     // =========================================================================
 
 	public TableView()
 	{
 	    this.sdf = new SimpleDateFormat(Messages.DATE_FORMAT);
-
-    	this.files = new ArrayList<EncryptedFile>();
-    	
-    	for(int i=0 ; i < 10 ; i++) {
-    		EncryptedFile file = new EncryptedFile();
-    		
-    		file.setDate(new Date(0l));
-    		file.setFile(i+"ksahldfkjhsaldf.sc");
-    		file.setName(i+".jpg");
-    		file.setPath("pfad/"+i+".jpg");
-    		file.setSize(new Long(i));
-    		file.setType(".jpg");
-    		
-    		files.add(file);
-    	}
+	    this.keyman = KeyManager.getInstance();
+	    this.crypter = new Crypter(keyman.getKey());
 	}
 
 	@Override
@@ -147,7 +139,7 @@ public class TableView extends ViewPart {
         this.tableViewer.setContentProvider(new IStructuredContentProvider() {
             public Object[] getElements(Object inputElement)
             {                	
-                return files.toArray();
+                return encryptedFileDao.getAllFiles();
             }
 
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
@@ -155,7 +147,7 @@ public class TableView extends ViewPart {
             public void dispose() { }
         });
         
-        this.tableViewer.setInput(files.toArray());
+        this.tableViewer.setInput(this.encryptedFileDao.getAllFiles());
 		
 	    DropTarget dropTarget = new DropTarget(table, DND.DROP_COPY | DND.DROP_DEFAULT);    
 	        
@@ -182,33 +174,35 @@ public class TableView extends ViewPart {
 	        }	      
 	      
 	        public void drop(DropTargetEvent event)
-	        {      
+	        {
 	        	if (fileTransfer.isSupportedType(event.currentDataType))
 	            {
-	            	String[] newFiles = (String[]) event.data;
+	             	String[] droppedFileInformation = (String[]) event.data;
 	             
-	                for (int i = 0 ; i < newFiles.length ; i++)
+	                for (int i = 0 ; i < droppedFileInformation.length ; i++)
 		            {
-		            	File file = new File(newFiles[i]);
-		            	System.out.println(file.getAbsolutePath());
+	                	EncryptedFile newEncryptedFile = new EncryptedFile(new File(droppedFileInformation[i]));
+		            	System.out.println(newEncryptedFile.getPath()+newEncryptedFile.getName());
 		            	
-		            	FileInfo fileInfo = new FileInfo(file.getAbsolutePath());
-		            	
-		            	EncryptedFile nef = new EncryptedFile();
-		            	nef.setDate(new Date(System.currentTimeMillis()));
-		            	nef.setName(fileInfo.getName());
-		            	nef.setSize(fileInfo.length());
-		            	try {
-							nef.setType(fileInfo.getFileType());
-						} catch (MalformedURLException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
-						files.add(nef);
+		            	// Encrypt
+        				try
+        				{
+        					FileInputStream finput = new FileInputStream(newEncryptedFile.getPath());
+        					FileOutputStream foutput = new FileOutputStream(EncryptedFile.encryptionPath+newEncryptedFile.getFile());
+        				
+        					crypter.encrypt(finput, foutput);
+        				
+	        				finput.close();
+	        				foutput.close();
+        				}
+        				catch(IOException e)
+        				{
+        					
+        				}
+        				
+        				log.debug("Encryption finished");
+        					
+            			encryptedFileDao.addFile(newEncryptedFile);
 		            }
 	            }
 	        	tableViewer.refresh();
