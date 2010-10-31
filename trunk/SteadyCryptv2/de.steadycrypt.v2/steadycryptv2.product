@@ -31,6 +31,7 @@
       <plugin id="com.ibm.icu"/>
       <plugin id="com.springsource.org.apache.log4j"/>
       <plugin id="de.steadycrypt.v2"/>
+      <plugin id="de.steadycrypt.v2.hibernate"/>
       <plugin id="org.apache.derby.core"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
