@@ -4,7 +4,7 @@
  *
  */
 
-package de.steadycrypt.v2.businessmodel;
+package de.steadycrypt.v2.bob;
 
 import java.sql.Date;
 

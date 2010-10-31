@@ -37,7 +37,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Messages;
-import de.steadycrypt.v2.businessmodel.EncryptedFile;
+import de.steadycrypt.v2.bob.EncryptedFile;
 import de.steadycrypt.v2.core.FileInfo;
 import de.steadycrypt.v2.core.SteadyTableLabelProvider;
 import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
