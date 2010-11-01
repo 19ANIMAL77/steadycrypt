@@ -17,14 +17,8 @@ public class EncryptedFile {
 	private Date date;
 	private String path;
 	private String file;
-	
-	public static final String encryptionPath = System.getProperty("user.dir")+"/sc-files/";
 
-    // =========================================================================
-	
-	public EncryptedFile() {
-		
-	}
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
 	/**
 	 * Used when a new file was dropped.
@@ -58,8 +52,8 @@ public class EncryptedFile {
 		this.path = path;
 		this.file = file;
 	}
-	
-    // =========================================================================
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	public String getName() {
 		return name;

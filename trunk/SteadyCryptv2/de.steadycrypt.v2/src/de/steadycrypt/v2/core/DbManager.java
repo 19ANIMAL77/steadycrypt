@@ -21,7 +21,8 @@ public class DbManager {
     private static String driver = "org.apache.derby.jdbc.EmbeddedDriver";
     private static String protocol = "jdbc:derby:steadyDB";
     private static Connection conn = null;
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
     /**
      * Singleton Pattern
@@ -30,7 +31,6 @@ public class DbManager {
 	private DbManager(){
 		log.debug("DbManager instantiated");
 	}
-	
 	
 	/**
 	 * Singleton Pattern for DbManager
@@ -43,14 +43,14 @@ public class DbManager {
 		return INSTANCE;
 	}
 	
-	
 	/**
 	 * Override clone. Clone is in Singleton not supported.
 	 */
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
 	}
-    
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	/**
      * Loads Derby Drivers
@@ -108,7 +108,7 @@ public class DbManager {
         		"name VARCHAR(250)," +
         		"type VARCHAR(30)," +
         		"size BIGINT," +
-        		"enc_date TIMESTAMP," +
+        		"enc_date DATE," +
         		"org_path LONG VARCHAR," +
         		"enc_name VARCHAR(40))");
         log.info("Created table CONTENT");

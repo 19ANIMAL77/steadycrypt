@@ -6,11 +6,8 @@
 
 package de.steadycrypt.v2.views;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
@@ -37,8 +34,8 @@ import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.EncryptedFile;
-import de.steadycrypt.v2.core.Crypter;
-import de.steadycrypt.v2.core.KeyManager;
+import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
+import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.core.SteadyTableLabelProvider;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
@@ -48,25 +45,22 @@ public class TableView extends ViewPart {
 	private static Logger log = Logger.getLogger(TableView.class);
 	public static String ID = "de.steadycrypt.v2.view.table";
 
-    // =========================================================================
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	public SimpleDateFormat sdf;
-	
-	private KeyManager keyman;
-	private Crypter crypter;
-	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+	private SimpleDateFormat sdf;
+	private List<EncryptedFileDob> model;
 
     private Action newInvoiceAction;
 
     private TableViewer tableViewer;
 
-    // =========================================================================
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	public TableView()
 	{
 	    this.sdf = new SimpleDateFormat(Messages.DATE_FORMAT);
-	    this.keyman = KeyManager.getInstance();
-	    this.crypter = new Crypter(keyman.getKey());
+	    EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+	    this.model = encryptedFileDao.getAllFiles();
 	}
 
 	@Override
@@ -139,7 +133,7 @@ public class TableView extends ViewPart {
         this.tableViewer.setContentProvider(new IStructuredContentProvider() {
             public Object[] getElements(Object inputElement)
             {                	
-                return encryptedFileDao.getAllFiles();
+                return model.toArray();
             }
 
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
@@ -147,7 +141,7 @@ public class TableView extends ViewPart {
             public void dispose() { }
         });
         
-        this.tableViewer.setInput(this.encryptedFileDao.getAllFiles());
+        this.tableViewer.setInput(this.model.toArray());
 		
 	    DropTarget dropTarget = new DropTarget(table, DND.DROP_COPY | DND.DROP_DEFAULT);    
 	        
@@ -177,33 +171,12 @@ public class TableView extends ViewPart {
 	        {
 	        	if (fileTransfer.isSupportedType(event.currentDataType))
 	            {
-	             	String[] droppedFileInformation = (String[]) event.data;
-	             
-	                for (int i = 0 ; i < droppedFileInformation.length ; i++)
-		            {
-	                	EncryptedFile newEncryptedFile = new EncryptedFile(new File(droppedFileInformation[i]));
-		            	System.out.println(newEncryptedFile.getPath()+newEncryptedFile.getName());
-		            	
-		            	// Encrypt
-        				try
-        				{
-        					FileInputStream finput = new FileInputStream(newEncryptedFile.getPath());
-        					FileOutputStream foutput = new FileOutputStream(EncryptedFile.encryptionPath+newEncryptedFile.getFile());
-        				
-        					crypter.encrypt(finput, foutput);
-        				
-	        				finput.close();
-	        				foutput.close();
-        				}
-        				catch(IOException e)
-        				{
-        					
-        				}
-        				
-        				log.debug("Encryption finished");
-        					
-            			encryptedFileDao.addFile(newEncryptedFile);
-		            }
+	        		FileDropHandler fileDropHandler = new FileDropHandler();
+	        		String[] droppedFileInformation = (String[]) event.data;
+	        		
+	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
+	        				
+	    			model.addAll(fileDropHandler.processData(droppedFileInformation));
 	            }
 	        	tableViewer.refresh();
 	        }
@@ -216,7 +189,7 @@ public class TableView extends ViewPart {
 		// TODO Auto-generated method stub
 	}
 
-    // -------------------------------------------------------------------------
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     private void makeActions()
     {
