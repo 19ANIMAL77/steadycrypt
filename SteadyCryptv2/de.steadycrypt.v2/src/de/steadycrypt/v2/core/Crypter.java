@@ -6,6 +6,10 @@
 
 package de.steadycrypt.v2.core;
  
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.spec.AlgorithmParameterSpec;
@@ -16,13 +20,16 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
+import de.steadycrypt.v2.bob.EncryptedFile;
+
 /**
  * Encrypter Object needed to en- and decrypt files.
  */
 public class Crypter
 {
-	Cipher ecipher;
-	Cipher dcipher;
+	public static final String encryptionPath = System.getProperty("user.dir")+"/sc-files/";
+	private Cipher ecipher;
+	private Cipher dcipher;
 	
 	/**
 	 * 
@@ -59,21 +66,31 @@ public class Crypter
 	 * @param in
 	 * @param out
 	 */
-	public void encrypt(InputStream in, OutputStream out) {
+	public EncryptedFile encrypt(File currentFile)
+	{		
+		EncryptedFile encryptedFile = new EncryptedFile(currentFile);
 		
-		try {
-			// Bytes written to out will be encrypted
-			out = new CipherOutputStream(out, ecipher);
+		try
+		{
+			InputStream input = new FileInputStream(encryptedFile.getPath());
+			OutputStream output = new FileOutputStream(encryptionPath+encryptedFile.getFile());
+		
+			output = new CipherOutputStream(output, ecipher);
 			
 			// Read in the cleartext bytes and write to out to encrypt
 			int numRead = 0;
-			while ((numRead = in.read(buf)) >= 0) {
-				out.write(buf, 0, numRead);
+			while ((numRead = input.read(buf)) >= 0)
+			{
+				output.write(buf, 0, numRead);
 			}
-			out.close();
+			
+			input.close();
+			output.close();
 		}
-		catch (java.io.IOException e) {
+		catch (IOException e){
 		}
+		
+		return encryptedFile;
 	}
 	
 	/**
@@ -82,15 +99,17 @@ public class Crypter
 	 * @param in
 	 * @param out
 	 */
-	public void decrypt(InputStream in, OutputStream out) {
-		
-		try	{
+	public void decrypt(InputStream in, OutputStream out)
+	{		
+		try
+		{
 			// Bytes read from in will be decrypted
 			in = new CipherInputStream(in, dcipher);
 			
 			// Read in the decrypted bytes and write the cleartext to out
-			int numRead = 0;
-			while ((numRead = in.read(buf)) >= 0) {
+			int numRead = 0;			
+			while ((numRead = in.read(buf)) >= 0)
+			{
 				out.write(buf, 0, numRead);
 			}
 			out.close();
