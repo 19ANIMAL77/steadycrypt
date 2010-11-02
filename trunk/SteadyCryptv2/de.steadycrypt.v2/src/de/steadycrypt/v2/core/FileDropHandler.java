@@ -23,6 +23,9 @@ public class FileDropHandler {
 	private KeyManager keyman;
 	private Crypter crypter;
 	
+	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+	private ArrayList<EncryptedFile> encryptedFiles = new ArrayList<EncryptedFile>();
+	
 	public FileDropHandler()
 	{
 		// Provide KeyManager
@@ -34,21 +37,41 @@ public class FileDropHandler {
 	}
 	
 	public List<EncryptedFileDob> processData(String[] droppedFileInformation)
-	{
-		EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
-		ArrayList<EncryptedFile> encryptedFiles = new ArrayList<EncryptedFile>();
+	{		
 		ArrayList<EncryptedFileDob> encryptedPersistedFiles = new ArrayList<EncryptedFileDob>();
 		
         for (int i = 0 ; i < droppedFileInformation.length ; i++)
         {
-        	encryptedFiles.add(crypter.encrypt(new File(droppedFileInformation[i])));
-        	
-			log.debug("Encryption finished");
+        	browseFolders(new File(droppedFileInformation[i]));
         }
         
         encryptedPersistedFiles.addAll(encryptedFileDao.addFiles(encryptedFiles));
         
 		return encryptedPersistedFiles;		
+	}
+	
+	private void browseFolders (File droppedFile)
+	{
+    	if(!droppedFile.isDirectory())
+    	{
+    		log.debug("File dropped");
+			log.debug(droppedFile.getPath());
+//    		encryptedFiles.add(crypter.encrypt(droppedFile));
+        	log.debug("Encryption finished");
+        	
+//        	droppedFile.delete();
+//        	log.debug("Sourcefile deleted");
+    	}
+    	else
+    	{
+    		log.debug("Folder dropped");
+			log.debug(droppedFile.getPath());
+    		for(File file : droppedFile.listFiles())
+    		{
+//    			log.debug(file.getPath());
+    			browseFolders(file);
+    		}
+    	}		
 	}
 		
 }
