@@ -12,14 +12,15 @@ import org.eclipse.ui.IPerspectiveFactory;
 
 import de.steadycrypt.v2.views.SideBarView;
 import de.steadycrypt.v2.views.TableView;
+import de.steadycrypt.v2.views.TreeTableView;
 
 public class SteadyPerspective implements IPerspectiveFactory {
 
 	public void createInitialLayout(IPageLayout layout) {
 		
-		layout.addStandaloneView(SideBarView.ID, false, SWT.LEFT, 0.25f, layout.getEditorArea());
-		layout.addStandaloneView(TableView.ID, true, SWT.RIGHT, 0.75f, layout.getEditorArea());
-		
+		layout.addStandaloneView(SideBarView.ID, false, SWT.RIGHT, 0.25f, layout.getEditorArea());
+		layout.addView(TableView.ID, SWT.RIGHT, 0.75f, SideBarView.ID);
+        layout.addView(TreeTableView.ID, IPageLayout.BOTTOM, 0.5f, TableView.ID);
 		layout.setEditorAreaVisible(false);
 		
 	}

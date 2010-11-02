@@ -23,7 +23,6 @@ public class Messages extends NLS
     public static String CryptedFilesTableIdentifier_SIZE;
     public static String CryptedFilesTableIdentifier_DATE;
     public static String CryptedFilesTableIdentifier_PATH;
-    public static String CryptedFilesTableIdentifier_FILE;
 
     // =========================================================================
 
@@ -34,9 +33,6 @@ public class Messages extends NLS
         {
             case DATE:
                 title = CryptedFilesTableIdentifier_DATE;
-                break;
-            case FILE:
-                title = CryptedFilesTableIdentifier_FILE;
                 break;
             case NAME:
                 title = CryptedFilesTableIdentifier_NAME;

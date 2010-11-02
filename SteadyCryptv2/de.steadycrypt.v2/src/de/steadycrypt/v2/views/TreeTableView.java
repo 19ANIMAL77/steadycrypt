@@ -40,10 +40,10 @@ import de.steadycrypt.v2.core.SteadyTableLabelProvider;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
 
-public class TableView extends ViewPart {
+public class TreeTableView extends ViewPart {
 	
-	private static Logger log = Logger.getLogger(TableView.class);
-	public static String ID = "de.steadycrypt.v2.view.table";
+	private static Logger log = Logger.getLogger(TreeTableView.class);
+	public static String ID = "de.steadycrypt.v2.view.treeTable";
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -56,7 +56,7 @@ public class TableView extends ViewPart {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	public TableView()
+	public TreeTableView()
 	{
 	    this.sdf = new SimpleDateFormat(Messages.DATE_FORMAT);
 	    EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
