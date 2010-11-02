@@ -290,4 +290,6 @@ Export-Package: antlr,
  org.slf4j.profiler,
  org.slf4j.spi
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: com.springsource.org.apache.log4j;bundle-version="1.2.16"
+Require-Bundle: com.springsource.org.apache.log4j;bundle-version="1.2.16",
+ org.apache.derby.core;bundle-version="10.6.2"
+Eclipse-BuddyPolicy: registered
