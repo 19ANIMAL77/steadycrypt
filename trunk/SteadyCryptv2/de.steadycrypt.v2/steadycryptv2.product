@@ -32,6 +32,7 @@
       <plugin id="com.springsource.org.apache.log4j"/>
       <plugin id="de.steadycrypt.v2"/>
       <plugin id="de.steadycrypt.v2.hibernate"/>
+      <plugin id="de.steadycrypt.v2.hibernate.config" fragment="true"/>
       <plugin id="org.apache.derby.core"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
@@ -41,7 +42,6 @@
       <plugin id="org.eclipse.core.expressions"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.runtime"/>
-      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
       <plugin id="org.eclipse.equinox.preferences"/>
