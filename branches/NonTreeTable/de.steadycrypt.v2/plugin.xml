@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="de.steadycrypt.v2.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="RCP Perspective"
+            class="de.steadycrypt.v2.SteadyPerspective"
+            id="de.steadycrypt.v2.steadyPerspective">
+      </perspective>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="de.steadycrypt.v2.application"
+            name="SteadyCrypt v2">
+         <property
+               name="windowImages"
+               value="icons/alt_window_16.gif,icons/alt_window_32.gif">
+         </property>
+         <property
+               name="appName"
+               value="SteadyCrypt v2">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+         <property
+               name="startupProgressRect"
+               value="5,295,440,15">
+         </property>
+         <property
+               name="startupForegroundColor"
+               value="FFFFFF">
+         </property>
+         <property
+               name="startupMessageRect"
+               value="7,275,436,15">
+         </property>
+      </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="de.steadycrypt.v2.views.TableView"
+            icon="icons/alt_window_16.gif"
+            id="de.steadycrypt.v2.view.table"
+            name="Table"
+            restorable="true">
+      </view>
+      <view
+            class="de.steadycrypt.v2.views.TreeTableView"
+            icon="icons/alt_window_16.gif"
+            id="de.steadycrypt.v2.view.treeTable"
+            name="TreeTable"
+            restorable="true">
+      </view>
+      <view
+            class="de.steadycrypt.v2.views.SideBarView"
+            icon="icons/alt_window_16.gif"
+            id="de.steadycrypt.v2.view.sidebar"
+            name="SideBar"
+            restorable="true">
+      </view>
+   </extension>
+
+</plugin>
