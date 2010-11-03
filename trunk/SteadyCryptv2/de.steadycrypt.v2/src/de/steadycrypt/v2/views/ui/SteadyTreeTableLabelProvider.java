@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 import de.steadycrypt.v2.Messages;
+import de.steadycrypt.v2.bob.EncryptedFolder;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
@@ -19,7 +20,7 @@ public class SteadyTreeTableLabelProvider extends LabelProvider {
 	
 	private SimpleDateFormat sdf = new SimpleDateFormat(Messages.DATE_FORMAT);
 	
-	public String getColumnText(Object element, int columnIndex)
+	public String getText(Object element, int columnIndex)
     {
         SteadyTableIdentifier identifier = SteadyTableIdentifier.values()[columnIndex];
         String text = null;
@@ -77,13 +78,13 @@ public class SteadyTreeTableLabelProvider extends LabelProvider {
         return text;
     }
 	
-	public String getColumnText(Object element)
+	public String getText(Object element)
     {
         String text = null;
         
-        if(element instanceof EncryptedFolderDob)
+        if(element instanceof EncryptedFolderDob || element instanceof EncryptedFolder)
         {
-        	text = ((EncryptedFolderDob)element).getName();
+        	text = ((EncryptedFolder)element).getName();
         }
         
         else if(element instanceof EncryptedFileDob)
