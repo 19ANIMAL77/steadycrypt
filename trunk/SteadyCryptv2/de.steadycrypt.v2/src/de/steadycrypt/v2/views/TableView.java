@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -25,9 +26,14 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -47,10 +53,13 @@ public class TableView extends ViewPart {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	private SimpleDateFormat sdf;
-	private List<EncryptedFileDob> model;
+	private SimpleDateFormat sdf = new SimpleDateFormat(Messages.DATE_FORMAT);
+	private Table table;
+    private List<EncryptedFileDob> model;
 
-    private Action newInvoiceAction;
+    private ToolBarManager toolBarManager;
+    private Action exportSelectionAction;
+    private Action selectAllAction;
 
     private TableViewer tableViewer;
 
@@ -58,7 +67,6 @@ public class TableView extends ViewPart {
 
 	public TableView()
 	{
-	    this.sdf = new SimpleDateFormat(Messages.DATE_FORMAT);
 	    EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	    this.model = encryptedFileDao.getAllFiles();
 	}
@@ -75,7 +83,17 @@ public class TableView extends ViewPart {
         content.setLayout(new GridLayout(1, false));
         scrolledComposite.setContent(content);
 
-        final Table table = new Table(content, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.V_SCROLL);
+        this.toolBarManager = new ToolBarManager();
+        this.toolBarManager.add(this.exportSelectionAction);
+        this.toolBarManager.add(this.selectAllAction);
+
+        ToolBar toolbar = toolBarManager.createControl(content);
+        toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+
+        Label horizontalSeparator = new Label(content, SWT.SEPARATOR | SWT.HORIZONTAL);
+        horizontalSeparator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        this.table = new Table(content, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.V_SCROLL);
         table.setHeaderVisible(true);
         GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         gridData.heightHint = 200;
@@ -178,6 +196,11 @@ public class TableView extends ViewPart {
 	        	tableViewer.refresh();
 	        }
 	    });
+	    
+	    final Button exportFilesButton = new Button(content, SWT.FLAT);
+	    exportFilesButton.setText(Messages.TableView_ExportFile);
+        gridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
+        exportFilesButton.setLayoutData(gridData);
 	}
 
 	@Override
@@ -190,14 +213,35 @@ public class TableView extends ViewPart {
 
     private void makeActions()
     {
-        newInvoiceAction = new Action() {
-        	public void run() { }
+        exportSelectionAction = new Action() {
+        	public void run()
+        	{
+        		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
+        		directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
+        		
+        		String selectedFolder = directoryDialog.open();
+        		log.debug(selectedFolder);
+        		tableViewer.refresh();
+        	}
         };
         
-        newInvoiceAction.setText("Hallo");
-        newInvoiceAction.setToolTipText("Tooltip");
-        newInvoiceAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(
-            ISharedImages.IMG_TOOL_NEW_WIZARD));
+        exportSelectionAction.setText(Messages.TableView_ExportFile);
+        exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
+        exportSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
+        
+        selectAllAction = new Action() {
+        	public void run()
+        	{
+        		Table table = tableViewer.getTable();
+        		for(TableItem ti : table.getItems()) {
+        			ti.setChecked(true);
+        		}
+        	}
+        };
+        
+        selectAllAction.setText(Messages.TableView_SelectAll);
+        selectAllAction.setToolTipText(Messages.TableView_SelectAll_Tooltip);
+        selectAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
     }
 
 }
