@@ -10,7 +10,7 @@ import java.sql.Date;
 
 import de.steadycrypt.v2.views.model.DeltaEvent;
 import de.steadycrypt.v2.views.model.IDeltaListener;
-import de.steadycrypt.v2.views.model.IModelVisitor;
+import de.steadycrypt.v2.views.model.IDroppedElementVisitor;
 import de.steadycrypt.v2.views.model.NullDeltaListener;
 
 public abstract class DroppedElement {
@@ -42,7 +42,7 @@ public abstract class DroppedElement {
 		}
 	}
 	
-	public abstract void accept(IModelVisitor visitor, Object passAlongArgument);
+	public abstract void accept(IDroppedElementVisitor visitor, Object passAlongArgument);
 
 	protected void fireAdd(Object added) {
 		listener.add(new DeltaEvent(added));
