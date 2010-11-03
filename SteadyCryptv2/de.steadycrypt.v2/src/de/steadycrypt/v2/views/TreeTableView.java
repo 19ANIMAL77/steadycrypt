@@ -151,7 +151,7 @@ public class TreeTableView extends ViewPart {
 					StringBuffer toShow = new StringBuffer();
 					for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
 						Object domain = (DroppedElement) iterator.next();
-						String value = labelProvider.getText(domain);
+						String value = labelProvider.getColumnText(domain,1);
 						toShow.append(value);
 						toShow.append(", ");
 					}
