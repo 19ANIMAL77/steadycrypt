@@ -1,5 +1,6 @@
 package de.steadycrypt.v2.views;
 
+import java.sql.Date;
 import java.util.Iterator;
 
 import org.eclipse.jface.action.Action;
@@ -7,11 +8,9 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.viewers.ViewerSorter;
@@ -24,13 +23,16 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.part.ViewPart;
 
+import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.EncryptedFile;
 import de.steadycrypt.v2.bob.EncryptedFolder;
+import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.views.ui.FileFolderSorter;
-import de.steadycrypt.v2.views.ui.TreeTableContentProvider;
-import de.steadycrypt.v2.views.ui.TreeTableLabelProvider;
 import de.steadycrypt.v2.views.ui.NoArticleSorter;
+import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
+import de.steadycrypt.v2.views.ui.SteadyTreeTableContentProvider;
+import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
 import de.steadycrypt.v2.views.ui.ThreeItemFilter;
 
 /**
@@ -39,11 +41,11 @@ import de.steadycrypt.v2.views.ui.ThreeItemFilter;
  */
 public class TreeTableView extends ViewPart {
 	
-	public static String ID = "de.steadycrypt.v2.view.treetable";
+	public static String ID = "de.steadycrypt.v2.view.treeTable";
 	
 	protected TreeViewer treeViewer;
 	protected Text text;
-	protected TreeTableLabelProvider labelProvider;
+	protected SteadyTreeTableLabelProvider labelProvider;
 	
 	protected Action atLeatThreeItems;
 	protected Action filesFoldersAction, noArticleAction;
@@ -62,7 +64,8 @@ public class TreeTableView extends ViewPart {
 	/*
 	 * @see IWorkbenchPart#createPartControl(Composite)
 	 */
-	public void createPartControl(Composite parent) {
+	public void createPartControl(Composite parent)
+	{
 		/* Create a grid layout object so the text and treeviewer
 		 * are layed out the way I want. */
 		GridLayout layout = new GridLayout();
@@ -98,23 +101,11 @@ public class TreeTableView extends ViewPart {
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
 		
-		TreeColumn treeColumn = new TreeColumn(tree, SWT.LEFT);
-		treeColumn.setText("Name");
-
-		treeColumn = new TreeColumn(tree, SWT.LEFT);
-		treeColumn.setText("Age");
-
-		treeColumn = new TreeColumn(tree, SWT.LEFT);
-		treeColumn.setText("Salary");
-		
-		TableLayout tableLayout = new TableLayout();
-		int nColumns = 3;
-		int weight = 100 / nColumns;
-		for (int i = 0; i < nColumns; i++) {
-			tableLayout.addColumnData(new ColumnWeightData(weight));
-		}
-
-		tree.setLayout(tableLayout);
+		for(SteadyTableIdentifier identifier : SteadyTableIdentifier.values())
+        {
+            new TreeColumn(tree, SWT.NONE).setText(Messages.getSteadyTableColumnTitle(identifier));
+            tree.getColumn(identifier.ordinal()).setWidth(identifier.columnWidth);
+        }
 
 		/*** Tree table specific code ends ***/ 
 		
@@ -133,8 +124,8 @@ public class TreeTableView extends ViewPart {
 		createToolbar();
 		hookListeners();
 		
-		treeViewer.setContentProvider(new TreeTableContentProvider());
-		labelProvider = new TreeTableLabelProvider();
+		treeViewer.setContentProvider(new SteadyTreeTableContentProvider());
+		labelProvider = new SteadyTreeTableLabelProvider();
 		treeViewer.setLabelProvider(labelProvider);
 		
 		treeViewer.setInput(getInitalInput());
@@ -218,19 +209,19 @@ public class TreeTableView extends ViewPart {
 	 * 
 	 * If nothing is selected add to the root. */
 	protected void addNewFile() {
-		EncryptedFolder receivingFolder;
-		if (treeViewer.getSelection().isEmpty()) {
-			receivingFolder = root;
-		} else {
-			IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-			DroppedElement selectedDomainObject = (DroppedElement) selection.getFirstElement();
-			if (!(selectedDomainObject instanceof EncryptedFolder)) {
-				receivingFolder = selectedDomainObject.getParent();
-			} else {
-				receivingFolder = (EncryptedFolder) selectedDomainObject;
-			}
-		}
-		receivingFolder.add(EncryptedFile.newFile());
+//		EncryptedFolder receivingFolder;
+//		if (treeViewer.getSelection().isEmpty()) {
+//			receivingFolder = root;
+//		} else {
+//			IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+//			DroppedElement selectedDomainObject = (DroppedElement) selection.getFirstElement();
+//			if (!(selectedDomainObject instanceof EncryptedFolder)) {
+//				receivingFolder = selectedDomainObject.getParent();
+//			} else {
+//				receivingFolder = (EncryptedFolder) selectedDomainObject;
+//			}
+//		}
+//		receivingFolder.add(EncryptedFile.newFile());
 	}
 
 	/** Remove the selected domain object(s).
@@ -322,32 +313,25 @@ public class TreeTableView extends ViewPart {
 	}
 	
 	
-	public EncryptedFolder getInitalInput() {
-		root = new EncryptedFolder();
-		EncryptedFolder someBooks = new EncryptedFolder("Books");
-		EncryptedFolder games = new EncryptedFolder("Games");
-		EncryptedFolder books = new EncryptedFolder("More files");
-		EncryptedFolder games2 = new EncryptedFolder("More games");
-		
-		root.add(someBooks);
-		root.add(games);
-		root.add(new EncryptedFolder());
-		
-		someBooks.add(books);
-		games.add(games2);
-		
-		books.add(new EncryptedFile("The Lord of the Rings", "J.R.R.", "Tolkien"));
-		books.add(new EncryptedFile("Cryptonomicon", "Neal", "Stephenson"));
-		books.add(new EncryptedFile("Smalltalk, Objects, and Design", "Chamond", "Liu"));
-		books.add(new EncryptedFile("A Game of Thrones", "George R. R.", " Martin"));
-		books.add(new EncryptedFile("The Hacker Ethic", "Pekka", "Himanen"));
-		//files.add(new EncryptedFolder());
-		
-		books.add(new EncryptedFile("The Code EncryptedFile", "Simon", "Singh"));
-		books.add(new EncryptedFile("The Chronicles of Narnia", "C. S.", "Lewis"));
-		books.add(new EncryptedFile("The Screwtape Letters", "C. S.", "Lewis"));
-		books.add(new EncryptedFile("Mere Christianity ", "C. S.", "Lewis"));	
-		return root;
+	public EncryptedFolder getInitalInput()
+	{
+    	EncryptedFolder root = new EncryptedFolder("Root-Folder", new Date(System.currentTimeMillis()), "C:");
+    	EncryptedFolder sub1 = new EncryptedFolder("Sub-Folder-1", new Date(System.currentTimeMillis()), "C:");
+    	EncryptedFolder sub2 = new EncryptedFolder("Sub-Folder-2", new Date(System.currentTimeMillis()), "C:");
+    	EncryptedFolder subsub = new EncryptedFolder("Sub-Sub-Folder", new Date(System.currentTimeMillis()), "C:");
+    	
+    	root.add(sub1);
+    	root.add(sub2);
+    	sub2.add(subsub);
+    	
+    	EncryptedFileDao efd = new EncryptedFileDao();
+    	
+    	for(Object ef : efd.getAllFiles())
+    	{
+    		sub1.addFile((EncryptedFile)ef);
+    	}
+    	
+    	return root;
 	}
 
 	/*

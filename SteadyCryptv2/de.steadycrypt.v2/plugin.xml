@@ -66,13 +66,6 @@
             name="TreeTable"
             restorable="true">
       </view>
-      <view
-            class="de.steadycrypt.v2.views.SideBarView"
-            icon="icons/alt_window_16.gif"
-            id="de.steadycrypt.v2.view.sidebar"
-            name="SideBar"
-            restorable="true">
-      </view>
    </extension>
 
 </plugin>
