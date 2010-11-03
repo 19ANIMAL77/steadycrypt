@@ -8,7 +8,7 @@ package de.steadycrypt.v2;
 
 import org.eclipse.osgi.util.NLS;
 
-import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
+import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
 
 public class Messages extends NLS
 {
@@ -23,6 +23,12 @@ public class Messages extends NLS
     public static String CryptedFilesTableIdentifier_SIZE;
     public static String CryptedFilesTableIdentifier_DATE;
     public static String CryptedFilesTableIdentifier_PATH;
+    
+    public static String TableView_ExportFile;
+    public static String TableView_ExportFile_Tooltip;
+    public static String TableView_ExportFileDialog_Title;
+    public static String TableView_SelectAll;
+    public static String TableView_SelectAll_Tooltip;
 
     // =========================================================================
 
