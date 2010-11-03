@@ -9,7 +9,7 @@ package de.steadycrypt.v2.bob;
 import java.io.File;
 import java.sql.Date;
 
-import de.steadycrypt.v2.views.model.IModelVisitor;
+import de.steadycrypt.v2.views.model.IDroppedElementVisitor;
 
 public class EncryptedFile extends DroppedElement {
 
@@ -86,7 +86,7 @@ public class EncryptedFile extends DroppedElement {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
-	public void accept(IModelVisitor visitor, Object passAlongArgument)
+	public void accept(IDroppedElementVisitor visitor, Object passAlongArgument)
 	{
 		visitor.visitFile(this, passAlongArgument);
 	}

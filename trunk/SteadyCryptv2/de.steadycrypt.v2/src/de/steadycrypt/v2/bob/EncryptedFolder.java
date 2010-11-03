@@ -11,7 +11,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.steadycrypt.v2.views.model.IModelVisitor;
+import de.steadycrypt.v2.views.model.IDroppedElementVisitor;
 import de.steadycrypt.v2.views.model.NullDeltaListener;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -20,8 +20,8 @@ public class EncryptedFolder extends DroppedElement {
 	private List folders;
 	private List files;
 
-	private static IModelVisitor adder = new Adder();
-	private static IModelVisitor remover = new Remover();
+	private static IDroppedElementVisitor adder = new Adder();
+	private static IDroppedElementVisitor remover = new Remover();
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -112,14 +112,14 @@ public class EncryptedFolder extends DroppedElement {
 		return getFolders().size() + getFiles().size();
 	}
 	
-	public void accept(IModelVisitor visitor, Object passAlongArgument)
+	public void accept(IDroppedElementVisitor visitor, Object passAlongArgument)
 	{
 		visitor.visitFolder(this, passAlongArgument);
 	}
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	private static class Adder implements IModelVisitor
+	private static class Adder implements IDroppedElementVisitor
 	{
 		public void visitFolder(EncryptedFolder folder, Object argument)
 		{
@@ -132,7 +132,7 @@ public class EncryptedFolder extends DroppedElement {
 		}
 	}
 
-	private static class Remover implements IModelVisitor
+	private static class Remover implements IDroppedElementVisitor
 	{
 		public void visitFolder(EncryptedFolder folder, Object argument)
 		{
