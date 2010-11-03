@@ -16,12 +16,7 @@ public class SteadyPerspective implements IPerspectiveFactory {
 
 	public void createInitialLayout(IPageLayout layout) {
 		
-//		layout.addStandaloneView(SideBarView.ID, false, SWT.RIGHT, 0.25f, layout.getEditorArea());
-//		layout.addView(TableView.ID, SWT.RIGHT, 0.75f, layout.getEditorArea());
-//      layout.addView(TreeTableView.ID, IPageLayout.BOTTOM, 0.5f, TableView.ID);
-		
-		layout.addStandaloneView(TreeTableView.ID, true, SWT.LEFT, 0.5f, layout.getEditorArea());
-		
+		layout.addStandaloneView(TreeTableView.ID, false, SWT.RIGHT, 0.75f, layout.getEditorArea());
 		layout.setEditorAreaVisible(false);
 		
 	}
