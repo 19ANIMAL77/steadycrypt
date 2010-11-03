@@ -8,20 +8,21 @@ package de.steadycrypt.v2.views.ui;
 
 import java.text.SimpleDateFormat;
 
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.EncryptedFolder;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
-import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
-public class SteadyTreeTableLabelProvider extends LabelProvider {
+public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	
 	private SimpleDateFormat sdf = new SimpleDateFormat(Messages.DATE_FORMAT);
-	
-	public String getText(Object element, int columnIndex)
-    {
+
+	@Override
+	public String getColumnText(Object element, int columnIndex)
+	{
         SteadyTableIdentifier identifier = SteadyTableIdentifier.values()[columnIndex];
         String text = null;
         
@@ -50,18 +51,18 @@ public class SteadyTreeTableLabelProvider extends LabelProvider {
 	        }
         }
         
-        else if(element instanceof EncryptedFolderDob)
+        else if(element instanceof EncryptedFolder)
         {
 	        switch(identifier)
 	        {
 	            case DATE:
-	                text = sdf.format(((EncryptedFolderDob)element).getDate());
+	                text = sdf.format(((EncryptedFolder)element).getDate());
 	                break;
 	            case NAME:
-	                text = ((EncryptedFolderDob)element).getName();
+	                text = ((EncryptedFolder)element).getName();
 	                break;
 	            case PATH:
-	                text = ((EncryptedFolderDob)element).getPath();
+	                text = ((EncryptedFolder)element).getPath();
 	                break;
 	            case SIZE:
 	                text = "";
@@ -76,28 +77,33 @@ public class SteadyTreeTableLabelProvider extends LabelProvider {
         }
 	        
         return text;
-    }
+	}
+
+	public Image getColumnImage(Object element, int columnIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
-	public String getText(Object element)
-    {
-        String text = null;
-        
-        if(element instanceof EncryptedFolderDob || element instanceof EncryptedFolder)
-        {
-        	text = ((EncryptedFolder)element).getName();
-        }
-        
-        else if(element instanceof EncryptedFileDob)
-        {
-        	text = ((EncryptedFileDob)element).getName();
-        }
-	        
-        return text;
-    }
+	@Override
+	public void addListener(ILabelProviderListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
 
-    public Image getColumnImage(Object element, int columnIndex)
-    {
-        return null;
-    }
+	@Override
+	public void removeListener(ILabelProviderListener listener) {
+		// TODO Auto-generated method stub
+	}
 
+	@Override
+	public void dispose() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isLabelProperty(Object element, String property) {
+		return false;
+	}
+	
 }
