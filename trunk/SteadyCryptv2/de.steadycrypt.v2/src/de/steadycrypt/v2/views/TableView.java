@@ -44,7 +44,7 @@ import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.core.SteadyTableLabelProvider;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
-import de.steadycrypt.v2.views.model.SteadyTableIdentifier;
+import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
 
 public class TableView extends ViewPart {
 	
