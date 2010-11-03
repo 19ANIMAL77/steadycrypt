@@ -39,7 +39,7 @@ import de.steadycrypt.v2.views.ui.ThreeItemFilter;
  */
 public class TreeTableView extends ViewPart {
 	
-	public static String ID = "de.steadycrypt.v2.view.treetable2";
+	public static String ID = "de.steadycrypt.v2.view.treetable";
 	
 	protected TreeViewer treeViewer;
 	protected Text text;
