@@ -16,15 +16,17 @@ import java.util.List;
 
 import de.steadycrypt.v2.bob.EncryptedFile;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.DbManager;
 
 public class EncryptedFileDao {
 
-//	private final String INSERT_FILE_STMT = "INSERT INTO CONTENT (name, type, size, enc_date, org_path, enc_name) VALUES (";
-	private final String INSERT_FILE = "INSERT INTO CONTENT (name, type, size, enc_date, org_path, enc_name) VALUES (?, ?, ?, ?, ?, ?)";
-	private final String UPDATE_FILE = "UPDATE CONTENT SET name=?, type=?, size=?, enc_date=?, org_path=?, enc_name=? WHERE id=?";
-	private final String SELECT_FILE = "SELECT id, name, type, size, enc_date, org_path, enc_name FROM content ORDER BY id DESC";
-	private final String DELETE_FILE = "DELETE FROM content WHERE id=?";
+	private final String INSERT_FILE = "INSERT INTO file (name, type, size, encryptiondate, originalpath, encryptedfilename, containingfolderid) VALUES (?, ?, ?, ?, ?, ?, ?)";
+	private final String UPDATE_FILE = "UPDATE file SET name=?, type=?, size=?, encryptiondate=?, originalpath=?, encryptedfilename=?, containingfolderid=? WHERE id=?";
+	private final String SELECT_FILE = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file ORDER BY name DESC";
+	private final String SELECT_FILE_FOR_FOLDER = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file WHERE containingfolderid=";
+	private final String SELECT_ROOT_FILES = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file WHERE containingfolderid=0  ORDER BY name DESC";
+	private final String DELETE_FILE = "DELETE FROM file WHERE id=?";
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
@@ -39,8 +41,58 @@ public class EncryptedFileDao {
 			
 			while(rs.next())
 			{
-				files.add(new EncryptedFileDob(rs.getInt("id"), rs.getString("name"), rs.getString("type"), rs.getLong("size"), rs.getDate("enc_date"),
-						rs.getString("org_path"), rs.getString("enc_name")));
+				files.add(new EncryptedFileDob(rs.getInt("id"), rs.getString("name"), rs.getString("type"), rs.getLong("size"), rs.getDate("encryptiondate"),
+						rs.getString("originalpath"), rs.getString("encryptedfilename")));
+			}
+		}
+		catch (SQLException e)
+		{
+			DbManager.printSQLException(e);
+		}
+		
+		return files;		
+	}
+	
+	public List<EncryptedFileDob> getFilesForFolder(EncryptedFolderDob folder)
+	{
+		List<EncryptedFileDob> files = new ArrayList<EncryptedFileDob>();
+		try
+		{
+			Connection connection = DbManager.getConnection();
+			Statement stmt = connection.createStatement();
+			StringBuilder sql = new StringBuilder();
+			sql.append(SELECT_FILE_FOR_FOLDER);
+			sql.append(folder.getId());
+			sql.append(" ORDER BY name DESC");
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			
+			while(rs.next())
+			{
+				files.add(new EncryptedFileDob(rs.getInt("id"), rs.getString("name"), rs.getString("type"), rs.getLong("size"), rs.getDate("encryptiondate"),
+						rs.getString("originalpath"), rs.getString("encryptedfilename")));
+			}
+		}
+		catch (SQLException e)
+		{
+			DbManager.printSQLException(e);
+		}
+		
+		return files;		
+	}
+	
+	public List<EncryptedFileDob> getRootFiles()
+	{
+		List<EncryptedFileDob> files = new ArrayList<EncryptedFileDob>();
+		try
+		{
+			Connection connection = DbManager.getConnection();
+			Statement stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery(SELECT_ROOT_FILES);
+			
+			while(rs.next())
+			{
+				files.add(new EncryptedFileDob(rs.getInt("id"), rs.getString("name"), rs.getString("type"), rs.getLong("size"), rs.getDate("encryptiondate"),
+						rs.getString("originalpath"), rs.getString("encryptedfilename")));
 			}
 		}
 		catch (SQLException e)
@@ -51,7 +103,44 @@ public class EncryptedFileDao {
 		return files;		
 	}
 
-	public List<EncryptedFileDob> addFiles(ArrayList<EncryptedFile> encryptedFiles)
+	public EncryptedFileDob addFile(EncryptedFile encryptedFile)
+	{
+		EncryptedFileDob encryptedFileDob = null;
+		
+		try
+		{
+			Connection connection = DbManager.getConnection();
+			PreparedStatement pStmt = connection.prepareStatement(INSERT_FILE, Statement.RETURN_GENERATED_KEYS);
+
+			pStmt.setString(1, encryptedFile.getName());
+			pStmt.setString(2, encryptedFile.getType());
+			pStmt.setLong(3, encryptedFile.getSize());
+			pStmt.setDate(4, encryptedFile.getDate());
+			pStmt.setString(5, encryptedFile.getPath());
+			pStmt.setString(6, encryptedFile.getFile());
+			pStmt.setInt(7, encryptedFile.getParent().getId());
+			
+			pStmt.execute();
+			
+			ResultSet rs = pStmt.getGeneratedKeys();
+			
+			while(rs.next())
+			{
+				encryptedFileDob = new EncryptedFileDob(rs.getInt(1), encryptedFile);
+			}
+			
+			pStmt.close();
+			connection.commit();
+		}
+		catch (SQLException e)
+		{
+			DbManager.printSQLException(e);
+		}
+		
+		return encryptedFileDob;
+	}
+
+	public List<EncryptedFileDob> addFiles(List<EncryptedFile> encryptedFiles)
 	{
 		List<EncryptedFileDob> encryptedFileDobs = new ArrayList<EncryptedFileDob>();
 		
@@ -68,6 +157,7 @@ public class EncryptedFileDao {
 				pStmt.setDate(4, encryptedFile.getDate());
 				pStmt.setString(5, encryptedFile.getPath());
 				pStmt.setString(6, encryptedFile.getFile());
+				pStmt.setInt(7, encryptedFile.getParent().getId());
 				
 				pStmt.execute();
 				
@@ -90,7 +180,7 @@ public class EncryptedFileDao {
 		return encryptedFileDobs;
 	}
 
-	public boolean updateFiles(ArrayList<EncryptedFileDob> encryptedFiles)
+	public boolean updateFiles(List<EncryptedFileDob> encryptedFiles)
 	{
 		boolean successful = false;
 		
@@ -107,7 +197,8 @@ public class EncryptedFileDao {
 				pStmt.setDate(4, encryptedFile.getDate());
 				pStmt.setString(5, encryptedFile.getPath());
 				pStmt.setString(6, encryptedFile.getFile());
-				pStmt.setInt(7, encryptedFile.getId());
+				pStmt.setInt(7, encryptedFile.getParent().getId());
+				pStmt.setInt(8, encryptedFile.getId());
 				
 				successful = pStmt.executeUpdate() > 0 ? true : false;
 			}
@@ -145,7 +236,7 @@ public class EncryptedFileDao {
 		return successful;
 	}
 
-	public boolean deleteMultipleFiles(ArrayList<EncryptedFileDob> encryptedFiles)
+	public boolean deleteMultipleFiles(List<EncryptedFileDob> encryptedFiles)
 	{
 		boolean successful = false;
 		

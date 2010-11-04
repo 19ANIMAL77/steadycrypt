@@ -33,14 +33,12 @@ import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
-import de.steadycrypt.v2.bob.EncryptedFile;
-import de.steadycrypt.v2.bob.EncryptedFolder;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
-import de.steadycrypt.v2.views.ui.SteadyTreeTableContentProvider;
-import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
 
+@SuppressWarnings("unused")
 public class TreeTableView_old extends ViewPart {
 	
 	private static Logger log = Logger.getLogger(TreeTableView_old.class);
@@ -132,12 +130,12 @@ public class TreeTableView_old extends ViewPart {
 	        {
 	        	if (fileTransfer.isSupportedType(event.currentDataType))
 	            {
-	        		FileDropHandler fileDropHandler = new FileDropHandler();
+					FileDropHandler fileDropHandler = new FileDropHandler();
 	        		String[] droppedFileInformation = (String[]) event.data;
 	        		
 	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
 	        				
-	    			model.addAll(fileDropHandler.processData(droppedFileInformation));
+//	    			model.addAll(fileDropHandler.processData(droppedFileInformation));
 	            }
 	        	treeViewer.refresh();
 	        }
@@ -161,23 +159,20 @@ public class TreeTableView_old extends ViewPart {
             ISharedImages.IMG_TOOL_NEW_WIZARD));
     }
     
-    private EncryptedFolder getInitialInput()
+    private EncryptedFolderDob getInitialInput()
     {
-    	EncryptedFolder root = new EncryptedFolder("Root-Folder", new Date(System.currentTimeMillis()), "C:");
-    	EncryptedFolder sub1 = new EncryptedFolder("Sub-Folder-1", new Date(System.currentTimeMillis()), "C:");
-    	EncryptedFolder sub2 = new EncryptedFolder("Sub-Folder-2", new Date(System.currentTimeMillis()), "C:");
-    	EncryptedFolder subsub = new EncryptedFolder("Sub-Sub-Folder", new Date(System.currentTimeMillis()), "C:");
+    	EncryptedFolderDob root = new EncryptedFolderDob(0, "Root-Folder", new Date(System.currentTimeMillis()), "C:");
+    	EncryptedFolderDob sub1 = new EncryptedFolderDob(1, "Sub-Folder-1", new Date(System.currentTimeMillis()), "C:");
+    	EncryptedFolderDob sub2 = new EncryptedFolderDob(2, "Sub-Folder-2", new Date(System.currentTimeMillis()), "C:");
+    	EncryptedFolderDob subsub = new EncryptedFolderDob(3, "Sub-Sub-Folder", new Date(System.currentTimeMillis()), "C:");
     	
-    	root.add(sub1);
-    	root.add(sub2);
-    	sub2.add(subsub);
+    	root.addFolder(sub1);
+    	root.addFolder(sub2);
+    	sub2.addFolder(subsub);
     	
     	EncryptedFileDao efd = new EncryptedFileDao();
     	
-    	for(Object ef : efd.getAllFiles())
-    	{
-    		sub1.addFile((EncryptedFile)ef);
-    	}
+    	sub1.addFiles(efd.getAllFiles());
     	
     	return root;
     }

@@ -81,7 +81,7 @@ public class DbManager {
     
     /**
      * This method is called only once, when starting the program for the first time.
-     * Creating Derby-Database "steadyDB", creating table "content" according to the type chosen here.
+     * Creating Derby-Database "steadyDB", creating tables "folder" and "file" according to the parameters chosen here.
      * @throws SQLException 
      */
     public void initiateDb(String username, String password) throws SQLException {
@@ -102,22 +102,40 @@ public class DbManager {
         Statement s = null;
         s = DbManager.conn.createStatement();
             
-        // Creating table "content" which contains information about the stored files 
-        s.execute("CREATE TABLE content (" +
-        		"id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)," +
-        		"name VARCHAR(250)," +
-        		"type VARCHAR(30)," +
-        		"size BIGINT," +
-        		"enc_date DATE," +
-        		"org_path LONG VARCHAR," +
-        		"enc_name VARCHAR(40))");
-        log.info("Created table CONTENT");
+        // Creating table "folder" which contains information about the stored files
+        StringBuilder sql = new StringBuilder();
+	        sql.append("CREATE TABLE folder (");
+	        sql.append("id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),");
+	        sql.append("name VARCHAR(250),");
+	        sql.append("encryptiondate DATE,");
+	        sql.append("originalpath LONG VARCHAR,");
+	        sql.append("containingfolderid INTEGER NOT NULL DEFAULT 0,");
+	        sql.append("PRIMARY KEY (id))");
+        s.execute(sql.toString());
+        log.info("Created table FOLDER");
+            
+        // Creating table "file" which contains information about the stored files
+        sql = new StringBuilder();
+	        sql.append("CREATE TABLE file (");
+	        sql.append("id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),");
+	        sql.append("name VARCHAR(250),");
+	        sql.append("type VARCHAR(30),");
+	        sql.append("size BIGINT,");
+	        sql.append("encryptiondate DATE,");
+	        sql.append("originalpath LONG VARCHAR,");
+	        sql.append("encryptedfilename VARCHAR(40),");
+	        sql.append("containingfolderid INTEGER NOT NULL DEFAULT 0,");
+	        sql.append("PRIMARY KEY (id))");
+        s.execute(sql.toString());
+        log.info("Created table FILE");
             
         // Creating table "keys" which contains the SecretKey object(s)
-        s.execute("CREATE TABLE SteadyKey (" +
-        		"STEADYKEY_ID bigint NOT NULL GENERATED ALWAYS AS IDENTITY," +
-        		"SECRETKEY varchar(255) for bit data," +
-        		"PRIMARY KEY (STEADYKEY_ID))");
+        sql = new StringBuilder();
+	        sql.append("CREATE TABLE SteadyKey (");
+	        sql.append("STEADYKEY_ID bigint NOT NULL GENERATED ALWAYS AS IDENTITY,");
+	        sql.append("SECRETKEY varchar(255) for bit data,");
+	        sql.append("PRIMARY KEY (STEADYKEY_ID))");
+	    s.execute(sql.toString());
         log.info("Created table KEYS");
         DbManager.conn.commit();        
     }
@@ -142,17 +160,18 @@ public class DbManager {
     
     
     /**
-     * Implemented for testing. Allows to caller to drop the "content" table.
+     * Implemented for testing. Allows to caller to drop the "folder" and "file" table.
      */
     public void resetDb() {
     	try {
         	Statement s = null;
             s = DbManager.conn.createStatement();
-            s.execute("delete from content");
+            s.execute("delete from folder");
+            s.execute("delete from file");
             DbManager.conn.commit();
         }
         catch (SQLException sqle) { printSQLException(sqle); }
-        log.info("Table Content deleted");
+        log.info("Tables Folder and File deleted");
     }
 	
     

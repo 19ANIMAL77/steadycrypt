@@ -9,7 +9,7 @@ package de.steadycrypt.v2.bob;
 import java.io.File;
 import java.sql.Date;
 
-import de.steadycrypt.v2.views.model.IDroppedElementVisitor;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
 public class EncryptedFile extends DroppedElement {
 
@@ -22,10 +22,11 @@ public class EncryptedFile extends DroppedElement {
 	/**
 	 * Used when a new file was dropped.
 	 * @param newFile
+	 * @param parent
 	 */
-	public EncryptedFile(File newFile)
+	public EncryptedFile(File newFile, EncryptedFolderDob parent)
 	{
-		super(newFile.getName(), new Date(System.currentTimeMillis()), newFile.getPath());
+		super(newFile.getName(), new Date(System.currentTimeMillis()), newFile.getPath(), parent);
 		this.type = defineFileType();
 		this.size = newFile.length();
 		this.file = System.nanoTime()+".sc";
@@ -43,6 +44,24 @@ public class EncryptedFile extends DroppedElement {
 	public EncryptedFile(String name, String type, long size, Date date, String path, String file)
 	{
 		super(name, date, path);
+		this.type = type;
+		this.size = size;
+		this.file = file;
+	}
+
+	/**
+	 * Used when the content table is being read.
+	 * @param name
+	 * @param type
+	 * @param size
+	 * @param date
+	 * @param path
+	 * @param file
+	 * @param parent
+	 */
+	public EncryptedFile(String name, String type, long size, Date date, String path, String file, EncryptedFolderDob parent)
+	{
+		super(name, date, path, parent);
 		this.type = type;
 		this.size = size;
 		this.file = file;
@@ -86,9 +105,9 @@ public class EncryptedFile extends DroppedElement {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
-	public void accept(IDroppedElementVisitor visitor, Object passAlongArgument)
-	{
-		visitor.visitFile(this, passAlongArgument);
-	}
+//	public void accept(IDroppedElementVisitor visitor, Object passAlongArgument)
+//	{
+//		visitor.visitFile(this, passAlongArgument);
+//	}
 
 }

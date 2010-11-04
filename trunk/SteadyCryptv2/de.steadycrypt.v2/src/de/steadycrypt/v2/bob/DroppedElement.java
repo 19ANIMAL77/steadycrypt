@@ -8,15 +8,15 @@ package de.steadycrypt.v2.bob;
 
 import java.sql.Date;
 
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.views.model.DeltaEvent;
 import de.steadycrypt.v2.views.model.IDeltaListener;
-import de.steadycrypt.v2.views.model.IDroppedElementVisitor;
 import de.steadycrypt.v2.views.model.NullDeltaListener;
 
 public abstract class DroppedElement {
 	
 	protected IDeltaListener listener = NullDeltaListener.getSoleInstance();
-	private EncryptedFolder parent;
+	private EncryptedFolderDob parent;
 	
 	protected String name;
 	protected Date date;
@@ -28,6 +28,13 @@ public abstract class DroppedElement {
 		this.name = name;
 		this.date = date;
 		this.path = path;
+	}
+	
+	public DroppedElement(String name, Date date, String path, EncryptedFolderDob parent) {
+		this.name = name;
+		this.date = date;
+		this.path = path;
+		this.parent = parent;
 	}
 	
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,7 +49,7 @@ public abstract class DroppedElement {
 		}
 	}
 	
-	public abstract void accept(IDroppedElementVisitor visitor, Object passAlongArgument);
+//	public abstract void accept(IDroppedElementVisitor visitor, Object passAlongArgument);
 
 	protected void fireAdd(Object added) {
 		listener.add(new DeltaEvent(added));
@@ -54,11 +61,11 @@ public abstract class DroppedElement {
 	
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
-	public EncryptedFolder getParent() {
+	public EncryptedFolderDob getParent() {
 		return parent;
 	}
 
-	public void setParent(EncryptedFolder parent) {
+	public void setParent(EncryptedFolderDob parent) {
 		this.parent = parent;
 	}
 

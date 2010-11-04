@@ -9,13 +9,13 @@ package de.steadycrypt.v2.views.ui;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 
-import de.steadycrypt.v2.bob.EncryptedFolder;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
 public class ThreeItemFilter extends ViewerFilter {
 
 	public boolean select(Viewer viewer, Object parentElement, Object element)
 	{
-		return parentElement instanceof EncryptedFolder && ((EncryptedFolder)parentElement).size() >= 3;
+		return parentElement instanceof EncryptedFolderDob && ((EncryptedFolderDob)parentElement).size() >= 3;
 	}
 
 }
