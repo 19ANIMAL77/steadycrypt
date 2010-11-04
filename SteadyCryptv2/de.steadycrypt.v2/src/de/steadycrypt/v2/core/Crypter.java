@@ -21,6 +21,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import de.steadycrypt.v2.bob.EncryptedFile;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
 /**
  * Encrypter Object needed to en- and decrypt files.
@@ -66,9 +67,9 @@ public class Crypter
 	 * @param in
 	 * @param out
 	 */
-	public EncryptedFile encrypt(File currentFile)
+	public EncryptedFile encrypt(File currentFile, EncryptedFolderDob parent)
 	{		
-		EncryptedFile encryptedFile = new EncryptedFile(currentFile);
+		EncryptedFile encryptedFile = new EncryptedFile(currentFile, parent);
 		
 		try
 		{

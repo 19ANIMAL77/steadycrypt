@@ -1,13 +1,20 @@
+/**
+ * Date: 26.10.2010
+ * SteadyCrypt v2 Project by Joerg Harr and Marvin Hoffmann
+ *
+ */
+
 package de.steadycrypt.v2.views;
 
 import java.sql.Date;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -15,19 +22,33 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
-import de.steadycrypt.v2.bob.EncryptedFile;
-import de.steadycrypt.v2.bob.EncryptedFolder;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
+import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
+import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.ui.FileFolderSorter;
 import de.steadycrypt.v2.views.ui.NoArticleSorter;
 import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
@@ -35,63 +56,63 @@ import de.steadycrypt.v2.views.ui.SteadyTreeTableContentProvider;
 import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
 import de.steadycrypt.v2.views.ui.ThreeItemFilter;
 
-/**
- * Insert the type's description here.
- * @see ViewPart
- */
 public class TreeTableView extends ViewPart {
 	
+	private static Logger log = Logger.getLogger(TreeTableView.class);
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 	
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 	protected TreeViewer treeViewer;
-	protected Text text;
 	protected SteadyTreeTableLabelProvider labelProvider;
-	
+
+    private ToolBarManager toolBarManager;
 	protected Action atLeatThreeItems;
 	protected Action filesFoldersAction, noArticleAction;
 	protected Action addFileAction, removeAction;
+    private Action exportSelectionAction;
+    private Action selectAllAction;
 	protected ViewerFilter atLeastThreeFilter;
 	protected ViewerSorter filesFoldersSorter, noArticleSorter;
+
+
+	EncryptedFolderDao encryptedFolderDao;
+	EncryptedFileDao encryptedFileDao;
+	protected EncryptedFolderDob root;
 	
-	protected EncryptedFolder root;
-	
-	/**
-	 * The constructor.
-	 */
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 	public TreeTableView() {
 	}
 
-	/*
-	 * @see IWorkbenchPart#createPartControl(Composite)
-	 */
 	public void createPartControl(Composite parent)
 	{
-		/* Create a grid layout object so the text and treeviewer
-		 * are layed out the way I want. */
-		GridLayout layout = new GridLayout();
-		layout.numColumns = 1;
-		layout.verticalSpacing = 2;
-		layout.marginWidth = 0;
-		layout.marginHeight = 2;
-		parent.setLayout(layout);
+		makeActions();
 		
-		/* Create a "label" to display information in. I'm
-		 * using a text field instead of a lable so you can
-		 * copy-paste out of it. */
-		text = new Text(parent, SWT.READ_ONLY | SWT.SINGLE | SWT.BORDER);
-		// layout the text field above the treeviewer
-		GridData layoutData = new GridData();
-		layoutData.grabExcessHorizontalSpace = true;
-		layoutData.horizontalAlignment = GridData.FILL;
-		text.setLayoutData(layoutData);
-		
-		// Create the tree viewer as a child of the composite parent
-		treeViewer = new TreeViewer(parent, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);		
+		ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setExpandVertical(true);
+        scrolledComposite.setExpandHorizontal(true);
+        Composite content = new Composite(scrolledComposite, SWT.NONE);
+        content.setLayout(new GridLayout(1, false));
+        scrolledComposite.setContent(content);
+
+        this.toolBarManager = new ToolBarManager();
+        this.toolBarManager.add(this.exportSelectionAction);
+        this.toolBarManager.add(this.selectAllAction);
+
+        ToolBar toolbar = toolBarManager.createControl(content);
+        toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+
+        Label horizontalSeparator = new Label(content, SWT.SEPARATOR | SWT.HORIZONTAL);
+        horizontalSeparator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        // Create the tree viewer as a child of the composite parent
+		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);		
 		
 		// Anpassungen für TreeTable
 		Tree tree = this.treeViewer.getTree();
 		
-		final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		this.treeViewer.getControl().setLayoutData(gridData);
 	
 		treeViewer.setUseHashlookup(true);
@@ -110,26 +131,63 @@ public class TreeTableView extends ViewPart {
 		/*** Tree table specific code ends ***/ 
 		
 		// layout the tree viewer below the text field
-		layoutData = new GridData();
-		layoutData.grabExcessHorizontalSpace = true;
-		layoutData.grabExcessVerticalSpace = true;
-		layoutData.horizontalAlignment = GridData.FILL;
-		layoutData.verticalAlignment = GridData.FILL;
-		treeViewer.getControl().setLayoutData(layoutData);
-		
-		// Create menu, toolbars, filters, sorters.
-		createFiltersAndSorters();
-		createActions();
-		createMenus();
-		createToolbar();
-		hookListeners();
+		gridData = new GridData();
+		gridData.grabExcessHorizontalSpace = true;
+		gridData.grabExcessVerticalSpace = true;
+		gridData.horizontalAlignment = GridData.FILL;
+		gridData.verticalAlignment = GridData.FILL;
+		treeViewer.getControl().setLayoutData(gridData);
 		
 		treeViewer.setContentProvider(new SteadyTreeTableContentProvider());
-		labelProvider = new SteadyTreeTableLabelProvider();
-		treeViewer.setLabelProvider(labelProvider);
+		treeViewer.setLabelProvider(new SteadyTreeTableLabelProvider());
 		
-		treeViewer.setInput(getInitalInput());
-		treeViewer.expandAll();
+		root = getInitalInput();
+		treeViewer.setInput(root);
+		treeViewer.expandToLevel(1);
+		
+	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);    
+	        
+	    dropTarget.setTransfer(new Transfer[] {FileTransfer.getInstance() });
+	    dropTarget.addDropListener(new DropTargetAdapter()
+	    {
+	    	FileTransfer fileTransfer = FileTransfer.getInstance();
+	 
+	    	public void dragEnter(DropTargetEvent event)
+	    	{
+	    		if (event.detail == DND.DROP_DEFAULT)
+	    			event.detail = DND.DROP_COPY;
+	    	}
+	    	    
+		    public void dragOperationChanged(DropTargetEvent event)
+		    {
+		    	if (event.detail == DND.DROP_DEFAULT)
+		    		event.detail = DND.DROP_COPY;
+		    }          
+	 
+	        public void dragOver(DropTargetEvent event)
+	        {
+	        	
+	        }	      
+	      
+	        public void drop(DropTargetEvent event)
+	        {
+	        	if (fileTransfer.isSupportedType(event.currentDataType))
+	            {
+	        		FileDropHandler fileDropHandler = new FileDropHandler();
+	        		String[] droppedFileInformation = (String[]) event.data;
+	        		
+	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
+	        				
+	    			fileDropHandler.processData(droppedFileInformation, root);
+	            }
+	        	treeViewer.refresh();
+	        }
+	    });
+	    
+	    final Button exportFilesButton = new Button(content, SWT.FLAT);
+	    exportFilesButton.setText(Messages.TableView_ExportFile);
+        gridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
+        exportFilesButton.setLayoutData(gridData);
 	}
 	
 	protected void createFiltersAndSorters() {
@@ -143,7 +201,7 @@ public class TreeTableView extends ViewPart {
 			public void selectionChanged(SelectionChangedEvent event) {
 				// if the selection is empty clear the label
 				if(event.getSelection().isEmpty()) {
-					text.setText("");
+//					text.setText("");
 					return;
 				}
 				if(event.getSelection() instanceof IStructuredSelection) {
@@ -159,7 +217,7 @@ public class TreeTableView extends ViewPart {
 					if(toShow.length() > 0) {
 						toShow.setLength(toShow.length() - 2);
 					}
-					text.setText(toShow.toString());
+//					text.setText(toShow.toString());
 				}
 			}
 		});
@@ -229,32 +287,20 @@ public class TreeTableView extends ViewPart {
 	 * 
 	 * If nothing is selected do nothing. */
 	protected void removeSelected() {
-		if (treeViewer.getSelection().isEmpty()) {
-			return;
-		}
-		IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-		/* Tell the tree to not redraw until we finish
-		 * removing all the selected children. */
-		treeViewer.getTree().setRedraw(false);
-		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
-			DroppedElement droppedElement = (DroppedElement) iterator.next();
-			EncryptedFolder parent = droppedElement.getParent();
-			parent.remove(droppedElement);
-		}
-		treeViewer.getTree().setRedraw(true);
+//		if (treeViewer.getSelection().isEmpty()) {
+//			return;
+//		}
+//		IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+//		/* Tell the tree to not redraw until we finish
+//		 * removing all the selected children. */
+//		treeViewer.getTree().setRedraw(false);
+//		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
+//			DroppedElement droppedElement = (DroppedElement) iterator.next();
+//			EncryptedFolder parent = droppedElement.getParent();
+//			parent.remove(droppedElement);
+//		}
+//		treeViewer.getTree().setRedraw(true);
 	}
-	
-	protected void createMenus() {
-		IMenuManager rootMenuManager = getViewSite().getActionBars().getMenuManager();
-		rootMenuManager.setRemoveAllWhenShown(true);
-		rootMenuManager.addMenuListener(new IMenuListener() {
-			public void menuAboutToShow(IMenuManager mgr) {
-				fillMenu(mgr);
-			}
-		});
-		fillMenu(rootMenuManager);
-	}
-
 
 	protected void fillMenu(IMenuManager rootMenuManager) {
 		IMenuManager filterSubmenu = new MenuManager("Filters");
@@ -265,9 +311,7 @@ public class TreeTableView extends ViewPart {
 		rootMenuManager.add(sortSubmenu);
 		sortSubmenu.add(filesFoldersAction);
 		sortSubmenu.add(noArticleAction);
-	}
-	
-	
+	}	
 	
 	protected void updateSorter(Action action) {
 		if(action == filesFoldersAction) {
@@ -305,38 +349,74 @@ public class TreeTableView extends ViewPart {
 //			}
 //		}
 	}
-	
-	protected void createToolbar() {
-		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-		toolbarManager.add(addFileAction);
-		toolbarManager.add(removeAction);
-	}
-	
-	
-	public EncryptedFolder getInitalInput()
-	{
-    	EncryptedFolder root = new EncryptedFolder("Root-Folder", new Date(System.currentTimeMillis()), "C:");
-    	EncryptedFolder sub1 = new EncryptedFolder("Sub-Folder-1", new Date(System.currentTimeMillis()), "C:");
-    	EncryptedFolder sub2 = new EncryptedFolder("Sub-Folder-2", new Date(System.currentTimeMillis()), "C:");
-    	EncryptedFolder subsub = new EncryptedFolder("Sub-Sub-Folder", new Date(System.currentTimeMillis()), "C:");
-    	
-    	root.add(sub1);
-    	root.add(sub2);
-    	sub2.add(subsub);
-    	
-    	EncryptedFileDao efd = new EncryptedFileDao();
-    	
-    	for(Object ef : efd.getAllFiles())
-    	{
-    		sub1.addFile((EncryptedFile)ef);
-    	}
-    	
-    	return root;
-	}
 
 	/*
 	 * @see IWorkbenchPart#setFocus()
 	 */
 	public void setFocus() {}
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    private void makeActions()
+    {
+        exportSelectionAction = new Action() {
+        	public void run()
+        	{
+        		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
+        		directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
+        		
+        		String selectedFolder = directoryDialog.open();
+        		log.debug(selectedFolder);
+        		treeViewer.refresh();
+        	}
+        };
+        
+        exportSelectionAction.setText(Messages.TableView_ExportFile);
+        exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
+        exportSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
+        
+        selectAllAction = new Action() {
+        	public void run()
+        	{
+        		Tree tree = treeViewer.getTree();
+        		for(TreeItem ti : tree.getItems()) {
+        			ti.setChecked(true);
+        		}
+        	}
+        };
+        
+        selectAllAction.setText(Messages.TableView_SelectAll);
+        selectAllAction.setToolTipText(Messages.TableView_SelectAll_Tooltip);
+        selectAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
+    }	
+	
+	public EncryptedFolderDob getInitalInput()
+	{
+    	root = new EncryptedFolderDob(0, "Root-Folder", new Date(System.currentTimeMillis()), "");
+
+    	encryptedFolderDao = new EncryptedFolderDao();
+    	encryptedFileDao = new EncryptedFileDao();
+    	
+    	getFolderContent(root);
+    	
+    	return root;
+	}
+	
+	public void getFolderContent(EncryptedFolderDob folder)
+	{
+		folder.addFiles(encryptedFileDao.getFilesForFolder(folder));
+		
+		List<EncryptedFolderDob> childFolders = encryptedFolderDao.getFoldersForFolder(folder);
+		
+		if(childFolders != null && childFolders.size() > 0)
+		{
+			folder.addFolders(childFolders);
+			
+			for(EncryptedFolderDob childFolder : childFolders)
+			{
+				getFolderContent(childFolder);
+			}
+		}
+	}
 
 }

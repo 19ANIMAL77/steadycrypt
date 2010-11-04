@@ -46,6 +46,7 @@ import de.steadycrypt.v2.core.SteadyTableLabelProvider;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
 
+@SuppressWarnings("unused")
 public class TableView extends ViewPart {
 	
 	private static Logger log = Logger.getLogger(TableView.class);
@@ -191,7 +192,7 @@ public class TableView extends ViewPart {
 	        		
 	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
 	        				
-	    			model.addAll(fileDropHandler.processData(droppedFileInformation));
+//	    			model.addAll(fileDropHandler.processData(droppedFileInformation));
 	            }
 	        	tableViewer.refresh();
 	        }

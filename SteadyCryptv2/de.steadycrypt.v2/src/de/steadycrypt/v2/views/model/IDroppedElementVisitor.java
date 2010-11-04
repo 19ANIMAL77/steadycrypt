@@ -6,11 +6,11 @@
 
 package de.steadycrypt.v2.views.model;
 
-import de.steadycrypt.v2.bob.EncryptedFile;
-import de.steadycrypt.v2.bob.EncryptedFolder;
+import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
 public interface IDroppedElementVisitor
 {
-	public void visitFolder(EncryptedFolder folder, Object passAlongArgument);
-	public void visitFile(EncryptedFile file, Object passAlongArgument);
+	public void visitFolder(EncryptedFolderDob folder, Object passAlongArgument);
+	public void visitFile(EncryptedFileDob file, Object passAlongArgument);
 }

@@ -14,7 +14,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.steadycrypt.v2.bob.DroppedElement;
-import de.steadycrypt.v2.bob.EncryptedFolder;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.views.model.DeltaEvent;
 import de.steadycrypt.v2.views.model.IDeltaListener;
 
@@ -34,23 +34,23 @@ public class SteadyTreeTableContentProvider implements ITreeContentProvider, IDe
 		this.viewer = (TreeViewer)viewer;
 		if(oldInput != null)
 		{
-			removeListenerFrom((EncryptedFolder)oldInput);
+			removeListenerFrom((EncryptedFolderDob)oldInput);
 		}
 		if(newInput != null)
 		{
-			addListenerTo((EncryptedFolder)newInput);
+			addListenerTo((EncryptedFolderDob)newInput);
 		}
 	}
 	
 	/** Because the domain model does not have a richer
 	 * listener model, recursively remove this listener
 	 * from each child box of the given box. */
-	protected void removeListenerFrom(EncryptedFolder folder)
+	protected void removeListenerFrom(EncryptedFolderDob folder)
 	{
 		folder.removeListener(this);
 		for (Iterator iterator = folder.getFolders().iterator(); iterator.hasNext();)
 		{
-			EncryptedFolder aFolder = (EncryptedFolder) iterator.next();
+			EncryptedFolderDob aFolder = (EncryptedFolderDob) iterator.next();
 			removeListenerFrom(aFolder);
 		}
 	}
@@ -58,12 +58,12 @@ public class SteadyTreeTableContentProvider implements ITreeContentProvider, IDe
 	/** Because the domain model does not have a richer
 	 * listener model, recursively add this listener
 	 * to each child box of the given box. */
-	protected void addListenerTo(EncryptedFolder folder)
+	protected void addListenerTo(EncryptedFolderDob folder)
 	{
 		folder.addListener(this);
 		for (Iterator iterator = folder.getFolders().iterator(); iterator.hasNext();)
 		{
-			EncryptedFolder aFolder = (EncryptedFolder) iterator.next();
+			EncryptedFolderDob aFolder = (EncryptedFolderDob) iterator.next();
 			addListenerTo(aFolder);
 		}
 	}
@@ -77,9 +77,9 @@ public class SteadyTreeTableContentProvider implements ITreeContentProvider, IDe
 	@Override
 	public Object[] getChildren(Object parentElement)
 	{
-		if(parentElement instanceof EncryptedFolder)
+		if(parentElement instanceof EncryptedFolderDob)
 		{
-			EncryptedFolder encryptedFolder = (EncryptedFolder)parentElement;
+			EncryptedFolderDob encryptedFolder = (EncryptedFolderDob)parentElement;
 			return concat(encryptedFolder.getFolders().toArray(), encryptedFolder.getFiles().toArray());
 		}
 		return EMPTY_ARRAY;
