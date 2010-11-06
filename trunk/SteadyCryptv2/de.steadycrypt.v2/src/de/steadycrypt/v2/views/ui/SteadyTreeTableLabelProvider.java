@@ -12,9 +12,11 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
+import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.EncryptedFolder;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
 public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	
@@ -79,8 +81,21 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
         return text;
 	}
 
-	public Image getColumnImage(Object element, int columnIndex) {
-		// TODO Auto-generated method stub
+	public Image getColumnImage(Object element, int columnIndex)
+	{
+		if(columnIndex == 0)
+		{
+			if(element instanceof EncryptedFolderDob)
+			{
+				return Activator.getImageDescriptor("icons/folder.png").createImage();
+			}
+			else if(element instanceof EncryptedFileDob)
+			{
+				if(((EncryptedFileDob)element).getType().contains("pdf"))
+					return Activator.getImageDescriptor("icons/pdf_icon.gif").createImage();
+				return Activator.getImageDescriptor("icons/file.png").createImage();
+			}
+		}
 		return null;
 	}
 	
