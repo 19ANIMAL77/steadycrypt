@@ -115,7 +115,7 @@ public class SideBarView extends ViewPart {
 		Object[] listeners = listenerList.getListeners(SideBarListener.class);
 		for(int i = listeners.length-1; i>=0; i-=1)
 		{
-			((SideBarListener)listeners[i]).deleteRow();
+			((SideBarListener)listeners[i]).findItem("stuff");
 		}
 	}
 

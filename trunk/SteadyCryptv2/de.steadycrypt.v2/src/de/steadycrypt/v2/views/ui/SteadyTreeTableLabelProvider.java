@@ -36,6 +36,7 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	                text = sdf.format(((EncryptedFileDob)element).getDate());
 	                break;
 	            case NAME:
+	            	//TODO: Konfigurierbar machen?
 	                text = ((EncryptedFileDob)element).getName().substring(0, ((EncryptedFileDob)element).getName().lastIndexOf("."));
 	                break;
 	            case PATH:
