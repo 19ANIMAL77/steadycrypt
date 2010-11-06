@@ -49,6 +49,7 @@ import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
+import de.steadycrypt.v2.views.model.SideBarListener;
 import de.steadycrypt.v2.views.ui.FileFolderSorter;
 import de.steadycrypt.v2.views.ui.NoArticleSorter;
 import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
@@ -56,9 +57,9 @@ import de.steadycrypt.v2.views.ui.SteadyTreeTableContentProvider;
 import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
 import de.steadycrypt.v2.views.ui.ThreeItemFilter;
 
-public class TreeTableView extends ViewPart {
+public class TreeTableView extends ViewPart implements SideBarListener {
 	
-	private static Logger log = Logger.getLogger(TreeTableView.class);
+	private static org.apache.log4j.Logger log = Logger.getLogger(TreeTableView.class);
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 	
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,6 +84,11 @@ public class TreeTableView extends ViewPart {
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	public TreeTableView() {
+		
+		/**
+		 * Register me at SideBarListener, hi there.
+		 */
+		SideBarView.addSideBarListener(this);
 	}
 
 	public void createPartControl(Composite parent)
@@ -417,6 +423,19 @@ public class TreeTableView extends ViewPart {
 				getFolderContent(childFolder);
 			}
 		}
+	}
+
+	/**
+	 * Triggered by SideBar
+	 */
+	public void deleteRow() {
+		
+		/**
+		 * Triggered by SideBarView, done by TreeTableView
+		 */
+		log.info("Triggered by SideBarView, done by TreeTableView");
+		removeSelected();
+		
 	}
 
 }
