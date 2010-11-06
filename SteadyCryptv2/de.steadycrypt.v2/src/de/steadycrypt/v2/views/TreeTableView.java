@@ -90,6 +90,12 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	public TreeTableView() {
+		
+		/**
+		 * Register me at SideBarListener, hi there.
+		 */
+		SideBarView.addSideBarListener(this);
+		
 	}
 
 	public void createPartControl(Composite parent)
@@ -486,13 +492,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	/**
 	 * Triggered by SideBar
 	 */
-	public void deleteRow() {
+	public void findItem(String searchString) {
 		
 		/**
 		 * Triggered by SideBarView, done by TreeTableView
 		 */
 		log.info("Triggered by SideBarView, done by TreeTableView");
-		removeSelected();
+		log.info("Search for item: "+ searchString);
 		
 	}
 
