@@ -106,7 +106,6 @@ public class SteadyTreeTableContentProvider implements ITreeContentProvider, IDe
 	@Override
 	public boolean hasChildren(Object element)
 	{
-		log.debug("hasChildren");
 		return getChildren(element).length > 0;
 	}
 
