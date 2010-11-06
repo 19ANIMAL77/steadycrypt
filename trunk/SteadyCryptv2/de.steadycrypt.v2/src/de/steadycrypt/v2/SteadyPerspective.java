@@ -6,7 +6,6 @@
 
 package de.steadycrypt.v2;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
@@ -17,10 +16,8 @@ public class SteadyPerspective implements IPerspectiveFactory {
 
 	public void createInitialLayout(IPageLayout layout) {
 		
-		String editorAreaID = layout.getEditorArea();
-		
-		layout.addStandaloneView(SideBarView.ID, false, SWT.LEFT, 0.25f, editorAreaID);
-		layout.addStandaloneView(TreeTableView.ID, false, SWT.TOP, 0.60f, editorAreaID);
+		layout.addStandaloneView(SideBarView.ID, false, IPageLayout.LEFT, 0.25f, layout.getEditorArea());
+		layout.addStandaloneView(TreeTableView.ID, false, IPageLayout.RIGHT, 0.25f, SideBarView.ID);
 		
 		layout.setEditorAreaVisible(false);
 		

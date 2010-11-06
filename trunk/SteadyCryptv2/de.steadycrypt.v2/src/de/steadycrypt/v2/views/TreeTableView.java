@@ -31,6 +31,8 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -47,6 +49,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
@@ -76,9 +79,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	protected Action filesFoldersAction, noArticleAction;
 	protected Action addFileAction, removeAction;
     private Action exportSelectionAction;
-    private Action expandAllAction;
     private Action collapseAllAction;
     private Action selectAllAction;
+    private boolean isCollapsed = true;
 	protected ViewerFilter atLeastThreeFilter;
 	protected ViewerSorter filesFoldersSorter, noArticleSorter;
 
@@ -111,7 +114,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
         this.toolBarManager = new ToolBarManager();
         this.toolBarManager.add(this.exportSelectionAction);
-        this.toolBarManager.add(this.expandAllAction);
         this.toolBarManager.add(this.collapseAllAction);
         this.toolBarManager.add(this.selectAllAction);
 
@@ -210,6 +212,18 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    exportFilesButton.setText(Messages.TableView_ExportFile);
         gridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
         exportFilesButton.setLayoutData(gridData);
+        
+        exportFilesButton.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e)
+			{
+				exportSelectionAction.run();				
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) { }
+		});
         
         MenuManager popupMenuManager = new MenuManager("PopupMenu");
         IMenuListener listener = new IMenuListener() { 
@@ -408,30 +422,35 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         
         exportSelectionAction.setText(Messages.TableView_ExportFile);
         exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
-        exportSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
-        
-        expandAllAction = new Action() {
-        	public void run()
-        	{
-        		treeViewer.expandAll();
-        	}
-        };
-        
-        expandAllAction.setText(Messages.TableView_ExpandAll);
-        expandAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
-        expandAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+        exportSelectionAction.setImageDescriptor(Activator.getImageDescriptor("icons/export2.png"));
         
         collapseAllAction = new Action() {
         	public void run()
         	{
-        		treeViewer.collapseAll();
-        		treeViewer.expandToLevel(1);
+        		if(isCollapsed)
+        		{
+        			treeViewer.expandAll();
+        	        
+        	        collapseAllAction.setText(Messages.TableView_CollapseAll);
+        	        collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
+        	        collapseAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+        		}
+        		else
+        		{
+        			treeViewer.collapseAll();
+        			treeViewer.expandToLevel(1);
+        	        
+        	        collapseAllAction.setText(Messages.TableView_ExpandAll);
+        	        collapseAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
+        	        collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
+        		}
+				isCollapsed = !isCollapsed;
         	}
         };
         
-        collapseAllAction.setText(Messages.TableView_CollapseAll);
-        collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
-        collapseAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+        collapseAllAction.setText(Messages.TableView_ExpandAll);
+        collapseAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
+        collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
         
         selectAllAction = new Action() {
         	public void run()
@@ -457,7 +476,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         
         selectAllAction.setText(Messages.TableView_SelectAll);
         selectAllAction.setToolTipText(Messages.TableView_SelectAll_Tooltip);
-        selectAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
+        selectAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/selectall.gif"));
     }	
 	
 	public EncryptedFolderDob getInitialInput()
