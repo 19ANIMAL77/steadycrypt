@@ -7,6 +7,9 @@
 package de.steadycrypt.v2.core;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -26,6 +29,9 @@ public class FileDropHandler {
 
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+	private List<EncryptedFolderDob> persistedNonDeletedFolders = new ArrayList<EncryptedFolderDob>();
+	private List<EncryptedFolderDob> successfullyProcessedFolders = new ArrayList<EncryptedFolderDob>();
+	private List<EncryptedFileDob> successfullyProcessedFiles = new ArrayList<EncryptedFileDob>();
 	
 	public FileDropHandler()
 	{
@@ -37,7 +43,7 @@ public class FileDropHandler {
 		this.crypter = new Crypter(this.keyman.getKey());	
 	}
 	
-	public void processData(String[] droppedFileInformation, EncryptedFolderDob parent)
+	public void processData(String[] droppedFileInformation, EncryptedFolderDob parent) throws IOException
 	{	
         for (int i = 0 ; i < droppedFileInformation.length ; i++)
         {
@@ -45,37 +51,55 @@ public class FileDropHandler {
         }
 	}
 	
-	private void browseFolders (File droppedElement, EncryptedFolderDob parent)
+	private void browseFolders (File droppedElement, EncryptedFolderDob parent) throws IOException
 	{
     	if(!droppedElement.isDirectory())
     	{
-    		log.debug("File dropped");
-			log.debug(droppedElement.getPath());
+    		System.out.println(droppedElement.canWrite());
+    		log.debug("File dropped");			
     		EncryptedFile droppedFile = crypter.encrypt(droppedElement, parent);
-    		
-    		EncryptedFileDob encryptedPersistedFile = this.encryptedFileDao.addFile(droppedFile);
-    		parent.addFile(encryptedPersistedFile);
-        	
     		log.debug("Encryption finished");
         	
-//        	droppedFile.delete();
-//        	log.debug("Sourcefile deleted");
+    		boolean success = droppedElement.delete();
+        	log.debug("Sourcefile deleted");
+    		
+    		if(success)
+    		{
+	    		EncryptedFileDob encryptedPersistedFile = this.encryptedFileDao.addFile(droppedFile);
+	    		parent.addFile(encryptedPersistedFile);
+	    		log.debug("File persisted");
+	    		successfullyProcessedFiles.add(encryptedPersistedFile);
+    		}
     	}
     	else
     	{
     		log.debug("Folder dropped");
-			log.debug(droppedElement.getPath());
 			EncryptedFolder droppedFolder = new EncryptedFolder(droppedElement, parent);
 			
 			EncryptedFolderDob encryptedPersistedFolder = this.encryptedFolderDao.addFolder(droppedFolder);
 			parent.addFolder(encryptedPersistedFolder);
+			persistedNonDeletedFolders.add(encryptedPersistedFolder);
+    		log.debug("Folder persisted");
 			
     		for(File file : droppedElement.listFiles())
     		{
-//    			log.debug(file.getPath());
     			browseFolders(file, encryptedPersistedFolder);
     		}
+    		
+    		boolean success = droppedElement.delete();
+        	log.debug("Sourcefolder deleted");
+    		
+        	if(success)
+    		{
+    			persistedNonDeletedFolders.remove(encryptedPersistedFolder);
+    			successfullyProcessedFolders.add(encryptedPersistedFolder);
+    		}
     	}		
+	}
+	
+	private void rollback()
+	{
+		//TODO: Decryption fŸr bereits verarbeitete Files
 	}
 		
 }
