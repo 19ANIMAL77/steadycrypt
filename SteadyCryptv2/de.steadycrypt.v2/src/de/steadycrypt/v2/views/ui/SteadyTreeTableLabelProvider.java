@@ -91,8 +91,14 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 			}
 			else if(element instanceof EncryptedFileDob)
 			{
-				if(((EncryptedFileDob)element).getType().contains("pdf"))
-					return Activator.getImageDescriptor("icons/pdf_icon.gif").createImage();
+				if(((EncryptedFileDob)element).getType().contains("doc"))
+					return Activator.getImageDescriptor("icons/file-doc.png").createImage();
+				else if(((EncryptedFileDob)element).getType().contains("pdf"))
+					return Activator.getImageDescriptor("icons/file-pdf.png").createImage();
+				else if(((EncryptedFileDob)element).getType().contains("ppt"))
+					return Activator.getImageDescriptor("icons/file-ppt.png").createImage();
+				else if(((EncryptedFileDob)element).getType().contains("txt"))
+					return Activator.getImageDescriptor("icons/file-txt.png").createImage();
 				return Activator.getImageDescriptor("icons/file.png").createImage();
 			}
 		}
