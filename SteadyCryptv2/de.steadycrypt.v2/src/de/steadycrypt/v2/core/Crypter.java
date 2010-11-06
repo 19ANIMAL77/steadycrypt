@@ -66,30 +66,26 @@ public class Crypter
 	 * 
 	 * @param in
 	 * @param out
+	 * @throws IOException 
 	 */
-	public EncryptedFile encrypt(File currentFile, EncryptedFolderDob parent)
+	public EncryptedFile encrypt(File currentFile, EncryptedFolderDob parent) throws IOException
 	{		
 		EncryptedFile encryptedFile = new EncryptedFile(currentFile, parent);
 		
-		try
-		{
-			InputStream input = new FileInputStream(encryptedFile.getPath());
-			OutputStream output = new FileOutputStream(encryptionPath+encryptedFile.getFile());
+		InputStream input = new FileInputStream(encryptedFile.getPath());
+		OutputStream output = new FileOutputStream(encryptionPath+encryptedFile.getFile());
+	
+		output = new CipherOutputStream(output, ecipher);
 		
-			output = new CipherOutputStream(output, ecipher);
-			
-			// Read in the cleartext bytes and write to out to encrypt
-			int numRead = 0;
-			while ((numRead = input.read(buf)) >= 0)
-			{
-				output.write(buf, 0, numRead);
-			}
-			
-			input.close();
-			output.close();
+		// Read in the cleartext bytes and write to out to encrypt
+		int numRead = 0;
+		while ((numRead = input.read(buf)) >= 0)
+		{
+			output.write(buf, 0, numRead);
 		}
-		catch (IOException e){
-		}
+		
+		input.close();
+		output.close();
 		
 		return encryptedFile;
 	}

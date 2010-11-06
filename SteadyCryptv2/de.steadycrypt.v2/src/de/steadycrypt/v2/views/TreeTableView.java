@@ -76,6 +76,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	protected Action filesFoldersAction, noArticleAction;
 	protected Action addFileAction, removeAction;
     private Action exportSelectionAction;
+    private Action expandAllAction;
+    private Action collapseAllAction;
     private Action selectAllAction;
 	protected ViewerFilter atLeastThreeFilter;
 	protected ViewerSorter filesFoldersSorter, noArticleSorter;
@@ -103,6 +105,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
         this.toolBarManager = new ToolBarManager();
         this.toolBarManager.add(this.exportSelectionAction);
+        this.toolBarManager.add(this.expandAllAction);
+        this.toolBarManager.add(this.collapseAllAction);
         this.toolBarManager.add(this.selectAllAction);
 
         ToolBar toolbar = toolBarManager.createControl(content);
@@ -183,7 +187,14 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	        		
 	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
 	        				
-	    			fileDropHandler.processData(droppedFileInformation, root);
+	    			try
+	    			{
+	    				fileDropHandler.processData(droppedFileInformation, root);
+	    			}
+	    			catch(Exception e)
+	    			{
+	    				
+	    			}
 	            }
 	        	treeViewer.refresh();
 	        }
@@ -377,7 +388,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
     private void makeActions()
     {
-        exportSelectionAction = new Action() {
+    	exportSelectionAction = new Action() {
         	public void run()
         	{
         		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
@@ -392,6 +403,29 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         exportSelectionAction.setText(Messages.TableView_ExportFile);
         exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
         exportSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
+        
+        expandAllAction = new Action() {
+        	public void run()
+        	{
+        		treeViewer.expandAll();
+        	}
+        };
+        
+        expandAllAction.setText(Messages.TableView_ExpandAll);
+        expandAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
+        expandAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+        
+        collapseAllAction = new Action() {
+        	public void run()
+        	{
+        		treeViewer.collapseAll();
+        		treeViewer.expandToLevel(1);
+        	}
+        };
+        
+        collapseAllAction.setText(Messages.TableView_CollapseAll);
+        collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
+        collapseAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
         
         selectAllAction = new Action() {
         	public void run()
