@@ -12,8 +12,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -35,11 +37,13 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
@@ -59,7 +63,7 @@ import de.steadycrypt.v2.views.ui.ThreeItemFilter;
 
 public class TreeTableView extends ViewPart implements SideBarListener {
 	
-	private static org.apache.log4j.Logger log = Logger.getLogger(TreeTableView.class);
+	private static Logger log = Logger.getLogger(TreeTableView.class);
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 	
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,11 +88,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	public TreeTableView() {
-		
-		/**
-		 * Register me at SideBarListener, hi there.
-		 */
-		SideBarView.addSideBarListener(this);
 	}
 
 	public void createPartControl(Composite parent)
@@ -147,7 +146,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer.setContentProvider(new SteadyTreeTableContentProvider());
 		treeViewer.setLabelProvider(new SteadyTreeTableLabelProvider());
 		
-		root = getInitalInput();
+		root = getInitialInput();
 		treeViewer.setInput(root);
 		treeViewer.expandToLevel(1);
 		
@@ -194,6 +193,19 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    exportFilesButton.setText(Messages.TableView_ExportFile);
         gridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
         exportFilesButton.setLayoutData(gridData);
+        
+        MenuManager popupMenuManager = new MenuManager("PopupMenu");
+        IMenuListener listener = new IMenuListener() { 
+        public void menuAboutToShow(IMenuManager manager) { 
+            manager.add(exportSelectionAction); 
+            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
+            } 
+        }; 
+        popupMenuManager.addMenuListener(listener); 
+        popupMenuManager.setRemoveAllWhenShown(true); 
+        getSite().registerContextMenu(popupMenuManager, getSite().getSelectionProvider());
+        Menu menu = popupMenuManager.createContextMenu(tree);
+        tree.setMenu(menu);
 	}
 	
 	protected void createFiltersAndSorters() {
@@ -385,8 +397,20 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         	public void run()
         	{
         		Tree tree = treeViewer.getTree();
-        		for(TreeItem ti : tree.getItems()) {
-        			ti.setChecked(true);
+        		TreeItem[] levelItems = tree.getItems();
+        		
+        		if(levelItems.length > 0)
+        		{
+        			checkItemsOfLevel(levelItems);
+        		}
+        	}
+        	private void checkItemsOfLevel(TreeItem[] levelItems)
+        	{
+        		for(TreeItem item : levelItems)
+        		{
+        			item.setChecked(true);
+        			if(item.getItems().length > 0)
+        				checkItemsOfLevel(item.getItems());
         		}
         	}
         };
@@ -396,7 +420,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         selectAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
     }	
 	
-	public EncryptedFolderDob getInitalInput()
+	public EncryptedFolderDob getInitialInput()
 	{
     	root = new EncryptedFolderDob(0, "Root-Folder", new Date(System.currentTimeMillis()), "");
 
