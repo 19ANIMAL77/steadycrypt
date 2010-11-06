@@ -36,7 +36,7 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	                text = sdf.format(((EncryptedFileDob)element).getDate());
 	                break;
 	            case NAME:
-	                text = ((EncryptedFileDob)element).getName();
+	                text = ((EncryptedFileDob)element).getName().substring(0, ((EncryptedFileDob)element).getName().lastIndexOf("."));
 	                break;
 	            case PATH:
 	                text = ((EncryptedFileDob)element).getPath();
@@ -83,6 +83,9 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 
 	public Image getColumnImage(Object element, int columnIndex)
 	{
+		
+		String fileType = "";
+		
 		if(columnIndex == 0)
 		{
 			if(element instanceof EncryptedFolderDob)
@@ -91,15 +94,39 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 			}
 			else if(element instanceof EncryptedFileDob)
 			{
-				if(((EncryptedFileDob)element).getType().contains("doc"))
-					return Activator.getImageDescriptor("icons/file-doc.png").createImage();
-				else if(((EncryptedFileDob)element).getType().contains("pdf"))
-					return Activator.getImageDescriptor("icons/file-pdf.png").createImage();
-				else if(((EncryptedFileDob)element).getType().contains("ppt"))
-					return Activator.getImageDescriptor("icons/file-ppt.png").createImage();
-				else if(((EncryptedFileDob)element).getType().contains("txt"))
-					return Activator.getImageDescriptor("icons/file-txt.png").createImage();
-				return Activator.getImageDescriptor("icons/file.png").createImage();
+				fileType = ((EncryptedFileDob) element).getType();
+				fileType = fileType.substring(0, fileType.lastIndexOf("-"));
+				
+				try
+				{
+					return Activator.getImageDescriptor("icons/file-"+fileType+".png").createImage();
+				}
+				catch (Exception e) 
+				{
+					if(((EncryptedFileDob)element).getType().contains("html"))
+						return Activator.getImageDescriptor("icons/file-htm.png").createImage();
+					
+					else if(((EncryptedFileDob)element).getType().contains("docx") || 
+							((EncryptedFileDob)element).getType().contains("pages") || 
+							((EncryptedFileDob)element).getType().contains("odt"))
+						return Activator.getImageDescriptor("icons/file-doc.png").createImage();
+					
+					else if(((EncryptedFileDob)element).getType().contains("xlsx") || 
+							((EncryptedFileDob)element).getType().contains("numbers") || 
+							((EncryptedFileDob)element).getType().contains("ods"))
+						return Activator.getImageDescriptor("icons/file-xls.png").createImage();
+					
+					else if(((EncryptedFileDob)element).getType().contains("pptx") || 
+							((EncryptedFileDob)element).getType().contains("key") || 
+							((EncryptedFileDob)element).getType().contains("odp"))
+						return Activator.getImageDescriptor("icons/file-ppt.png").createImage();
+					
+					else if(((EncryptedFileDob)element).getType().contains("pptx"))
+						return Activator.getImageDescriptor("icons/file-ppt.png").createImage();
+					
+					else
+						return Activator.getImageDescriptor("icons/file.png").createImage();
+				}
 			}
 		}
 		return null;
