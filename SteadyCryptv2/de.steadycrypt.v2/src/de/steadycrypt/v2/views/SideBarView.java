@@ -24,7 +24,7 @@ import de.steadycrypt.v2.views.model.SideBarListener;
 public class SideBarView extends ViewPart {
 	
 	public static String ID = "de.steadycrypt.v2.view.sideBar";
-	private static org.apache.log4j.Logger log = Logger.getLogger(SideBarView.class);
+	private static Logger log = Logger.getLogger(SideBarView.class);
 	
 	protected static EventListenerList listenerList = new EventListenerList();
 
