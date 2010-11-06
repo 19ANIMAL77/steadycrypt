@@ -6,6 +6,7 @@
 
 package de.steadycrypt.v2.views.ui;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -43,7 +44,8 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	                text = ((EncryptedFileDob)element).getPath();
 	                break;
 	            case SIZE:
-	                text = Long.toString(((EncryptedFileDob)element).getSize());
+	                BigDecimal size = new BigDecimal(((EncryptedFileDob)element).getSize()/1024);
+	                text = size.compareTo(new BigDecimal(1000)) > 0 ? size.divide(new BigDecimal(1024)).setScale(2,BigDecimal.ROUND_HALF_UP).toString() +" MB" : size.setScale(0,BigDecimal.ROUND_HALF_UP).toString() + " KB";
 	                break;
 	            case TYPE:
 	                text = ((EncryptedFileDob)element).getType();
