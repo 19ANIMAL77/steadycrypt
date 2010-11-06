@@ -18,7 +18,7 @@ import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.views.model.DeltaEvent;
 import de.steadycrypt.v2.views.model.IDeltaListener;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unused"})
 public class SteadyTreeTableContentProvider implements ITreeContentProvider, IDeltaListener {
 	
 	private static Logger log = Logger.getLogger(SteadyTreeTableContentProvider.class);
