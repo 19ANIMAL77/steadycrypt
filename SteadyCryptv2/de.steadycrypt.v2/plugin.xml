@@ -53,6 +53,13 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            class="de.steadycrypt.v2.views.SideBarView"
+            icon="icons/alt_window_16.gif"
+            id="de.steadycrypt.v2.view.sideBar"
+            name="SideBar"
+            restorable="true">
+      </view>
+      <view
             class="de.steadycrypt.v2.views.TableView"
             icon="icons/alt_window_16.gif"
             id="de.steadycrypt.v2.view.table"
