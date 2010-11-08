@@ -17,6 +17,6 @@ public interface SideBarListener extends EventListener {
 	/**
 	 * This Event is triggered by my Button experiment
 	 */
-	public void findItem(String searchString);
+	public void doSearch();
 
 }
