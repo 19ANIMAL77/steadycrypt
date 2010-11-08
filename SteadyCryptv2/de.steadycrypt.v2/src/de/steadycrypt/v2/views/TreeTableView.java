@@ -79,9 +79,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	protected Action filesFoldersAction, noArticleAction;
 	protected Action addFileAction, removeAction;
     private Action exportSelectionAction;
+    private Action expandAllAction;
     private Action collapseAllAction;
     private Action selectAllAction;
-    private boolean isCollapsed = true;
 	protected ViewerFilter atLeastThreeFilter;
 	protected ViewerSorter filesFoldersSorter, noArticleSorter;
 
@@ -114,6 +114,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
         this.toolBarManager = new ToolBarManager();
         this.toolBarManager.add(this.exportSelectionAction);
+        this.toolBarManager.add(this.expandAllAction);
         this.toolBarManager.add(this.collapseAllAction);
         this.toolBarManager.add(this.selectAllAction);
 
@@ -218,7 +219,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				exportSelectionAction.run();				
+				exportSelectionAction.run();			
 			}
 			
 			@Override
@@ -424,33 +425,28 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
         exportSelectionAction.setImageDescriptor(Activator.getImageDescriptor("icons/export2.png"));
         
-        collapseAllAction = new Action() {
+        expandAllAction = new Action() {
         	public void run()
         	{
-        		if(isCollapsed)
-        		{
-        			treeViewer.expandAll();
-        	        
-        	        collapseAllAction.setText(Messages.TableView_CollapseAll);
-        	        collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
-        	        collapseAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
-        		}
-        		else
-        		{
-        			treeViewer.collapseAll();
-        			treeViewer.expandToLevel(1);
-        	        
-        	        collapseAllAction.setText(Messages.TableView_ExpandAll);
-        	        collapseAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
-        	        collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
-        		}
-				isCollapsed = !isCollapsed;
+        		treeViewer.expandAll();
         	}
         };
         
-        collapseAllAction.setText(Messages.TableView_ExpandAll);
-        collapseAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
-        collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
+        expandAllAction.setText(Messages.TableView_ExpandAll);
+        expandAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
+        expandAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
+        
+        collapseAllAction = new Action() {
+        	public void run()
+        	{
+        		treeViewer.collapseAll();
+    			treeViewer.expandToLevel(1);
+        	}
+        };
+        
+        collapseAllAction.setText(Messages.TableView_CollapseAll);
+        collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
+        collapseAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
         
         selectAllAction = new Action() {
         	public void run()
