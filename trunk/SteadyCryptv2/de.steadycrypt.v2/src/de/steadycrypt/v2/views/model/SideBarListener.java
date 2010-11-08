@@ -9,7 +9,7 @@ package de.steadycrypt.v2.views.model;
 import java.util.EventListener;
 
 /**
- * This interface should be implemented if you're interrested
+ * This interface should be implemented if you're interested
  * in being informed of SideBar Events.
  */
 public interface SideBarListener extends EventListener {
