@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.dnd.DND;
@@ -60,12 +59,10 @@ import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
-import de.steadycrypt.v2.views.ui.FileFolderSorter;
-import de.steadycrypt.v2.views.ui.NoArticleSorter;
+import de.steadycrypt.v2.views.ui.SearchFilter;
 import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
 import de.steadycrypt.v2.views.ui.SteadyTreeTableContentProvider;
 import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
-import de.steadycrypt.v2.views.ui.ThreeItemFilter;
 
 public class TreeTableView extends ViewPart implements SideBarListener {
 	
@@ -89,8 +86,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	
 	protected TreeViewer treeViewer;
 	protected SteadyTreeTableLabelProvider labelProvider;
-	protected ViewerFilter atLeastThreeFilter;
-	protected ViewerSorter filesFoldersSorter, noArticleSorter;
+	protected ViewerFilter searchFilter;
 	
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 
@@ -249,12 +245,15 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         getSite().registerContextMenu(popupMenuManager, getSite().getSelectionProvider());
         Menu menu = popupMenuManager.createContextMenu(tree);
         tree.setMenu(menu);
+        
+        createFiltersAndSorters();
 	}
 	
+	/**
+	 * Instantiate all Filters needed.
+	 */
 	protected void createFiltersAndSorters() {
-		atLeastThreeFilter = new ThreeItemFilter();
-		filesFoldersSorter = new FileFolderSorter();
-		noArticleSorter = new NoArticleSorter();
+		searchFilter = new SearchFilter();
 	}
 
 	protected void hookListeners() {
@@ -362,21 +361,21 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	}	
 	
 	protected void updateSorter(Action action) {
-		if(action == filesFoldersAction) {
-			noArticleAction.setChecked(!filesFoldersAction.isChecked());
-			if(action.isChecked()) {
-				treeViewer.setSorter(filesFoldersSorter);
-			} else {
-				treeViewer.setSorter(null);
-			}
-		} else if(action == noArticleAction) {
-			filesFoldersAction.setChecked(!noArticleAction.isChecked());
-			if(action.isChecked()) {
-				treeViewer.setSorter(noArticleSorter);
-			} else {
-				treeViewer.setSorter(null);
-			}
-		}
+//		if(action == filesFoldersAction) {
+//			noArticleAction.setChecked(!filesFoldersAction.isChecked());
+//			if(action.isChecked()) {
+//				treeViewer.setSorter(filesFoldersSorter);
+//			} else {
+//				treeViewer.setSorter(null);
+//			}
+//		} else if(action == noArticleAction) {
+//			filesFoldersAction.setChecked(!noArticleAction.isChecked());
+//			if(action.isChecked()) {
+//				treeViewer.setSorter(noArticleSorter);
+//			} else {
+//				treeViewer.setSorter(null);
+//			}
+//		}
 			
 	}
 
@@ -496,6 +495,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		log.info("Triggered by SideBarView, done by TreeTableView");
 		log.info("Search for item: "+ searchString);
 		
+	}
+
+	/**
+	 * Triggered by SideBarView
+	 */
+	public void doSearch(){
+		treeViewer.addFilter(searchFilter);
 	}
 
 }
