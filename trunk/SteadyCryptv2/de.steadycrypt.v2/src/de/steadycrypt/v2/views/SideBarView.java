@@ -10,77 +10,64 @@ import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ExpandBar;
-import org.eclipse.swt.widgets.ExpandItem;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
+import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.views.model.SideBarListener;
 
 public class SideBarView extends ViewPart {
 	
 	public static String ID = "de.steadycrypt.v2.view.sideBar";
-	private static Logger log = Logger.getLogger(SideBarView.class);
+	public static String searchString = "";
 	
+	private static Logger log = Logger.getLogger(SideBarView.class);
+
 	protected static EventListenerList listenerList = new EventListenerList();
 
 	@Override
 	public void createPartControl(Composite parent) {
 		
-		// ExpandBars
-		ExpandBar exBar = new ExpandBar(parent, SWT.V_SCROLL | SWT.H_SCROLL);
-		
-		// First item
-		Composite composite = new Composite (exBar, SWT.NONE);
+	
+		// First part - Properties for filters
 		GridLayout layout = new GridLayout ();
-		layout.marginLeft = layout.marginTop = layout.marginRight = layout.marginBottom = 10;
-		layout.verticalSpacing = 10;
-		composite.setLayout(layout);
+		layout.marginLeft = layout.marginTop = layout.marginRight = layout.marginBottom = 5;
+		layout.verticalSpacing = 5;
+		parent.setLayout(layout);
 		
-		// Button experiment STARTS
-		Button button = new Button (composite, SWT.PUSH);
-		button.setText("Hallo Tabelle");
-	    button.addSelectionListener(new SelectionListener() {
-
-	        public void widgetSelected(SelectionEvent event) {
-
-	        	fireSideBarEvent();
-
-	        }
-
-	        public void widgetDefaultSelected(SelectionEvent event) {}
-	        
-	      });
-		// Button experiment ENDS
+		// GUI Components
+		Label lblSearch = new Label(parent, SWT.FLAT);
+		lblSearch.setText(Messages.SideBarView_Search);
+				
+		final Text txtSearchField = new Text(parent, SWT.BORDER);
 		
-		ExpandItem item0 = new ExpandItem (exBar, SWT.NONE, 0);
-		item0.setText("Filters");
-		item0.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		item0.setControl(composite);
-		item0.setExpanded(true);
-		
-		// Second item
-		composite = new Composite (exBar, SWT.NONE);
-		layout = new GridLayout (2, false);
-		layout.marginLeft = layout.marginTop = layout.marginRight = layout.marginBottom = 10;
-		layout.verticalSpacing = 10;
-		composite.setLayout(layout);
-		
-		ExpandItem item1 = new ExpandItem (exBar, SWT.NONE, 1);
-		item1.setText("Favourites");
-		item1.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-		item1.setControl(composite);
-		item1.setExpanded(true);
+		/**
+		 * Refresh the static searchString after every key is
+		 * released and inform TreeTableView about the change
+		 * via fireSideBarEvent.
+		 */
+		txtSearchField.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				searchString = txtSearchField.getText();
+				fireSideBarEvent();
+			}
+			
+		});
 		
 	}
 
 	@Override
 	public void setFocus() {
-		// TODO Auto-generated method stub
 		
 	}
 	
@@ -115,8 +102,7 @@ public class SideBarView extends ViewPart {
 		Object[] listeners = listenerList.getListeners(SideBarListener.class);
 		for(int i = listeners.length-1; i>=0; i-=1)
 		{
-			((SideBarListener)listeners[i]).findItem("stuff");
+			((SideBarListener)listeners[i]).doSearch();
 		}
 	}
-
 }
