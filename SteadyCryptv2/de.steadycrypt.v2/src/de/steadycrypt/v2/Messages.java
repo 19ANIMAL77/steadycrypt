@@ -34,6 +34,8 @@ public class Messages extends NLS
     public static String TableView_SelectAll;
     public static String TableView_SelectAll_Tooltip;
 
+    public static String SideBarView_Search;
+
     // =========================================================================
 
     public static String getSteadyTableColumnTitle(SteadyTableIdentifier identifier)
