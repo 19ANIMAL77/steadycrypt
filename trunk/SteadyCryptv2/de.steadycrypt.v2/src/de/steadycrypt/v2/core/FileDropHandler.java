@@ -22,7 +22,7 @@ import de.steadycrypt.v2.dao.EncryptedFolderDao;
 
 public class FileDropHandler {
 	
-	private static org.apache.log4j.Logger log = Logger.getLogger(FileDropHandler.class);
+	private static Logger log = Logger.getLogger(FileDropHandler.class);
 
 	private KeyManager keyman;
 	private Crypter crypter;
@@ -43,11 +43,16 @@ public class FileDropHandler {
 		this.crypter = new Crypter(this.keyman.getKey());	
 	}
 	
-	public void processData(String[] droppedFileInformation, EncryptedFolderDob parent) throws IOException
+	public void processData(String[] droppedFileInformation, EncryptedFolderDob parent)
 	{	
         for (int i = 0 ; i < droppedFileInformation.length ; i++)
         {
-        	browseFolders(new File(droppedFileInformation[i]), parent);
+        	try {
+        		browseFolders(new File(droppedFileInformation[i]), parent);
+        	} catch(IOException e) {
+        		log.error(e.getMessage());
+        		e.printStackTrace();
+        	}
         }
 	}
 	
@@ -55,8 +60,12 @@ public class FileDropHandler {
 	{
     	if(!droppedElement.isDirectory())
     	{
-    		System.out.println(droppedElement.canWrite());
-    		log.debug("File dropped");			
+    		log.debug("File dropped");
+    		if(droppedElement.getName().contains(".DS_Store"))
+    		{
+    			System.out.println(".ds_store File ignored!");
+    			return;
+    		}
     		EncryptedFile droppedFile = crypter.encrypt(droppedElement, parent);
     		log.debug("Encryption finished");
         	
@@ -95,11 +104,6 @@ public class FileDropHandler {
     			successfullyProcessedFolders.add(encryptedPersistedFolder);
     		}
     	}		
-	}
-	
-	private void rollback()
-	{
-		//TODO: Decryption fŸr bereits verarbeitete Files
 	}
 		
 }

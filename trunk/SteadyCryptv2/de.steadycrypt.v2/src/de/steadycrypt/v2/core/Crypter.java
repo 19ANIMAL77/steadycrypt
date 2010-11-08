@@ -21,10 +21,11 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 import de.steadycrypt.v2.bob.EncryptedFile;
+import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
 /**
- * Encrypter Object needed to en- and decrypt files.
+ * Crypter Object needed to en- and decrypt files.
  */
 public class Crypter
 {
@@ -33,7 +34,6 @@ public class Crypter
 	private Cipher dcipher;
 	
 	/**
-	 * 
 	 * @param key
 	 */
 	public Crypter(SecretKey key) {
@@ -64,12 +64,10 @@ public class Crypter
 	/**
 	 * Encrypt the file from inputstream and write the new one into the outputstream
 	 * 
-	 * @param in
-	 * @param out
 	 * @throws IOException 
 	 */
 	public EncryptedFile encrypt(File currentFile, EncryptedFolderDob parent) throws IOException
-	{		
+	{
 		EncryptedFile encryptedFile = new EncryptedFile(currentFile, parent);
 		
 		InputStream input = new FileInputStream(encryptedFile.getPath());
@@ -77,7 +75,6 @@ public class Crypter
 	
 		output = new CipherOutputStream(output, ecipher);
 		
-		// Read in the cleartext bytes and write to out to encrypt
 		int numRead = 0;
 		while ((numRead = input.read(buf)) >= 0)
 		{
@@ -93,25 +90,35 @@ public class Crypter
 	/**
 	 * Decrypt the File from inputstream and write the new file into the outputstream
 	 * 
-	 * @param in
-	 * @param out
+	 * @throws IOException
 	 */
-	public void decrypt(InputStream in, OutputStream out)
-	{		
-		try
+	public void decrypt(EncryptedFileDob currentFile, String parentPath) throws IOException
+	{
+		File outputFile = new File(parentPath+"/"+currentFile.getName());
+		
+		if(outputFile.exists())
 		{
-			// Bytes read from in will be decrypted
-			in = new CipherInputStream(in, dcipher);
-			
-			// Read in the decrypted bytes and write the cleartext to out
-			int numRead = 0;			
-			while ((numRead = in.read(buf)) >= 0)
+			int i = 1;
+			outputFile = new File(parentPath+"/"+i+"_"+currentFile.getName());
+			while(outputFile.exists())
 			{
-				out.write(buf, 0, numRead);
+				i++;
+				outputFile = new File(parentPath+"/"+i+"_"+currentFile.getName());
 			}
-			out.close();
 		}
-		catch (java.io.IOException e) {
+		
+		InputStream input = new FileInputStream(encryptionPath+currentFile.getFile());
+		OutputStream output = new FileOutputStream(outputFile);
+	
+		input = new CipherInputStream(input, dcipher);
+		
+		int numRead = 0;
+		while ((numRead = input.read(buf)) >= 0)
+		{
+			output.write(buf, 0, numRead);
 		}
+		
+		input.close();
+		output.close();
 	}
 }

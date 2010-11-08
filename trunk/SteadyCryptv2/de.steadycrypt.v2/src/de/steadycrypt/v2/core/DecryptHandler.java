@@ -6,78 +6,118 @@
 
 package de.steadycrypt.v2.core;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.ui.PlatformUI;
+
+import de.steadycrypt.v2.Messages;
+import de.steadycrypt.v2.bob.DroppedElement;
+import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
+import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
+import de.steadycrypt.v2.dao.EncryptedFileDao;
+import de.steadycrypt.v2.dao.EncryptedFolderDao;
 
 public class DecryptHandler {
 	
-	private static org.apache.log4j.Logger log = Logger.getLogger(DbManager.class);
-	private static DecryptHandler INSTANCE = null;
-	private static KeyManager keyman;
-	private static Crypter crypter;
+	private static Logger log = Logger.getLogger(DbManager.class);
+	
+	private KeyManager keyman;
+	private Crypter crypter;
+	
+	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
+	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
     
-    
-    /**
-     * Singleton Pattern
-     * Only DecryptHandler itself can call the constructor via getInstance()
-     */
-	private DecryptHandler(){
-		log.debug("DecryptHandler instantiated");
-
+	public DecryptHandler()
+	{
 		// Provide KeyManager
-		DecryptHandler.keyman = KeyManager.getInstance();
+		this.keyman = KeyManager.getInstance();
 		log.debug("Get KeyManager-Instance");
-		
-		// Create encrypter/decrypter
-		DecryptHandler.crypter = new Crypter(keyman.getKey());
+		// Provide Crypter
+		this.crypter = new Crypter(keyman.getKey());
 		log.debug("Crypt instance created");
 	}
 	
-	
-	/**
-	 * Singleton Pattern for DecryptHandler
-	 * @return instance of DecryptHandler
-	 */
-	public static DecryptHandler getInstance() {
-		if(INSTANCE == null) {
-			INSTANCE = new DecryptHandler();
-		}
-		return INSTANCE;
-	}
-    
-	
-	/**
-	 * Method implements decryption process
-	 * @param EncryptedFile
-	 * @param OutputPath
-	 */
-	public void decrypt (String EncryptedFile, String OutputPath) {
+	@SuppressWarnings("unchecked")
+	public void processData(TreeSelection filesToDecrypt)
+	{
+		Iterator<DroppedElement> droppedElementsIterator = filesToDecrypt.iterator();
 		
-		try {
-			FileInputStream finput = new FileInputStream(EncryptedFile);
-			FileOutputStream foutput = new FileOutputStream(OutputPath);
-			
-			crypter.decrypt(finput, foutput);
-			
-			try {
-				finput.close();
-				foutput.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
+		directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
+		String path = directoryDialog.open();
+		
+		if(path != null)
+		{
+			while(droppedElementsIterator.hasNext())
+			{
+				try {
+					browseFolders(droppedElementsIterator.next(), path, true);
+				} catch(IOException e) {
+	        		log.error(e.getMessage());
+	        		e.printStackTrace();
+				}
 			}
-
-			
-		} catch (FileNotFoundException e) {
-			log.error(e);
 		}
-		
+	}
 
-		
-		log.debug("Decryption finished");
+	public void browseFolders(DroppedElement elementToDecrypt, String destination, boolean rootFile) throws IOException
+	{
+		if(elementToDecrypt instanceof EncryptedFileDob)
+		{
+			EncryptedFileDob fileToDecrypt = (EncryptedFileDob)elementToDecrypt;
+			log.debug("EncryptedFile handed over");
+			crypter.decrypt(fileToDecrypt, destination);
+			log.debug("File decrypted");
+			
+			File file = new File(Crypter.encryptionPath+(fileToDecrypt).getFile());
+			boolean success = file.delete();
+			log.debug("scFile deleted");
+			
+			if(success)
+			{
+				this.encryptedFileDao.deleteFile(fileToDecrypt);
+				log.debug("database entry deleted");
+				if(rootFile)
+					(fileToDecrypt).getParent().removeFile(fileToDecrypt);
+			}
+		}
+		else if(elementToDecrypt instanceof EncryptedFolderDob)
+		{
+			EncryptedFolderDob folderToDecrypt = (EncryptedFolderDob)elementToDecrypt;
+			log.debug("EncryptedFolder handed over");
+			
+			File newSubDestination = new File(destination+"/"+folderToDecrypt.getName());
+			boolean success = newSubDestination.exists();
+			if(!success)
+				success = newSubDestination.mkdir();
+			System.out.println(newSubDestination.getPath());
+			
+			if(success)
+			{
+				for(EncryptedFolderDob nextFolderToDecrypt : folderToDecrypt.getFolders())
+				{
+					System.out.println("more folders");
+					browseFolders(nextFolderToDecrypt, newSubDestination.getPath(), false);
+				}
+				
+				for(EncryptedFileDob nextFileToDecrypt : folderToDecrypt.getFiles())
+				{
+					System.out.println("more files");
+					browseFolders(nextFileToDecrypt, newSubDestination.getPath(), false);
+				}
+				
+				encryptedFolderDao.deleteFolder(folderToDecrypt);
+				log.debug("database entry deleted");
+				if(rootFile)
+					folderToDecrypt.getParent().removeFolder(folderToDecrypt);
+			}
+		}
 	}
 
 }

@@ -17,9 +17,12 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.viewers.ViewerSorter;
@@ -37,7 +40,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
@@ -53,6 +55,7 @@ import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
+import de.steadycrypt.v2.core.DecryptHandler;
 import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
@@ -67,29 +70,30 @@ import de.steadycrypt.v2.views.ui.ThreeItemFilter;
 public class TreeTableView extends ViewPart implements SideBarListener {
 	
 	private static Logger log = Logger.getLogger(TreeTableView.class);
-	public static String ID = "de.steadycrypt.v2.view.treeTable";
-	
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	protected TreeViewer treeViewer;
-	protected SteadyTreeTableLabelProvider labelProvider;
-
     private ToolBarManager toolBarManager;
-	protected Action atLeatThreeItems;
-	protected Action filesFoldersAction, noArticleAction;
-	protected Action addFileAction, removeAction;
+
     private Action exportSelectionAction;
     private Action expandAllAction;
     private Action collapseAllAction;
     private Action selectAllAction;
+	private Action filesFoldersAction, noArticleAction;
+	private Action addFileAction, removeAction;
+
+	private DecryptHandler decryptHandler = new DecryptHandler();
+	private FileDropHandler fileDropHandler = new FileDropHandler();
+	
+	private EncryptedFolderDao encryptedFolderDao;
+	private EncryptedFileDao encryptedFileDao;
+	private EncryptedFolderDob root;
+	private List<DroppedElement> checkedElements;
+	
+	protected TreeViewer treeViewer;
+	protected SteadyTreeTableLabelProvider labelProvider;
 	protected ViewerFilter atLeastThreeFilter;
 	protected ViewerSorter filesFoldersSorter, noArticleSorter;
-
-
-	EncryptedFolderDao encryptedFolderDao;
-	EncryptedFileDao encryptedFileDao;
-	protected EncryptedFolderDob root;
 	
+	public static String ID = "de.steadycrypt.v2.view.treeTable";
+
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	public TreeTableView() {
@@ -163,6 +167,14 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer.setInput(root);
 		treeViewer.expandToLevel(1);
 		
+		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
+            public void doubleClick(DoubleClickEvent event)
+            {
+                decryptHandler.processData((TreeSelection)event.getSelection());
+	        	treeViewer.refresh();
+            }
+        });
+		
 	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);    
 	        
 	    dropTarget.setTransfer(new Transfer[] {FileTransfer.getInstance() });
@@ -191,7 +203,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	        {
 	        	if (fileTransfer.isSupportedType(event.currentDataType))
 	            {
-	        		FileDropHandler fileDropHandler = new FileDropHandler();
 	        		String[] droppedFileInformation = (String[]) event.data;
 	        		
 	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
@@ -275,18 +286,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	
 	protected void createActions() {
 		
-		atLeatThreeItems = new Action("Folders With At Least Three Items") {
-			public void run() {
-				updateFilter(atLeatThreeItems);
-			}
-		};
-		atLeatThreeItems.setChecked(false);
-		
-		filesFoldersAction = new Action("Files, Folders") {
-			public void run() {
-				updateSorter(filesFoldersAction);
-			}
-		};
 		filesFoldersAction.setChecked(false);
 		
 		noArticleAction = new Action("Ignoring Articles") {
@@ -355,7 +354,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	protected void fillMenu(IMenuManager rootMenuManager) {
 		IMenuManager filterSubmenu = new MenuManager("Filters");
 		rootMenuManager.add(filterSubmenu);
-		filterSubmenu.add(atLeatThreeItems);
 		
 		IMenuManager sortSubmenu = new MenuManager("Sort By");
 		rootMenuManager.add(sortSubmenu);
@@ -381,24 +379,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		}
 			
 	}
-	
-	/* Multiple filters can be enabled at a time. */
-	protected void updateFilter(Action action) {
-		if(action == atLeatThreeItems) {
-			if(action.isChecked()) {
-				treeViewer.addFilter(atLeastThreeFilter);
-			} else {
-				treeViewer.removeFilter(atLeastThreeFilter);
-			}
-		}
-//		else if(action == onlyBoardGamesAction) {
-//			if(action.isChecked()) {
-//				treeViewer.addFilter(onlyBoardGamesFilter);
-//			} else {
-//				treeViewer.removeFilter(onlyBoardGamesFilter);
-//			}
-//		}
-	}
 
 	/*
 	 * @see IWorkbenchPart#setFocus()
@@ -412,12 +392,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	exportSelectionAction = new Action() {
         	public void run()
         	{
-        		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
-        		directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
-        		
-        		String selectedFolder = directoryDialog.open();
-        		log.debug(selectedFolder);
-        		treeViewer.refresh();
+                decryptHandler.processData((TreeSelection)treeViewer.getSelection());
+                treeViewer.refresh();
         	}
         };
         
@@ -474,6 +450,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         selectAllAction.setToolTipText(Messages.TableView_SelectAll_Tooltip);
         selectAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/selectall.gif"));
     }	
+
+    public List<DroppedElement> getCheckedElements()
+    {
+        return this.checkedElements;
+    }
 	
 	public EncryptedFolderDob getInitialInput()
 	{
