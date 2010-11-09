@@ -34,7 +34,16 @@ public class Messages extends NLS
     public static String TableView_SelectAll;
     public static String TableView_SelectAll_Tooltip;
 
-    public static String SideBarView_Search;
+    public static String SideBarView_Filters;
+    public static String SideBarView_NameFilter;
+    public static String SideBarView_TypeFilter;
+    public static String SideBarView_DateFilter;
+    public static String SideBarView_DateFilterFrom;
+    public static String SideBarView_DateFilterTo;
+    public static String SideBarView_SaveFavorite;
+    public static String SideBarView_SaveFavoriteButton;
+    public static String SideBarView_Favorites;
+    public static String SideBarView_DeleteFavorite;
 
     // =========================================================================
 
