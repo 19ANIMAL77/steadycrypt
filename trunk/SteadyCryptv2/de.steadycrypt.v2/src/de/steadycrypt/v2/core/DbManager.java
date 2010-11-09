@@ -118,8 +118,8 @@ public class DbManager {
         sql = new StringBuilder();
 	        sql.append("CREATE TABLE file (");
 	        sql.append("id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),");
-	        sql.append("name VARCHAR(250),");
-	        sql.append("type VARCHAR(30),");
+	        sql.append("name VARCHAR(255),");
+	        sql.append("type VARCHAR(255),");
 	        sql.append("size BIGINT,");
 	        sql.append("encryptiondate DATE,");
 	        sql.append("originalpath LONG VARCHAR,");
@@ -137,6 +137,21 @@ public class DbManager {
 	        sql.append("PRIMARY KEY (STEADYKEY_ID))");
 	    s.execute(sql.toString());
         log.info("Created table KEYS");
+            
+        // Creating table "favorite" which contains the saved filter-favorites
+        sql = new StringBuilder();
+	        sql.append("CREATE TABLE favorite (");
+	        sql.append("id INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),");
+	        sql.append("name VARCHAR(255) NOT NULL,");
+	        sql.append("filename VARCHAR(255),");
+	        sql.append("filetype VARCHAR(255),");
+	        sql.append("fromdate DATE,");
+	        sql.append("todate DATE,");
+	        sql.append("minsize BIGINT,");
+	        sql.append("maxsize BIGINT,");
+	        sql.append("PRIMARY KEY (id))");
+	    s.execute(sql.toString());
+        log.info("Created table FAVORITE");
         DbManager.conn.commit();        
     }
     
