@@ -10,8 +10,10 @@ import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -35,16 +37,17 @@ public class SideBarView extends ViewPart {
 		
 	
 		// First part - Properties for filters
-		GridLayout layout = new GridLayout ();
-		layout.marginLeft = layout.marginTop = layout.marginRight = layout.marginBottom = 5;
-		layout.verticalSpacing = 5;
-		parent.setLayout(layout);
+        Composite filterComposite = new Composite(parent, SWT.BORDER);
+        filterComposite.setLayout(new GridLayout(2, true));
 		
 		// GUI Components
-		Label lblSearch = new Label(parent, SWT.FLAT);
+		Label lblSearch = new Label(filterComposite, SWT.FLAT);
 		lblSearch.setText(Messages.SideBarView_Search);
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		lblSearch.setLayoutData(gridData);
 				
-		final Text txtSearchField = new Text(parent, SWT.BORDER);
+		final Text txtSearchField = new Text(filterComposite, SWT.BORDER);
+		txtSearchField.setLayoutData(gridData);
 		
 		/**
 		 * Refresh the static searchString after every key is
