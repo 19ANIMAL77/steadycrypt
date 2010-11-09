@@ -59,6 +59,7 @@ import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
+import de.steadycrypt.v2.views.ui.DataTypeFilter;
 import de.steadycrypt.v2.views.ui.SearchFilter;
 import de.steadycrypt.v2.views.ui.SteadyTableIdentifier;
 import de.steadycrypt.v2.views.ui.SteadyTreeTableContentProvider;
@@ -87,6 +88,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	protected TreeViewer treeViewer;
 	protected SteadyTreeTableLabelProvider labelProvider;
 	protected ViewerFilter searchFilter;
+	protected DataTypeFilter dataTypeFilter;
 	
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 
@@ -168,6 +170,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
             {
                 decryptHandler.processData((TreeSelection)event.getSelection());
 	        	treeViewer.refresh();
+	        	SideBarView.updateFileTypeFilter();
             }
         });
 		
@@ -213,6 +216,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    			}
 	            }
 	        	treeViewer.refresh();
+	        	SideBarView.updateFileTypeFilter();
 	        }
 	    });
 	    
@@ -254,6 +258,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	 */
 	protected void createFiltersAndSorters() {
 		searchFilter = new SearchFilter();
+		dataTypeFilter = new DataTypeFilter();
 	}
 
 	protected void hookListeners() {
@@ -393,6 +398,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         	{
                 decryptHandler.processData((TreeSelection)treeViewer.getSelection());
                 treeViewer.refresh();
+	        	SideBarView.updateFileTypeFilter();
         	}
         };
         
@@ -502,6 +508,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	 */
 	public void doSearch(){
 		treeViewer.addFilter(searchFilter);
+		treeViewer.addFilter(dataTypeFilter);
 	}
 
 }
