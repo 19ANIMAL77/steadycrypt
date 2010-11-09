@@ -17,10 +17,10 @@ public class SearchFilter extends ViewerFilter {
 
 	public boolean select(Viewer viewer, Object parentElement, Object element){
 		
-		if(element instanceof EncryptedFileDob && ((EncryptedFileDob)element).getName().toUpperCase().contains(SideBarView.searchString.toUpperCase())){
+		if(element instanceof EncryptedFileDob && ((EncryptedFileDob)element).getName().toUpperCase().contains(SideBarView.fileNameFilterString.toUpperCase())){
 			return true;
 		} else if (element instanceof EncryptedFolderDob){
-			return find((DroppedElement) element, SideBarView.searchString);
+			return find((DroppedElement) element, SideBarView.fileNameFilterString.toUpperCase());
 		}
 		
 		return false;
@@ -39,26 +39,26 @@ public class SearchFilter extends ViewerFilter {
 		
 		if(element instanceof EncryptedFileDob)
 		{
-			if ((contents.contains(searchString.toUpperCase()))) 
+			if (contents.contains(searchString)) 
 			{
 				return found = true;
 			}			
 		}
 		else if(element instanceof EncryptedFolderDob)
 		{
-			EncryptedFolderDob folderToDecrypt = (EncryptedFolderDob)element;
+			EncryptedFolderDob folderToCheck = (EncryptedFolderDob)element;
 						
-			for(EncryptedFolderDob nextFolderToDecrypt : folderToDecrypt.getFolders())
+			for(EncryptedFolderDob nextFolderToCheck : folderToCheck.getFolders())
 			{
-				found = found == true ? true : find(nextFolderToDecrypt, searchString);
+				found = found == true ? true : find(nextFolderToCheck, searchString);
 			}
 			
-			for(EncryptedFileDob nextFileToDecrypt : folderToDecrypt.getFiles())
+			for(EncryptedFileDob nextFileToCheck : folderToCheck.getFiles())
 			{
-				found =  found == true ? true : find(nextFileToDecrypt, searchString);
+				found =  found == true ? true : find(nextFileToCheck, searchString);
 			}
 			
-			if ((contents.contains(searchString.toUpperCase()))) 
+			if (contents.contains(searchString)) 
 			{
 				return found = true;
 			}	

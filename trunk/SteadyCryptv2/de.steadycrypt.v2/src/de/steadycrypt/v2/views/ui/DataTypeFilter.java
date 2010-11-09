@@ -8,19 +8,27 @@ package de.steadycrypt.v2.views.ui;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 
+import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
+import de.steadycrypt.v2.views.SideBarView;
 
 public class DataTypeFilter extends ViewerFilter {
 
-	public boolean select(Viewer viewer, Object parentElement, Object element){
-		
-		//TODO: gewählter type aus SideBarView..->
-		if(element instanceof EncryptedFileDob && ((EncryptedFileDob)element).getType().contains("_GEWÄHLTER_TYPE_")){
+	public boolean select(Viewer viewer, Object parentElement, Object element)
+	{
+		if(SideBarView.fileTypeFilterString.equals(Messages.FileTypeFilter_NONE))
+		{
 			return true;
-		} else if (element instanceof EncryptedFolderDob){
-			return find((DroppedElement) element, "_GEWÄHLTER_TYPE_");
+		}
+		else if(element instanceof EncryptedFileDob && ((EncryptedFileDob)element).getType().contains(SideBarView.fileTypeFilterString))
+		{
+			return true;
+		} 
+		else if (element instanceof EncryptedFolderDob)
+		{
+			return find((DroppedElement) element, SideBarView.fileTypeFilterString);
 		}
 		
 		return false;
@@ -38,34 +46,29 @@ public class DataTypeFilter extends ViewerFilter {
 		
 		if(element instanceof EncryptedFileDob)
 		{
-			String contents = ((EncryptedFileDob) element).getType();
-			
-			if ((contents.contains(dataTypeString))) 
+			if ((((EncryptedFileDob) element).getType().contains(dataTypeString))) 
 			{
 				return found = true;
 			}			
 		}
 		else if(element instanceof EncryptedFolderDob)
 		{
-			EncryptedFolderDob folderToDecrypt = (EncryptedFolderDob)element;
+			EncryptedFolderDob folderToCheck = (EncryptedFolderDob)element;
 						
-			for(EncryptedFolderDob nextFolderToDecrypt : folderToDecrypt.getFolders())
+			for(EncryptedFolderDob nextFolderToCheck : folderToCheck.getFolders())
 			{
-				found = found == true ? true : find(nextFolderToDecrypt, dataTypeString);
+				found = found == true ? true : find(nextFolderToCheck, dataTypeString);
 			}
 			
-			for(EncryptedFileDob nextFileToDecrypt : folderToDecrypt.getFiles())
+			for(EncryptedFileDob nextFileToCheck : folderToCheck.getFiles())
 			{
-				found =  found == true ? true : find(nextFileToDecrypt, dataTypeString);
+				found =  found == true ? true : find(nextFileToCheck, dataTypeString);
 			}
 			
-			//TODO: Folder hat kein dataType
-//			if ((contents.contains(searchString.toUpperCase()))) 
-//			{
-//				return found = true;
-//			}
-			return found = true;
-			
+			if ((dataTypeString.equalsIgnoreCase(Messages.FileTypeFilter_FOLDER))) 
+			{
+				return found = true;
+			}
 		}
 		
 		return found;

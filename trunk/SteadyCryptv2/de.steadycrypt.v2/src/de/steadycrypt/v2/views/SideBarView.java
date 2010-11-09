@@ -26,6 +26,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,14 +55,16 @@ import de.steadycrypt.v2.views.model.SideBarListener;
 public class SideBarView extends ViewPart {
 	
 	public static String ID = "de.steadycrypt.v2.view.sideBar";
-	public static String searchString = "";
+	public static String fileNameFilterString = "";
+	public static String fileTypeFilterString = "";
 	
 	private static Logger log = Logger.getLogger(SideBarView.class);
-	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+	private static EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	private FilterFavoriteDao filterFavoriteDao = new FilterFavoriteDao();
     private List<FilterFavoriteDob> favorites;
     private Action deleteFavoriteAction;
     private TableViewer tableViewer;
+    private static Combo comboFileTypes;
 
 	protected static EventListenerList listenerList = new EventListenerList();
 
@@ -101,12 +105,9 @@ public class SideBarView extends ViewPart {
 		lblFileTypes.setText(Messages.SideBarView_TypeFilter);
 		lblFileTypes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
-	    final Combo comboFileTypes = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
+	    comboFileTypes = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 	    comboFileTypes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-	    for(String fileType : encryptedFileDao.getAllFileTypes())
-	    {
-	    	comboFileTypes.add(fileType);
-	    }
+	    updateFileTypeFilter();
 		
 		final Label lblDate = new Label(filterComposite, SWT.FLAT);
 		lblDate.setText(Messages.SideBarView_DateFilter);
@@ -205,9 +206,22 @@ public class SideBarView extends ViewPart {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				searchString = txtSearchField.getText();
+				fileNameFilterString = txtSearchField.getText();
 				fireSideBarEvent();
 			}
+			
+		});
+		
+		comboFileTypes.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				fileTypeFilterString = comboFileTypes.getText();
+				fireSideBarEvent();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) { }
 			
 		});
         
@@ -251,6 +265,18 @@ public class SideBarView extends ViewPart {
         deleteFavoriteAction.setText(Messages.SideBarView_DeleteFavorite);
         deleteFavoriteAction.setToolTipText(Messages.SideBarView_DeleteFavorite);
         deleteFavoriteAction.setImageDescriptor(Activator.getImageDescriptor("icons/favorite-delete.png"));
+	}
+	
+	protected static void updateFileTypeFilter()
+	{
+    	comboFileTypes.removeAll();
+    	comboFileTypes.add(Messages.FileTypeFilter_NONE);
+    	comboFileTypes.add(Messages.FileTypeFilter_FOLDER);
+	    for(String fileType : encryptedFileDao.getAllFileTypes())
+	    {
+	    	comboFileTypes.add(fileType);
+	    }
+	    comboFileTypes.setText(Messages.FileTypeFilter_NONE);
 	}
 
 	@Override

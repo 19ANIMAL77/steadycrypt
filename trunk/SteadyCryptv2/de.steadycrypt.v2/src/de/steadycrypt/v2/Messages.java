@@ -15,8 +15,10 @@ public class Messages extends NLS
     private static final String BUNDLE_NAME = "de.steadycrypt.v2.messages"; //$NON-NLS-1$
 
     // =========================================================================
-    
+
     public static String DATE_FORMAT;
+    public static String FileTypeFilter_FOLDER;
+    public static String FileTypeFilter_NONE;
 
     public static String CryptedFilesTableIdentifier_NAME;
     public static String CryptedFilesTableIdentifier_TYPE;
