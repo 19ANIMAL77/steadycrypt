@@ -297,9 +297,9 @@ public class SideBarView extends ViewPart {
         	{	
 				FilterFavoriteDob filter = (FilterFavoriteDob)((StructuredSelection)tableViewer.getSelection()).getFirstElement();
 				txtSearchField.setText(filter.getFilename() == null ? "" : filter.getFilename());
-				fileNameFilterString=filter.getFilename() == null ? "" : filter.getFilename();
+				fileNameFilterString = txtSearchField.getText();
 				comboFileTypes.setText(filter.getFiletype() == null ? Messages.FileTypeFilter_NONE : filter.getFiletype());
-				fileTypeFilterString = filter.getFiletype() == null ? Messages.FileTypeFilter_NONE : filter.getFiletype();
+				fileTypeFilterString = comboFileTypes.getText();
 				txtSaveFavorite.setText(filter.getName());
         	}
         };
