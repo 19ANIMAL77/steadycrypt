@@ -10,17 +10,18 @@ import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Messages;
+import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
 
 public class SideBarView extends ViewPart {
@@ -29,6 +30,7 @@ public class SideBarView extends ViewPart {
 	public static String searchString = "";
 	
 	private static Logger log = Logger.getLogger(SideBarView.class);
+	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 
 	protected static EventListenerList listenerList = new EventListenerList();
 
@@ -48,6 +50,17 @@ public class SideBarView extends ViewPart {
 				
 		final Text txtSearchField = new Text(filterComposite, SWT.BORDER);
 		txtSearchField.setLayoutData(gridData);
+		
+		Label lblFileTypes = new Label(filterComposite, SWT.FLAT);
+		lblFileTypes.setText(Messages.SideBarView_Search);
+		lblFileTypes.setLayoutData(gridData);
+
+	    final Combo comboFileTypes = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER  |SWT.READ_ONLY);
+	    comboFileTypes.setLayoutData(gridData);
+	    for(String fileType : encryptedFileDao.getAllFileTypes())
+	    {
+	    	comboFileTypes.add(fileType);
+	    }
 		
 		/**
 		 * Refresh the static searchString after every key is

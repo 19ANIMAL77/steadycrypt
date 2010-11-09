@@ -27,6 +27,7 @@ public class EncryptedFileDao {
 	private final String SELECT_FILE_FOR_FOLDER = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file WHERE containingfolderid=";
 	private final String SELECT_ROOT_FILES = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file WHERE containingfolderid=0  ORDER BY name DESC";
 	private final String DELETE_FILE = "DELETE FROM file WHERE id=?";
+	private final String SELECT_FILE_TYPES = "SELECT DISTINCT type FROM file ORDER BY type";
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
@@ -262,6 +263,28 @@ public class EncryptedFileDao {
 		}
 		
 		return successful;
+	}
+	
+	public List<String> getAllFileTypes()
+	{
+		List<String> fileTypes = new ArrayList<String>();
+		try
+		{
+			Connection connection = DbManager.getConnection();
+			Statement stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery(SELECT_FILE_TYPES);
+			
+			while(rs.next())
+			{
+				fileTypes.add(rs.getString("type"));
+			}
+		}
+		catch (SQLException e)
+		{
+			DbManager.printSQLException(e);
+		}
+		
+		return fileTypes;		
 	}
 
 }
