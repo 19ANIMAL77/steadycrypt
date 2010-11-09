@@ -226,10 +226,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         exportFilesButton.setLayoutData(gridData);
         
         exportFilesButton.addSelectionListener(new SelectionListener() {
-			
 			@Override
-			public void widgetSelected(SelectionEvent e)
-			{
+			public void widgetSelected(SelectionEvent e) {
 				exportSelectionAction.run();			
 			}
 			

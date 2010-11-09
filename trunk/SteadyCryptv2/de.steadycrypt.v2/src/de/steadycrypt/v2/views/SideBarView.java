@@ -12,14 +12,20 @@ import java.util.List;
 import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -47,11 +53,13 @@ import org.eclipse.ui.part.ViewPart;
 
 import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
+import de.steadycrypt.v2.bob.FilterFavorite;
 import de.steadycrypt.v2.bob.dob.FilterFavoriteDob;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.FilterFavoriteDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
 
+@SuppressWarnings("unused")
 public class SideBarView extends ViewPart {
 	
 	public static String ID = "de.steadycrypt.v2.view.sideBar";
@@ -62,9 +70,13 @@ public class SideBarView extends ViewPart {
 	private static EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	private FilterFavoriteDao filterFavoriteDao = new FilterFavoriteDao();
     private List<FilterFavoriteDob> favorites;
+    private Action saveFavoriteAction;
+    private Action loadFavoriteAction;
     private Action deleteFavoriteAction;
     private TableViewer tableViewer;
+    private Text txtSearchField;
     private static Combo comboFileTypes;
+    private Text txtSaveFavorite;
 
 	protected static EventListenerList listenerList = new EventListenerList();
 
@@ -98,7 +110,7 @@ public class SideBarView extends ViewPart {
 		lblFileName.setText(Messages.SideBarView_NameFilter);
 		lblFileName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 				
-		final Text txtSearchField = new Text(filterComposite, SWT.BORDER);
+		this.txtSearchField = new Text(filterComposite, SWT.BORDER);
 		txtSearchField.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		
 		final Label lblFileTypes = new Label(filterComposite, SWT.FLAT);
@@ -130,7 +142,7 @@ public class SideBarView extends ViewPart {
 		lblSaveFavorite.setText(Messages.SideBarView_SaveFavorite);
 		lblSaveFavorite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 				
-		final Text txtSaveFavorite = new Text(filterComposite, SWT.BORDER);
+		this.txtSaveFavorite = new Text(filterComposite, SWT.BORDER);
 		txtSaveFavorite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		
 		final Button saveButton = new Button(filterComposite, SWT.FLAT);
@@ -195,9 +207,9 @@ public class SideBarView extends ViewPart {
         tableViewer.setInput(favorites.toArray());
 		
 		/**
-		 * Refresh the static searchString after every key is
-		 * released and inform TreeTableView about the change
-		 * via fireSideBarEvent.
+		 * Refresh the static fileNameFilterString every time a key is
+		 * released and inform TreeTableView about the change via
+		 * fireSideBarEvent.
 		 */
 		txtSearchField.addKeyListener(new KeyListener() {
 
@@ -212,8 +224,12 @@ public class SideBarView extends ViewPart {
 			
 		});
 		
+		/**
+		 * Refresh the static fileTypeFilterString every time the selection
+		 * of the comboFileTypes changes and inform TreeTableView about the
+		 * change via fireSideBarEvent.
+		 */
 		comboFileTypes.addSelectionListener(new SelectionListener() {
-
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				fileTypeFilterString = comboFileTypes.getText();
@@ -222,7 +238,16 @@ public class SideBarView extends ViewPart {
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) { }
-			
+		});
+		
+		saveButton.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				saveFavoriteAction.run();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) { }
 		});
         
         MenuManager popupMenuManager = new MenuManager("PopupMenu");
@@ -238,27 +263,69 @@ public class SideBarView extends ViewPart {
         Menu menu = popupMenuManager.createContextMenu(table);
         table.setMenu(menu);
 		
+		tableViewer.addDoubleClickListener(new IDoubleClickListener(){
+            public void doubleClick(DoubleClickEvent event)
+            {
+                loadFavoriteAction.run();
+                fireSideBarEvent();
+            }
+        });
+		
 	}
 	
 	private void makeActions()
 	{
+    	saveFavoriteAction = new Action() {
+            
+			public void run()
+        	{	
+				if(!(txtSaveFavorite.getText().length() > 0))
+				{
+					MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Missing", "Favorit Name");
+				}
+				else
+				{
+					favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(txtSaveFavorite.getText(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.FileTypeFilter_NONE) ? null : comboFileTypes.getText(), null, null, 0l, 0l)));
+					tableViewer.refresh();
+				}
+        	}
+        };
+        
+    	loadFavoriteAction = new Action() {
+            
+			public void run()
+        	{	
+				FilterFavoriteDob filter = (FilterFavoriteDob)((StructuredSelection)tableViewer.getSelection()).getFirstElement();
+				txtSearchField.setText(filter.getFilename() == null ? "" : filter.getFilename());
+				fileNameFilterString=filter.getFilename() == null ? "" : filter.getFilename();
+				comboFileTypes.setText(filter.getFiletype() == null ? Messages.FileTypeFilter_NONE : filter.getFiletype());
+				fileTypeFilterString = filter.getFiletype() == null ? Messages.FileTypeFilter_NONE : filter.getFiletype();
+				txtSaveFavorite.setText(filter.getName());
+        	}
+        };
+        
     	deleteFavoriteAction = new Action() {
             @SuppressWarnings("rawtypes")
 			public void run()
         	{
                 try
                 {
-                	TreeSelection ts = (TreeSelection)tableViewer.getSelection();
-					Iterator iterator = ts.iterator();
+                	StructuredSelection selection = (StructuredSelection)tableViewer.getSelection();
+					Iterator iterator = selection.iterator();
 	                while(iterator.hasNext())
 	                {
 	                	Object nextElement = iterator.next();
-	                	if(nextElement instanceof FilterFavoriteDob)
-	                		filterFavoriteDao.deleteFavorite((FilterFavoriteDob)iterator.next());
+	                	if(nextElement instanceof FilterFavoriteDob) {
+	                		filterFavoriteDao.deleteFavorite((FilterFavoriteDob)nextElement);
+	                		favorites.remove((FilterFavoriteDob)nextElement);
+	                	}
 	                }
 	                tableViewer.refresh();
                 }
-                catch(ClassCastException e) { }
+                catch(ClassCastException e) {
+                	log.error(e.getMessage());
+                	e.printStackTrace();
+                }
         	}
         };
         
