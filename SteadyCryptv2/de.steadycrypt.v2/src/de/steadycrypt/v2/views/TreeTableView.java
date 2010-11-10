@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -28,17 +29,24 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
@@ -53,6 +61,8 @@ import org.eclipse.ui.part.ViewPart;
 import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
+import de.steadycrypt.v2.bob.EncryptedFile;
+import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.DecryptHandler;
 import de.steadycrypt.v2.core.FileDropHandler;
@@ -130,7 +140,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);		
 		
 		// Anpassungen für TreeTable
-		Tree tree = this.treeViewer.getTree();
+		final Tree tree = this.treeViewer.getTree();
 		
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		this.treeViewer.getControl().setLayoutData(gridData);
@@ -174,7 +184,40 @@ public class TreeTableView extends ViewPart implements SideBarListener {
             }
         });
 		
-	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);    
+		// Drag part starts -------
+		// TODO: new
+		int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
+		
+		final DragSource source = new DragSource (tree, operations);
+		source.setTransfer(new Transfer[] {TextTransfer.getInstance()});
+		final DroppedElement[] dragSourceItem = new DroppedElement[1];
+		source.addDragListener (new DragSourceListener () 
+		{
+			public void dragStart(DragSourceEvent event) 
+			{
+				TreeItem[] selection = tree.getSelection();
+				if (selection.length > 0 && selection[0].getItemCount() == 0) 
+				{
+					event.doit = true;
+					dragSourceItem[0] = (DroppedElement) selection[0].getData();
+				} else {
+					event.doit = false;
+				}
+			};
+			public void dragSetData (DragSourceEvent event) 
+			{
+				event.data = dragSourceItem[0];
+			}
+			public void dragFinished(DragSourceEvent event) 
+			{
+				if (event.detail == DND.DROP_MOVE)
+					((IContributionItem) dragSourceItem[0]).dispose();
+					dragSourceItem[0] = null;
+			}
+		});
+		
+		// Drop part starts -------
+	    DropTarget dropTarget = new DropTarget(tree, operations);    
 	        
 	    dropTarget.setTransfer(new Transfer[] {FileTransfer.getInstance() });
 	    dropTarget.addDropListener(new DropTargetAdapter()
@@ -195,13 +238,29 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	 
 	        public void dragOver(DropTargetEvent event)
 	        {
-	        	
+	        	// TODO: null pointer wegen dem cast bei Rectangle bounds.
+//				DroppedElement item = (DroppedElement)event.data;
+//				Point pt = PlatformUI.getWorkbench().getDisplay().map(null, tree, event.x, event.y);
+//				Rectangle bounds = ((TreeItem) event.item).getBounds();
+//				if (pt.y < bounds.y + bounds.height/3) 
+//				{
+//					event.feedback |= DND.FEEDBACK_INSERT_BEFORE;
+//				} 
+//				else if (pt.y > bounds.y + 2*bounds.height/3) 
+//				{
+					event.feedback |= DND.FEEDBACK_INSERT_AFTER;
+//				} 
+//				else 
+//				{
+//					event.feedback |= DND.FEEDBACK_SELECT;
+//				}
 	        }	      
 	      
 	        public void drop(DropTargetEvent event)
 	        {
 	        	if (fileTransfer.isSupportedType(event.currentDataType))
 	            {
+	        		// Von extern Datei droppen
 	        		String[] droppedFileInformation = (String[]) event.data;
 	        		
 	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
@@ -215,6 +274,86 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    				
 	    			}
 	            }
+	        	else
+	        	{
+	        		// TODO:
+	        		// Intern Drag'n'Drop
+	        		DroppedElement item = null;
+	        		boolean folder = false;
+	        		if(event.data instanceof EncryptedFileDob)
+	        		{
+	        			folder = false;
+	        			item = (EncryptedFileDob)event.data;
+	        		}
+	        		else if (event.data instanceof EncryptedFolderDob)
+	        		{
+	        			folder = true;
+	        			item = (EncryptedFolderDob)event.data;
+	        		}
+
+					Point pt = PlatformUI.getWorkbench().getDisplay().map(null, tree, event.x, event.y);
+					Rectangle bounds = ((TreeItem) event.item).getBounds();
+					EncryptedFolderDob parent = item.getParent();
+					if (parent != null) 
+					{
+						List<EncryptedFolderDob> items = parent.getFolders();
+						int index = 0;
+						for (int i = 0; i < items.size(); i++) 
+						{
+							if (items.get(i) == item) 
+							{
+								index = i;
+								break;
+							}
+						}
+						if (pt.y < bounds.y + bounds.height/3) 
+						{
+							if(!folder)
+							{
+								// TODO: null pointer, no parent
+//								EncryptedFileDob newItem = (EncryptedFileDob) item;
+//								parent.addFile(newItem);
+							}
+							else
+							{
+								EncryptedFolderDob newItem = (EncryptedFolderDob) item;
+								parent.addFolder(newItem);
+							}
+						} 
+						else if (pt.y > bounds.y + 2*bounds.height/3) 
+						{
+							if(!folder)
+							{
+								// TODO: null pointer, no parent
+//								EncryptedFileDob newItem = (EncryptedFileDob) item;
+//								parent.addFile(newItem);
+							}
+							else
+							{
+								//TODO: null pointer, no parent
+//								EncryptedFolderDob newItem = (EncryptedFolderDob) item;
+//								parent.addFolder(newItem);
+							}						
+						} 
+						else 
+						{
+							if(!folder)
+							{
+								EncryptedFileDob newItem = (EncryptedFileDob) item;
+								parent.addFile(newItem);
+							}
+							else
+							{
+								EncryptedFolderDob newItem = (EncryptedFolderDob) item;
+								parent.addFolder(newItem);
+							}						
+						}
+					} 
+					else 
+					{
+						log.debug("Darf nie passieren wegen root Folder.");
+					}
+	        	}
 	        	treeViewer.refresh();
 	        	SideBarView.updateFileTypeFilter();
 	        }
