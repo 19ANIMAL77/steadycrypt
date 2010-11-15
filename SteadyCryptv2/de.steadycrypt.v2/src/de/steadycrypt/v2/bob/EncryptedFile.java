@@ -98,9 +98,10 @@ public class EncryptedFile extends DroppedElement {
 	{
 		String ext = (this.name.lastIndexOf(".")==-1)?"":this.name.substring(this.name.lastIndexOf(".")+1,this.name.length());
 
-		String fileType = ext+"-File";
-		
-		return fileType;
+//		String fileType = ext+"-File";
+//
+//		return fileType;
+		return ext;
 	}
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

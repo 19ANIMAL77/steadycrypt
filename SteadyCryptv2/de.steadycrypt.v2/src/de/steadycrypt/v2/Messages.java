@@ -17,8 +17,15 @@ public class Messages extends NLS
     // =========================================================================
 
     public static String DATE_FORMAT;
+	public static String FILE;
+	
+    public static String Filter_NONE;
+	
     public static String FileTypeFilter_FOLDER;
-    public static String FileTypeFilter_NONE;
+	
+    public static String EncryptionDateFilter_WEEK;
+    public static String EncryptionDateFilter_MONTH;
+    public static String EncryptionDateFilter_YEAR;
 
     public static String CryptedFilesTableIdentifier_NAME;
     public static String CryptedFilesTableIdentifier_TYPE;

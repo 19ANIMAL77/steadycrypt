@@ -99,11 +99,30 @@ public class Crypter
 		if(outputFile.exists())
 		{
 			int i = 1;
-			outputFile = new File(parentPath+"/"+i+"_"+currentFile.getName());
+			
+			StringBuilder filename = new StringBuilder();
+			filename.append(parentPath);
+			filename.append("/");
+			filename.append(currentFile.getName().substring(0,currentFile.getName().lastIndexOf(".")));
+			filename.append(" ");
+			filename.append(i);
+			filename.append(".");
+			filename.append(currentFile.getType());
+			
+			outputFile = new File(filename.toString());
 			while(outputFile.exists())
 			{
 				i++;
-				outputFile = new File(parentPath+"/"+i+"_"+currentFile.getName());
+				filename = new StringBuilder();
+				filename.append(parentPath);
+				filename.append("/");
+				filename.append(currentFile.getName().substring(0,currentFile.getName().lastIndexOf(".")));
+				filename.append(" ");
+				filename.append(i);
+				filename.append(".");
+				filename.append(currentFile.getType());
+				
+				outputFile = new File(filename.toString());
 			}
 		}
 		
