@@ -15,5 +15,5 @@ public enum SteadyTableIdentifier {
 	private SteadyTableIdentifier(int width)
 	{
 		this.columnWidth = width;
-	}	
+	}
 }

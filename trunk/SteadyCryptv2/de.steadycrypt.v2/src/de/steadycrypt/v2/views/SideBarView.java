@@ -76,6 +76,7 @@ public class SideBarView extends ViewPart {
     private TableViewer tableViewer;
     private Text txtSearchField;
     private static Combo comboFileTypes;
+    private static Combo comboEncryptionDate;
     private Text txtSaveFavorite;
 
 	protected static EventListenerList listenerList = new EventListenerList();
@@ -124,14 +125,10 @@ public class SideBarView extends ViewPart {
 		final Label lblDate = new Label(filterComposite, SWT.FLAT);
 		lblDate.setText(Messages.SideBarView_DateFilter);
 		lblDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		
-		final Label lblDateFrom = new Label(filterComposite, SWT.FLAT);
-		lblDateFrom.setText(Messages.SideBarView_DateFilterFrom);
-		lblDateFrom.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		
-		final Label lblDateTo = new Label(filterComposite, SWT.FLAT);
-		lblDateTo.setText(Messages.SideBarView_DateFilterTo);
-		lblDateTo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+
+		comboEncryptionDate = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
+		comboEncryptionDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		updateEncryptionDateFilter();
 
 		// Save Filter Part
 		
@@ -205,6 +202,27 @@ public class SideBarView extends ViewPart {
         });
         
         tableViewer.setInput(favorites.toArray());
+        
+        MenuManager popupMenuManager = new MenuManager("PopupMenu");
+        IMenuListener listener = new IMenuListener() { 
+        public void menuAboutToShow(IMenuManager manager) { 
+            manager.add(deleteFavoriteAction); 
+            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
+            } 
+        }; 
+        popupMenuManager.addMenuListener(listener); 
+        popupMenuManager.setRemoveAllWhenShown(true); 
+        getSite().registerContextMenu(popupMenuManager, getSite().getSelectionProvider());
+        Menu menu = popupMenuManager.createContextMenu(table);
+        table.setMenu(menu);
+		
+		tableViewer.addDoubleClickListener(new IDoubleClickListener(){
+            public void doubleClick(DoubleClickEvent event)
+            {
+                loadFavoriteAction.run();
+                fireSideBarEvent();
+            }
+        });
 		
 		/**
 		 * Refresh the static fileNameFilterString every time a key is
@@ -249,27 +267,6 @@ public class SideBarView extends ViewPart {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) { }
 		});
-        
-        MenuManager popupMenuManager = new MenuManager("PopupMenu");
-        IMenuListener listener = new IMenuListener() { 
-        public void menuAboutToShow(IMenuManager manager) { 
-            manager.add(deleteFavoriteAction); 
-            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
-            } 
-        }; 
-        popupMenuManager.addMenuListener(listener); 
-        popupMenuManager.setRemoveAllWhenShown(true); 
-        getSite().registerContextMenu(popupMenuManager, getSite().getSelectionProvider());
-        Menu menu = popupMenuManager.createContextMenu(table);
-        table.setMenu(menu);
-		
-		tableViewer.addDoubleClickListener(new IDoubleClickListener(){
-            public void doubleClick(DoubleClickEvent event)
-            {
-                loadFavoriteAction.run();
-                fireSideBarEvent();
-            }
-        });
 		
 	}
 	
@@ -285,7 +282,7 @@ public class SideBarView extends ViewPart {
 				}
 				else
 				{
-					favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(txtSaveFavorite.getText(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.FileTypeFilter_NONE) ? null : comboFileTypes.getText(), null, null, 0l, 0l)));
+					favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(txtSaveFavorite.getText(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText(), null, null, 0l, 0l)));
 					tableViewer.refresh();
 				}
         	}
@@ -298,7 +295,7 @@ public class SideBarView extends ViewPart {
 				FilterFavoriteDob filter = (FilterFavoriteDob)((StructuredSelection)tableViewer.getSelection()).getFirstElement();
 				txtSearchField.setText(filter.getFilename() == null ? "" : filter.getFilename());
 				fileNameFilterString = txtSearchField.getText();
-				comboFileTypes.setText(filter.getFiletype() == null ? Messages.FileTypeFilter_NONE : filter.getFiletype());
+				comboFileTypes.setText(filter.getFiletype() == null ? Messages.Filter_NONE : filter.getFiletype());
 				fileTypeFilterString = comboFileTypes.getText();
 				txtSaveFavorite.setText(filter.getName());
         	}
@@ -337,13 +334,24 @@ public class SideBarView extends ViewPart {
 	protected static void updateFileTypeFilter()
 	{
     	comboFileTypes.removeAll();
-    	comboFileTypes.add(Messages.FileTypeFilter_NONE);
+    	comboFileTypes.add(Messages.Filter_NONE);
     	comboFileTypes.add(Messages.FileTypeFilter_FOLDER);
 	    for(String fileType : encryptedFileDao.getAllFileTypes())
 	    {
 	    	comboFileTypes.add(fileType);
 	    }
-	    comboFileTypes.setText(Messages.FileTypeFilter_NONE);
+	    comboFileTypes.setText(Messages.Filter_NONE);
+	}
+	
+	protected static void updateEncryptionDateFilter()
+	{
+		comboEncryptionDate.removeAll();
+		comboEncryptionDate.add(Messages.Filter_NONE);
+		comboEncryptionDate.add(Messages.EncryptionDateFilter_WEEK);
+		comboEncryptionDate.add(Messages.EncryptionDateFilter_MONTH);
+		comboEncryptionDate.add(Messages.EncryptionDateFilter_YEAR);
+
+		comboEncryptionDate.setText(Messages.Filter_NONE);
 	}
 
 	@Override

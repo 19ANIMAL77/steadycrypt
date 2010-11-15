@@ -18,7 +18,7 @@ public class DataTypeFilter extends ViewerFilter {
 
 	public boolean select(Viewer viewer, Object parentElement, Object element)
 	{
-		if(SideBarView.fileTypeFilterString.equals(Messages.FileTypeFilter_NONE))
+		if(SideBarView.fileTypeFilterString.equals(Messages.Filter_NONE))
 		{
 			return true;
 		}

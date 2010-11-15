@@ -48,7 +48,7 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	                text = size.compareTo(new BigDecimal(1000)) > 0 ? size.divide(new BigDecimal(1024)).setScale(2,BigDecimal.ROUND_HALF_UP).toString() +" MB" : size.setScale(0,BigDecimal.ROUND_HALF_UP).toString() + " KB";
 	                break;
 	            case TYPE:
-	                text = ((EncryptedFileDob)element).getType();
+	                text = ((EncryptedFileDob)element).getType() + Messages.FILE;
 	                break;
 	                
 	            default:
@@ -98,7 +98,7 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 			else if(element instanceof EncryptedFileDob)
 			{
 				fileType = ((EncryptedFileDob) element).getType();
-				fileType = fileType.substring(0, fileType.lastIndexOf("-"));
+//				fileType = fileType.substring(0, fileType.lastIndexOf("-"));
 				
 				try
 				{
