@@ -30,11 +30,8 @@ import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
@@ -85,6 +82,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	private EncryptedFolderDob root;
 	private List<DroppedElement> checkedElements;
 	
+	private Tree tree;
 	private TreeViewer treeViewer;
 	private ViewerFilter searchFilter;
 	private DataTypeFilter dataTypeFilter;
@@ -131,7 +129,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);		
 		
 		// Anpassungen für TreeTable
-		Tree tree = treeViewer.getTree();
+		tree = treeViewer.getTree();
 		
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		treeViewer.getControl().setLayoutData(gridData);
@@ -166,15 +164,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer.setInput(root);
 		treeViewer.expandToLevel(1);
 		
-		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
-            public void doubleClick(DoubleClickEvent event)
-            {
-                decryptHandler.processData((TreeSelection)event.getSelection());
-	        	treeViewer.refresh();
-	        	SideBarView.updateFileTypeFilter();
-            }
-        });
-		
 		// Drag-Part //////////////////////////////////////////////////////////
 		DragSource source = new DragSource(tree, DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK);
 	    // TODO: welchen TransferType muss man wählen?
@@ -187,46 +176,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    dropTarget.setTransfer(new Transfer[] {TextTransfer.getInstance(), FileTransfer.getInstance()});
 	    dropTarget.addDropListener(new TreeDropTargetAdapter(tree, treeViewer));
 
-	    
-	    final Button exportFilesButton = new Button(content, SWT.FLAT);
-	    exportFilesButton.setText(Messages.TableView_ExportFile);
-        gridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
-        exportFilesButton.setLayoutData(gridData);
-        
-        exportFilesButton.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				exportSelectionAction.run();			
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) { }
-		});
-        
-        MenuManager popupMenuManager = new MenuManager("PopupMenu");
-        IMenuListener listener = new IMenuListener() { 
-        public void menuAboutToShow(IMenuManager manager) { 
-            manager.add(exportSelectionAction); 
-            manager.add(deleteSelectionAction); 
-            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
-            } 
-        }; 
-        popupMenuManager.addMenuListener(listener); 
-        popupMenuManager.setRemoveAllWhenShown(true); 
-        getSite().registerContextMenu(popupMenuManager, getSite().getSelectionProvider());
-        Menu menu = popupMenuManager.createContextMenu(tree);
-        tree.setMenu(menu);
-        
+	    addListeners();
+        createContextMenu();
         createFiltersAndSorters();
-	}
-	
-	/**
-	 * Instantiate all Filters needed.
-	 */
-	private void createFiltersAndSorters() {
-		searchFilter = new SearchFilter();
-		dataTypeFilter = new DataTypeFilter();
-		encryptionDateFilter = new EncryptionDateFilter();
 	}
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -260,7 +212,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         
         deleteSelectionAction.setText(Messages.TableView_DeleteFile);
         deleteSelectionAction.setToolTipText(Messages.TableView_DeleteFile_Tooltip);
-        deleteSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL));
+        deleteSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE));
         
         expandAllAction = new Action() {
         	public void run()
@@ -310,7 +262,45 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         selectAllAction.setText(Messages.TableView_SelectAll);
         selectAllAction.setToolTipText(Messages.TableView_SelectAll_Tooltip);
         selectAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/selectall.gif"));
-    }	
+    }
+    
+    private void addListeners()
+    {	
+		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
+            public void doubleClick(DoubleClickEvent event)
+            {
+                decryptHandler.processData((TreeSelection)event.getSelection());
+	        	treeViewer.refresh();
+	        	SideBarView.updateFileTypeFilter();
+            }
+        });
+    }
+    
+    private void createContextMenu()
+    {
+        MenuManager popupMenuManager = new MenuManager("PopupMenu");
+        IMenuListener listener = new IMenuListener() { 
+        public void menuAboutToShow(IMenuManager manager) { 
+            manager.add(exportSelectionAction); 
+            manager.add(deleteSelectionAction); 
+            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
+            } 
+        }; 
+        popupMenuManager.addMenuListener(listener); 
+        popupMenuManager.setRemoveAllWhenShown(true); 
+        getSite().registerContextMenu(popupMenuManager, getSite().getSelectionProvider());
+        Menu menu = popupMenuManager.createContextMenu(tree);
+        tree.setMenu(menu);
+    }
+	
+	/**
+	 * Instantiate all Filters needed.
+	 */
+	private void createFiltersAndSorters() {
+		searchFilter = new SearchFilter();
+		dataTypeFilter = new DataTypeFilter();
+		encryptionDateFilter = new EncryptionDateFilter();
+	}
 
     public List<DroppedElement> getCheckedElements()
     {
