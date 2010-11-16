@@ -25,7 +25,7 @@ import de.steadycrypt.v2.dao.EncryptedFolderDao;
 
 public class DecryptHandler {
 	
-	private static Logger log = Logger.getLogger(DbManager.class);
+	private static Logger log = Logger.getLogger(DecryptHandler.class);
 	
 	private KeyManager keyman;
 	private Crypter crypter;
@@ -96,19 +96,16 @@ public class DecryptHandler {
 			boolean success = newSubDestination.exists();
 			if(!success)
 				success = newSubDestination.mkdir();
-			System.out.println(newSubDestination.getPath());
 			
 			if(success)
 			{
 				for(EncryptedFolderDob nextFolderToDecrypt : folderToDecrypt.getFolders())
 				{
-					System.out.println("more folders");
 					browseFolders(nextFolderToDecrypt, newSubDestination.getPath(), false);
 				}
 				
 				for(EncryptedFileDob nextFileToDecrypt : folderToDecrypt.getFiles())
 				{
-					System.out.println("more files");
 					browseFolders(nextFileToDecrypt, newSubDestination.getPath(), false);
 				}
 				

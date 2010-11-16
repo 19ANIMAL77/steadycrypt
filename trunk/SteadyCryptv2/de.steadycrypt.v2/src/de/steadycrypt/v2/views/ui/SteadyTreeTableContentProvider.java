@@ -8,7 +8,6 @@ package de.steadycrypt.v2.views.ui;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -18,10 +17,9 @@ import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.views.model.DeltaEvent;
 import de.steadycrypt.v2.views.model.IDeltaListener;
 
-@SuppressWarnings({"rawtypes", "unused"})
+@SuppressWarnings("rawtypes")
 public class SteadyTreeTableContentProvider implements ITreeContentProvider, IDeltaListener {
 	
-	private static Logger log = Logger.getLogger(SteadyTreeTableContentProvider.class);
 	private static Object[] EMPTY_ARRAY = new Object[0];
 	protected TreeViewer viewer;
 
