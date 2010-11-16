@@ -22,9 +22,9 @@ public class EncryptedFolderDao {
 
 	private final String INSERT_FOLDER = "INSERT INTO folder (name, encryptiondate, originalpath, containingfolderid) VALUES (?, ?, ?, ?)";
 	private final String UPDATE_FOLDER = "UPDATE folder SET name=?, encryptiondate=?, originalpath=?, containingfolderid=? WHERE id=?";
-	private final String SELECT_FOLDER = "SELECT id, name, encryptiondate, originalpath FROM folder ORDER BY name DESC";
+	private final String SELECT_FOLDER = "SELECT id, name, encryptiondate, originalpath FROM folder ORDER BY name";
 	private final String SELECT_FOLDER_FOR_FOLDER = "SELECT id, name, encryptiondate, originalpath FROM folder WHERE containingfolderid=";
-	private final String SELECT_ROOT_FOLDERS = "SELECT id, name, encryptiondate, originalpath FROM folder WHERE containingfolderid=0  ORDER BY name DESC";
+	private final String SELECT_ROOT_FOLDERS = "SELECT id, name, encryptiondate, originalpath FROM folder WHERE containingfolderid=0  ORDER BY name";
 	private final String DELETE_FOLDER = "DELETE FROM folder WHERE id=?";
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,7 +61,7 @@ public class EncryptedFolderDao {
 			StringBuilder sql = new StringBuilder();
 			sql.append(SELECT_FOLDER_FOR_FOLDER);
 			sql.append(folder.getId());
-			sql.append(" ORDER BY name DESC");
+			sql.append(" ORDER BY name");
 			ResultSet rs = stmt.executeQuery(sql.toString());
 			
 			while(rs.next())
