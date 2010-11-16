@@ -6,8 +6,6 @@
 
 package de.steadycrypt.v2.bob.dob;
 
-import java.sql.Date;
-
 import de.steadycrypt.v2.bob.FilterFavorite;
 
 public class FilterFavoriteDob extends FilterFavorite {
@@ -18,14 +16,13 @@ public class FilterFavoriteDob extends FilterFavorite {
 	
 	public FilterFavoriteDob(int id, FilterFavorite filterfavorite)
 	{
-		super(filterfavorite.getName(), filterfavorite.getFilename(), filterfavorite.getFiletype(), filterfavorite.getFromDate(),
-				filterfavorite.getToDate(), filterfavorite.getMinSize(), filterfavorite.getMaxSize());
+		super(filterfavorite.getName(), filterfavorite.getFilename(), filterfavorite.getFiletype(), filterfavorite.getEncryptionPeriod());
 		this.id = id;
 	}
 	
-	public FilterFavoriteDob(int id, String name, String fileName, String fileType, Date fromDate, Date toDate, Long minSize, Long maxSize)
+	public FilterFavoriteDob(int id, String name, String fileName, String fileType, String encryptionPeriod)
 	{
-		super(name, fileName, fileType, fromDate, toDate, minSize, maxSize);
+		super(name, fileName, fileType, encryptionPeriod);
 		this.id = id;
 	}
 

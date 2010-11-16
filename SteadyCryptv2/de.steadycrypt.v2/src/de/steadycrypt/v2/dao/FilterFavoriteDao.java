@@ -20,10 +20,11 @@ import de.steadycrypt.v2.core.DbManager;
 
 public class FilterFavoriteDao {
 
-	private final String INSERT_FAVORITE = "INSERT INTO favorite (name, filename, filetype, fromdate, todate, minsize, maxsize) VALUES (?, ?, ?, ?, ?, ?, ?)";
-	private final String UPDATE_FAVORITE = "UPDATE favorite SET name=?, filename=?, filetype=?, fromdate=?, todate=?, minsize=?, maxsize=? WHERE id=?";
-	private final String SELECT_FAVORITE = "SELECT id, name, filename, filetype, fromdate, todate, minsize, maxsize FROM favorite ORDER BY id";
+	private final String INSERT_FAVORITE = "INSERT INTO favorite (name, filename, filetype, encryptionperiod) VALUES (?, ?, ?, ?)";
+	private final String UPDATE_FAVORITE = "UPDATE favorite SET name=?, filename=?, filetype=?, encryptionperiod=? WHERE id=?";
+	private final String SELECT_FAVORITE = "SELECT id, name, filename, filetype, encryptionperiod FROM favorite ORDER BY id";
 	private final String DELETE_FAVORITE = "DELETE FROM favorite WHERE id=?";
+	private final String CHECK_FAVORITE = "SELECT id, name, filename, filetype, encryptionperiod FROM favorite WHERE name LIKE ?";
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
@@ -38,8 +39,7 @@ public class FilterFavoriteDao {
 			
 			while(rs.next())
 			{
-				favorites.add(new FilterFavoriteDob(rs.getInt("id"), rs.getString("name"), rs.getString("filename"), rs.getString("filetype"), rs.getDate("fromdate"),
-						rs.getDate("todate"), rs.getLong("minsize"), rs.getLong("maxsize")));
+				favorites.add(new FilterFavoriteDob(rs.getInt("id"), rs.getString("name"), rs.getString("filename"), rs.getString("filetype"), rs.getString("encryptionperiod")));
 			}
 		}
 		catch (SQLException e)
@@ -62,10 +62,7 @@ public class FilterFavoriteDao {
 			pStmt.setString(1, filterFavorite.getName());
 			pStmt.setString(2, filterFavorite.getFilename());
 			pStmt.setString(3, filterFavorite.getFiletype());
-			pStmt.setDate(4, filterFavorite.getFromDate());
-			pStmt.setDate(5, filterFavorite.getToDate());
-			pStmt.setLong(6, filterFavorite.getMinSize());
-			pStmt.setLong(7, filterFavorite.getMaxSize());
+			pStmt.setString(4, filterFavorite.getEncryptionPeriod());
 			
 			pStmt.execute();
 			
@@ -99,11 +96,8 @@ public class FilterFavoriteDao {
 			pStmt.setString(1, filterFavorite.getName());
 			pStmt.setString(2, filterFavorite.getFilename());
 			pStmt.setString(3, filterFavorite.getFiletype());
-			pStmt.setDate(4, filterFavorite.getFromDate());
-			pStmt.setDate(5, filterFavorite.getToDate());
-			pStmt.setLong(6, filterFavorite.getMinSize());
-			pStmt.setLong(7, filterFavorite.getMaxSize());
-			pStmt.setInt(8, filterFavorite.getId());
+			pStmt.setString(4, filterFavorite.getEncryptionPeriod());
+			pStmt.setInt(5, filterFavorite.getId());
 			
 			successful = pStmt.executeUpdate() > 0 ? true : false;
 			
@@ -138,6 +132,32 @@ public class FilterFavoriteDao {
 		}
 		
 		return successful;
+	}
+
+	/**
+	 * @param filterName
+	 * @return boolean
+	 */
+	public boolean allreadyExists(String filterName)
+	{
+		boolean found = false;
+		try
+		{
+			Connection connection = DbManager.getConnection();
+			PreparedStatement pStmt = connection.prepareStatement(CHECK_FAVORITE);
+
+			pStmt.setString(1, filterName);
+			
+			ResultSet rs = pStmt.executeQuery();
+			
+			found = rs.next();
+		}
+		catch (SQLException e)
+		{
+			DbManager.printSQLException(e);
+		}
+		
+		return found;	
 	}
 
 }

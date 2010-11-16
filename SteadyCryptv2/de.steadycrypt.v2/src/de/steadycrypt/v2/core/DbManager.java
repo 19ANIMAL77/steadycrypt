@@ -145,13 +145,13 @@ public class DbManager {
 	        sql.append("name VARCHAR(255) NOT NULL,");
 	        sql.append("filename VARCHAR(255),");
 	        sql.append("filetype VARCHAR(255),");
-	        sql.append("fromdate DATE,");
-	        sql.append("todate DATE,");
-	        sql.append("minsize BIGINT,");
-	        sql.append("maxsize BIGINT,");
+	        sql.append("encryptionperiod VARCHAR(5),");
 	        sql.append("PRIMARY KEY (id))");
 	    s.execute(sql.toString());
-        log.info("Created table FAVORITE");
+            
+        // Insert "(Reset)" entry into table "favorite"
+        s.execute("INSERT INTO favorite (name, filename, filetype, encryptionperiod) VALUES ('(Reset)', null, null, null)");
+        log.info("Added (Reset)-Favorite");
         DbManager.conn.commit();        
     }
     

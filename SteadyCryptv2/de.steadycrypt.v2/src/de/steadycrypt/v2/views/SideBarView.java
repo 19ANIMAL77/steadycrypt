@@ -6,6 +6,9 @@
 
 package de.steadycrypt.v2.views;
 
+import java.sql.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,6 +32,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -64,7 +68,10 @@ public class SideBarView extends ViewPart {
 	
 	public static String ID = "de.steadycrypt.v2.view.sideBar";
 	public static String fileNameFilterString = "";
-	public static String fileTypeFilterString = "";
+	public static String fileTypeFilterString = Messages.Filter_NONE;
+	public static String encryptionDateFilterString = Messages.Filter_NONE;
+	public static Date encryptionDateFilter;
+	private EncryptionPeriod eP;
 	
 	private static Logger log = Logger.getLogger(SideBarView.class);
 	private static EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
@@ -154,13 +161,13 @@ public class SideBarView extends ViewPart {
 		favoritesSection.setText(Messages.SideBarView_Favorites);
 		
 		Composite favoritesComposite = toolKit.createComposite(favoritesSection);
-		favoritesComposite.setLayout(new GridLayout(1, true));
+		favoritesComposite.setLayout(new GridLayout(2, true));
 		toolKit.paintBordersFor(favoritesComposite);
 		favoritesSection.setClient(favoritesComposite);
 
         final Table table = new Table(favoritesComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
         table.setHeaderVisible(false);
-        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gridData.heightHint = 100;
         table.setLayoutData(gridData);
         
@@ -180,7 +187,8 @@ public class SideBarView extends ViewPart {
 
             public Image getColumnImage(Object element, int columnIndex)
             {
-            	return Activator.getImageDescriptor("icons/favorite.png").createImage();
+//            	return Activator.getImageDescriptor("icons/favorite.png").createImage();
+            	return null;
             }
 
             // unused methods
@@ -202,6 +210,16 @@ public class SideBarView extends ViewPart {
         });
         
         tableViewer.setInput(favorites.toArray());
+		
+		final Button loadButton = new Button(favoritesComposite, SWT.FLAT);
+		loadButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		loadButton.setText(Messages.SideBarView_LoadFavoriteButton);
+		loadButton.setImage(Activator.getImageDescriptor("icons/favorite.png").createImage());
+		
+		final Button deleteButton = new Button(favoritesComposite, SWT.FLAT);
+		deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		deleteButton.setText(Messages.SideBarView_DeleteFavoriteButton);
+		deleteButton.setImage(Activator.getImageDescriptor("icons/favorite-delete.png").createImage());
         
         MenuManager popupMenuManager = new MenuManager("PopupMenu");
         IMenuListener listener = new IMenuListener() { 
@@ -258,10 +276,47 @@ public class SideBarView extends ViewPart {
 			public void widgetDefaultSelected(SelectionEvent e) { }
 		});
 		
+		/**
+		 * Refresh the static encryptionDateFilterString every time the selection
+		 * of the comboEncryptionDate changes and inform TreeTableView about the
+		 * change via fireSideBarEvent.
+		 */
+		comboEncryptionDate.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				encryptionDateFilterString = comboEncryptionDate.getText();
+				calculateEncryptionDateFilter();
+				fireSideBarEvent();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) { }
+		});
+		
 		saveButton.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				saveFavoriteAction.run();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) { }
+		});
+		
+		loadButton.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				loadFavoriteAction.run();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) { }
+		});
+		
+		deleteButton.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				deleteFavoriteAction.run();
 			}
 
 			@Override
@@ -278,12 +333,19 @@ public class SideBarView extends ViewPart {
         	{	
 				if(!(txtSaveFavorite.getText().length() > 0))
 				{
-					MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Missing", "Favorit Name");
+					MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_ErrorDialog_Title, Messages.SideBarView_ErrorDialog_MissingName);
 				}
 				else
 				{
-					favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(txtSaveFavorite.getText(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText(), null, null, 0l, 0l)));
-					tableViewer.refresh();
+					if (filterFavoriteDao.allreadyExists(txtSaveFavorite.getText()))
+					{
+						MessageDialog.openWarning(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_WarningDialog_Title, NLS.bind(Messages.SideBarView_WarningDialog_Override, txtSaveFavorite.getText()));
+					}
+					else
+					{
+						favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(txtSaveFavorite.getText(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText(), comboEncryptionDate.getText().equals(Messages.Filter_NONE) ? null : eP.toString())));
+						tableViewer.refresh();
+					}
 				}
         	}
         };
@@ -292,11 +354,31 @@ public class SideBarView extends ViewPart {
             
 			public void run()
         	{	
-				FilterFavoriteDob filter = (FilterFavoriteDob)((StructuredSelection)tableViewer.getSelection()).getFirstElement();
+				FilterFavoriteDob filter;
+				filter = (FilterFavoriteDob)((StructuredSelection)tableViewer.getSelection()).getFirstElement();
+				
+				if(filter == null)
+					return;
+				
 				txtSearchField.setText(filter.getFilename() == null ? "" : filter.getFilename());
 				fileNameFilterString = txtSearchField.getText();
 				comboFileTypes.setText(filter.getFiletype() == null ? Messages.Filter_NONE : filter.getFiletype());
 				fileTypeFilterString = comboFileTypes.getText();
+				if(filter.getEncryptionPeriod() == null)
+				{
+					comboEncryptionDate.setText(Messages.Filter_NONE);
+				} else if(filter.getEncryptionPeriod().equals(EncryptionPeriod.WEEK.toString()))
+				{
+					comboEncryptionDate.setText(Messages.EncryptionDateFilter_WEEK);
+				} else if(filter.getEncryptionPeriod().equals(EncryptionPeriod.MONTH.toString()))
+				{
+					comboEncryptionDate.setText(Messages.EncryptionDateFilter_MONTH);
+				} else if(filter.getEncryptionPeriod().equals(EncryptionPeriod.YEAR.toString()))
+				{
+					comboEncryptionDate.setText(Messages.EncryptionDateFilter_YEAR);
+				}
+				encryptionDateFilterString = comboEncryptionDate.getText();
+				calculateEncryptionDateFilter();
 				txtSaveFavorite.setText(filter.getName());
         	}
         };
@@ -305,14 +387,25 @@ public class SideBarView extends ViewPart {
             @SuppressWarnings("rawtypes")
 			public void run()
         	{
+            	MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_WarningDialog_Title, Messages.SideBarView_WarningDialog_Delete);
                 try
                 {
-                	StructuredSelection selection = (StructuredSelection)tableViewer.getSelection();
+                	StructuredSelection selection;
+                	selection = (StructuredSelection)tableViewer.getSelection();
+                	
+                	if(selection == null)
+                		return;
+                	
 					Iterator iterator = selection.iterator();
 	                while(iterator.hasNext())
 	                {
 	                	Object nextElement = iterator.next();
 	                	if(nextElement instanceof FilterFavoriteDob) {
+	                		if(((FilterFavoriteDob)nextElement).getName().equalsIgnoreCase(Messages.RESET_FAVORIT))
+	                		{
+	                			MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_ErrorDialog_Title, Messages.SideBarView_ErrorDialog_CantDelete);
+	                			continue;
+	                		}
 	                		filterFavoriteDao.deleteFavorite((FilterFavoriteDob)nextElement);
 	                		favorites.remove((FilterFavoriteDob)nextElement);
 	                	}
@@ -352,6 +445,31 @@ public class SideBarView extends ViewPart {
 		comboEncryptionDate.add(Messages.EncryptionDateFilter_YEAR);
 
 		comboEncryptionDate.setText(Messages.Filter_NONE);
+	}
+	
+	private void calculateEncryptionDateFilter() 
+	{
+		GregorianCalendar gc = new GregorianCalendar();
+		if (encryptionDateFilterString.equalsIgnoreCase(Messages.EncryptionDateFilter_WEEK))
+		{
+			gc.add(Calendar.DAY_OF_YEAR, -7);
+			encryptionDateFilter = new Date(gc.getTimeInMillis());
+			eP = EncryptionPeriod.WEEK;
+		} else if (encryptionDateFilterString.equalsIgnoreCase(Messages.EncryptionDateFilter_MONTH))
+		{
+			gc.add(Calendar.MONTH, -1);
+			encryptionDateFilter = new Date(gc.getTimeInMillis());
+			eP = EncryptionPeriod.MONTH;
+		} else if (encryptionDateFilterString.equalsIgnoreCase(Messages.EncryptionDateFilter_YEAR))
+		{
+			gc.add(Calendar.YEAR, -1);
+			encryptionDateFilter = new Date(gc.getTimeInMillis());
+			eP = EncryptionPeriod.YEAR;
+		}	
+	}
+	
+	private enum EncryptionPeriod {
+		YEAR, MONTH, WEEK;
 	}
 
 	@Override
