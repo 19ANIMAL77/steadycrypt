@@ -181,6 +181,36 @@ public class EncryptedFileDao {
 		return encryptedFileDobs;
 	}
 
+	public boolean updateFile(EncryptedFileDob encryptedFile)
+	{
+		boolean successful = false;
+		
+		try
+		{
+			Connection connection = DbManager.getConnection();
+			PreparedStatement pStmt = connection.prepareStatement(UPDATE_FILE);
+
+			pStmt.setString(1, encryptedFile.getName());
+			pStmt.setString(2, encryptedFile.getType());
+			pStmt.setLong(3, encryptedFile.getSize());
+			pStmt.setDate(4, encryptedFile.getDate());
+			pStmt.setString(5, encryptedFile.getPath());
+			pStmt.setString(6, encryptedFile.getFile());
+			pStmt.setInt(7, encryptedFile.getParent().getId());
+			pStmt.setInt(8, encryptedFile.getId());
+			
+			successful = pStmt.executeUpdate() > 0 ? true : false;
+			
+			connection.commit();
+		}
+		catch (SQLException e)
+		{
+			DbManager.printSQLException(e);
+		}
+		
+		return successful;
+	}
+
 	public boolean updateFiles(List<EncryptedFileDob> encryptedFiles)
 	{
 		boolean successful = false;

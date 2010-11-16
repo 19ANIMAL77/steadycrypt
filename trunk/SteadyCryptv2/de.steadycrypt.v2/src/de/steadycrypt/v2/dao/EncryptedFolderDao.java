@@ -133,6 +133,33 @@ public class EncryptedFolderDao {
 		return encryptedFolderDob;
 	}
 
+	public boolean updateFolder(EncryptedFolderDob encryptedFolder)
+	{
+		boolean successful = false;
+		
+		try
+		{
+			Connection connection = DbManager.getConnection();
+			PreparedStatement pStmt = connection.prepareStatement(UPDATE_FOLDER);
+
+			pStmt.setString(1, encryptedFolder.getName());
+			pStmt.setDate(2, encryptedFolder.getDate());
+			pStmt.setString(3, encryptedFolder.getPath());
+			pStmt.setInt(4, encryptedFolder.getParent().getId());
+			pStmt.setInt(5, encryptedFolder.getId());
+			
+			successful = pStmt.executeUpdate() > 0 ? true : false;
+			
+			connection.commit();
+		}
+		catch (SQLException e)
+		{
+			DbManager.printSQLException(e);
+		}
+		
+		return successful;
+	}
+
 	public boolean updateFolders(List<EncryptedFolderDob> encryptedFolders)
 	{
 		boolean successful = false;
