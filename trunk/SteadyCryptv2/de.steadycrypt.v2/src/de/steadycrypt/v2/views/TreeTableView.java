@@ -7,7 +7,6 @@
 package de.steadycrypt.v2.views;
 
 import java.sql.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -19,9 +18,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -69,15 +65,15 @@ import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
 
 public class TreeTableView extends ViewPart implements SideBarListener {
 	
+	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(TreeTableView.class);
     private ToolBarManager toolBarManager;
 
     private Action exportSelectionAction;
+    private Action deleteSelectionAction;
     private Action expandAllAction;
     private Action collapseAllAction;
     private Action selectAllAction;
-	private Action filesFoldersAction, noArticleAction;
-	private Action addFileAction, removeAction;
 
 	private DecryptHandler decryptHandler = new DecryptHandler();
 	
@@ -86,11 +82,10 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	private EncryptedFolderDob root;
 	private List<DroppedElement> checkedElements;
 	
-	protected TreeViewer treeViewer;
-	protected SteadyTreeTableLabelProvider labelProvider;
-	protected ViewerFilter searchFilter;
-	protected DataTypeFilter dataTypeFilter;
-	protected EncryptionDateFilter encryptionDateFilter;
+	private TreeViewer treeViewer;
+	private ViewerFilter searchFilter;
+	private DataTypeFilter dataTypeFilter;
+	private EncryptionDateFilter encryptionDateFilter;
 	
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 
@@ -116,11 +111,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         content.setLayout(new GridLayout(1, false));
         scrolledComposite.setContent(content);
 
-        this.toolBarManager = new ToolBarManager();
-        this.toolBarManager.add(this.exportSelectionAction);
-        this.toolBarManager.add(this.expandAllAction);
-        this.toolBarManager.add(this.collapseAllAction);
-        this.toolBarManager.add(this.selectAllAction);
+        toolBarManager = new ToolBarManager();
+        toolBarManager.add(exportSelectionAction);
+        toolBarManager.add(expandAllAction);
+        toolBarManager.add(collapseAllAction);
+        toolBarManager.add(selectAllAction);
 
         ToolBar toolbar = toolBarManager.createControl(content);
         toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
@@ -132,10 +127,10 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);		
 		
 		// Anpassungen für TreeTable
-		Tree tree = this.treeViewer.getTree();
+		Tree tree = treeViewer.getTree();
 		
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		this.treeViewer.getControl().setLayoutData(gridData);
+		treeViewer.getControl().setLayoutData(gridData);
 	
 		treeViewer.setUseHashlookup(true);
 		
@@ -223,139 +218,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	/**
 	 * Instantiate all Filters needed.
 	 */
-	protected void createFiltersAndSorters() {
+	private void createFiltersAndSorters() {
 		searchFilter = new SearchFilter();
 		dataTypeFilter = new DataTypeFilter();
 		encryptionDateFilter = new EncryptionDateFilter();
 	}
-
-	protected void hookListeners() {
-		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
-				// if the selection is empty clear the label
-				if(event.getSelection().isEmpty()) {
-//					text.setText("");
-					return;
-				}
-				if(event.getSelection() instanceof IStructuredSelection) {
-					IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-					StringBuffer toShow = new StringBuffer();
-					for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
-						Object domain = (DroppedElement) iterator.next();
-						String value = labelProvider.getColumnText(domain,1);
-						toShow.append(value);
-						toShow.append(", ");
-					}
-					// remove the trailing comma space pair
-					if(toShow.length() > 0) {
-						toShow.setLength(toShow.length() - 2);
-					}
-//					text.setText(toShow.toString());
-				}
-			}
-		});
-	}
-	
-	protected void createActions() {
-		
-		filesFoldersAction.setChecked(false);
-		
-		noArticleAction = new Action("Ignoring Articles") {
-			public void run() {
-				updateSorter(noArticleAction);
-			}
-		};
-		noArticleAction.setChecked(false);
-		
-		addFileAction = new Action("Add EncryptedFile") {
-			public void run() {
-				addNewFile();
-			}			
-		};
-		addFileAction.setToolTipText("Add a New EncryptedFile");
-
-		removeAction = new Action("Delete") {
-			public void run() {
-				removeSelected();
-			}			
-		};
-		removeAction.setToolTipText("Delete");		
-	}
-	
-	/** Add a new book to the selected folders.
-	 * If a folder is not selected, use the selected
-	 * obect's folders. 
-	 * 
-	 * If nothing is selected add to the root. */
-	protected void addNewFile() {
-//		EncryptedFolder receivingFolder;
-//		if (treeViewer.getSelection().isEmpty()) {
-//			receivingFolder = root;
-//		} else {
-//			IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-//			DroppedElement selectedDomainObject = (DroppedElement) selection.getFirstElement();
-//			if (!(selectedDomainObject instanceof EncryptedFolder)) {
-//				receivingFolder = selectedDomainObject.getParent();
-//			} else {
-//				receivingFolder = (EncryptedFolder) selectedDomainObject;
-//			}
-//		}
-//		receivingFolder.add(EncryptedFile.newFile());
-	}
-
-	/** Remove the selected domain object(s).
-	 * If multiple objects are selected remove all of them.
-	 * 
-	 * If nothing is selected do nothing. */
-	protected void removeSelected() {
-//		if (treeViewer.getSelection().isEmpty()) {
-//			return;
-//		}
-//		IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-//		/* Tell the tree to not redraw until we finish
-//		 * removing all the selected children. */
-//		treeViewer.getTree().setRedraw(false);
-//		for (Iterator<?> iterator = selection.iterator(); iterator.hasNext();) {
-//			DroppedElement droppedElement = (DroppedElement) iterator.next();
-//			EncryptedFolder parent = droppedElement.getParent();
-//			parent.remove(droppedElement);
-//		}
-//		treeViewer.getTree().setRedraw(true);
-	}
-
-	protected void fillMenu(IMenuManager rootMenuManager) {
-		IMenuManager filterSubmenu = new MenuManager("Filters");
-		rootMenuManager.add(filterSubmenu);
-		
-		IMenuManager sortSubmenu = new MenuManager("Sort By");
-		rootMenuManager.add(sortSubmenu);
-		sortSubmenu.add(filesFoldersAction);
-		sortSubmenu.add(noArticleAction);
-	}	
-	
-	protected void updateSorter(Action action) {
-//		if(action == filesFoldersAction) {
-//			noArticleAction.setChecked(!filesFoldersAction.isChecked());
-//			if(action.isChecked()) {
-//				treeViewer.setSorter(filesFoldersSorter);
-//			} else {
-//				treeViewer.setSorter(null);
-//			}
-//		} else if(action == noArticleAction) {
-//			filesFoldersAction.setChecked(!noArticleAction.isChecked());
-//			if(action.isChecked()) {
-//				treeViewer.setSorter(noArticleSorter);
-//			} else {
-//				treeViewer.setSorter(null);
-//			}
-//		}
-			
-	}
-
-	/*
-	 * @see IWorkbenchPart#setFocus()
-	 */
-	public void setFocus() {}
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -373,6 +240,19 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         exportSelectionAction.setText(Messages.TableView_ExportFile);
         exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
         exportSelectionAction.setImageDescriptor(Activator.getImageDescriptor("icons/export2.png"));
+        
+        deleteSelectionAction = new Action() {
+        	public void run()
+        	{
+                decryptHandler.processData((TreeSelection)treeViewer.getSelection());
+                treeViewer.refresh();
+	        	SideBarView.updateFileTypeFilter();
+        	}
+        };
+        
+        deleteSelectionAction.setText(Messages.TableView_ExportFile);
+        deleteSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
+        deleteSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL));
         
         expandAllAction = new Action() {
         	public void run()
@@ -426,10 +306,10 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
     public List<DroppedElement> getCheckedElements()
     {
-        return this.checkedElements;
+        return checkedElements;
     }
 	
-	public EncryptedFolderDob getInitialInput()
+	private EncryptedFolderDob getInitialInput()
 	{
     	root = new EncryptedFolderDob(0, "Root-Folder", new Date(System.currentTimeMillis()), "");
 
@@ -441,7 +321,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	return root;
 	}
 	
-	public void getFolderContent(EncryptedFolderDob folder)
+	private void getFolderContent(EncryptedFolderDob folder)
 	{
 		folder.addFiles(encryptedFileDao.getFilesForFolder(folder));
 		
@@ -459,19 +339,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	}
 
 	/**
-	 * Triggered by SideBar
-	 */
-	public void findItem(String searchString) {
-		
-		/**
-		 * Triggered by SideBarView, done by TreeTableView
-		 */
-		log.info("Triggered by SideBarView, done by TreeTableView");
-		log.info("Search for item: "+ searchString);
-		
-	}
-
-	/**
 	 * Triggered by SideBarView
 	 */
 	public void doSearch(){
@@ -479,5 +346,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer.addFilter(dataTypeFilter);
 		treeViewer.addFilter(encryptionDateFilter);
 	}
+
+	public void setFocus() {}
 
 }
