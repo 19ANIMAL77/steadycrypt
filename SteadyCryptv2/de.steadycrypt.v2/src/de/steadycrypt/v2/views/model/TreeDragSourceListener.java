@@ -6,6 +6,9 @@
 
 package de.steadycrypt.v2.views.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
@@ -18,68 +21,53 @@ import de.steadycrypt.v2.bob.DroppedElement;
 public class TreeDragSourceListener implements DragSourceListener {
 	
 	private static Logger log = Logger.getLogger(TreeDragSourceListener.class);
-	private final TreeItem[] dragSourceItem;
+	private List<TreeItem> dragSourceItems;
 	private Tree tree;
 	
-	public static DroppedElement draggedDroppedElement;
+	public static List<DroppedElement> draggedDroppedElements;
 	
-	public TreeDragSourceListener(Tree tree) {
-		
+	public TreeDragSourceListener(Tree tree)
+	{		
 		this.tree = tree;	    
-	    dragSourceItem = new TreeItem[1];
+	    this.dragSourceItems = new ArrayList<TreeItem>();
+	    TreeDragSourceListener.draggedDroppedElements = new ArrayList<DroppedElement>();
 	}
 
-	/**
-	 * 
-	 */
-	public void dragStart(DragSourceEvent event) {
-		
-//	  	log.debug("NOT VALID TYPE #1");
-  	  
+	public void dragStart(DragSourceEvent event)
+	{
 		TreeItem[] selection = this.tree.getSelection();
-		if (selection.length > 0 && selection[0].getItemCount() == 0) 
-		{
+		if (selection.length > 0 && selection[0].getItemCount() == 0) {
 			event.doit = true;
-			dragSourceItem[0] = selection[0];
-//			log.debug("NOT VALID TYPE doit = true #1");
+			for(TreeItem currentSelection : selection) {
+				dragSourceItems.add(currentSelection);
+			}
 		}
-		else 
-		{
+		else {
 			event.doit = false;
-//			log.debug("NOT VALID TYPE doit = false #1");
 		}
-	  
-//		log.debug("NOT VALID TYPE #2");
-		
 	}
 
-	/**
-	 * 
-	 */
-	public void dragSetData(DragSourceEvent event) {
-		
+	public void dragSetData(DragSourceEvent event)
+	{
 //		log.debug("NOT VALID TYPE #3");
 		// TODO: was muss event.data sein??
 //		event.data = (DroppedElement)dragSourceItem[0].getData();
 		event.data = "sc";
-		TreeDragSourceListener.draggedDroppedElement = (DroppedElement)dragSourceItem[0].getData();
-		
-//		log.debug("NOT VALID TYPE #4");
-		
+		for(TreeItem currentDragSourceItem : dragSourceItems) {
+			TreeDragSourceListener.draggedDroppedElements.add((DroppedElement)currentDragSourceItem.getData());
+		}
 	}
 
-	/**
-	 * 
-	 */
-	public void dragFinished(DragSourceEvent event) {
-		
-//		log.debug("NOT VALID TYPE #5");
-		if (event.detail == DND.DROP_MOVE)
-			dragSourceItem[0].dispose();
+	public void dragFinished(DragSourceEvent event)
+	{
+		if (event.detail == DND.DROP_MOVE) {
+			for(TreeItem currentDragSourceItem : dragSourceItems) {
+				currentDragSourceItem.dispose();
+			}	
+		}
 	  
-		dragSourceItem[0] = null;
+		dragSourceItems.clear();
 	  
 		log.debug("Drag finished...");
-		
 	}
 }
