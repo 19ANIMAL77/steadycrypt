@@ -33,16 +33,21 @@ public class Messages extends NLS
     public static String CryptedFilesTableIdentifier_SIZE;
     public static String CryptedFilesTableIdentifier_DATE;
     public static String CryptedFilesTableIdentifier_PATH;
-    
+
     public static String TableView_ExportFile;
     public static String TableView_ExportFile_Tooltip;
-    public static String TableView_ExportFileDialog_Title;
+    public static String TableView_DeleteFile;
+    public static String TableView_DeleteFile_Tooltip;
     public static String TableView_ExpandAll;
     public static String TableView_ExpandAll_Tooltip;
     public static String TableView_CollapseAll;
     public static String TableView_CollapseAll_Tooltip;
     public static String TableView_SelectAll;
     public static String TableView_SelectAll_Tooltip;
+
+    public static String TableView_ExportFileDialog_Title;
+    public static String TableView_WarningDialog_Title;
+    public static String TableView_WarningDialog_Delete;
 
     public static String SideBarView_Filters;
     public static String SideBarView_NameFilter;
