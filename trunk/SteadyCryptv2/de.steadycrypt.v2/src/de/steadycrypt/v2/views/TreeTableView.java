@@ -28,10 +28,10 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
 import org.eclipse.swt.dnd.DropTarget;
-import org.eclipse.swt.dnd.DropTargetAdapter;
-import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -59,6 +59,8 @@ import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
+import de.steadycrypt.v2.views.model.TreeDragSourceListener;
+import de.steadycrypt.v2.views.model.TreeDropTargetAdapter;
 import de.steadycrypt.v2.views.ui.DataTypeFilter;
 import de.steadycrypt.v2.views.ui.EncryptionDateFilter;
 import de.steadycrypt.v2.views.ui.SearchFilter;
@@ -176,51 +178,19 @@ public class TreeTableView extends ViewPart implements SideBarListener {
             }
         });
 		
+		// Drag-Part //////////////////////////////////////////////////////////
+		int operations = DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK;
+		final DragSource source = new DragSource(tree, operations);
+	    // TODO: welchen TransferType muss man wählen?
+	    source.setTransfer(new Transfer[] {TextTransfer.getInstance()});
+	    source.addDragListener(new TreeDragSourceListener(tree));
+		
+		// Drop-Part //////////////////////////////////////////////////////////
 	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);    
-	        
-	    dropTarget.setTransfer(new Transfer[] {FileTransfer.getInstance() });
-	    dropTarget.addDropListener(new DropTargetAdapter()
-	    {
-	    	FileTransfer fileTransfer = FileTransfer.getInstance();
-	 
-	    	public void dragEnter(DropTargetEvent event)
-	    	{
-	    		if (event.detail == DND.DROP_DEFAULT)
-	    			event.detail = DND.DROP_COPY;
-	    	}
-	    	    
-		    public void dragOperationChanged(DropTargetEvent event)
-		    {
-		    	if (event.detail == DND.DROP_DEFAULT)
-		    		event.detail = DND.DROP_COPY;
-		    }          
-	 
-	        public void dragOver(DropTargetEvent event)
-	        {
-	        	
-	        }	      
-	      
-	        public void drop(DropTargetEvent event)
-	        {
-	        	if (fileTransfer.isSupportedType(event.currentDataType))
-	            {
-	        		String[] droppedFileInformation = (String[]) event.data;
-	        		
-	        		log.info(droppedFileInformation.length + " Files dropt. Handing over to FileDropHandler!");
-	        				
-	    			try
-	    			{
-	    				fileDropHandler.processData(droppedFileInformation, root);
-	    			}
-	    			catch(Exception e)
-	    			{
-	    				
-	    			}
-	            }
-	        	treeViewer.refresh();
-	        	SideBarView.updateFileTypeFilter();
-	        }
-	    });
+	    // TODO: und welchen TransferType muss man hier wählen?
+	    dropTarget.setTransfer(new Transfer[] {TextTransfer.getInstance(), FileTransfer.getInstance()});
+	    dropTarget.addDropListener(new TreeDropTargetAdapter(tree, treeViewer));
+
 	    
 	    final Button exportFilesButton = new Button(content, SWT.FLAT);
 	    exportFilesButton.setText(Messages.TableView_ExportFile);
