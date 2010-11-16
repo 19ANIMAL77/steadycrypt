@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 public class KeyManager {
 	
 	private SteadyKey steadykey = null;
-	private static org.apache.log4j.Logger log = Logger.getLogger(KeyManager.class);
+	private static Logger log = Logger.getLogger(KeyManager.class);
 	private static KeyManager INSTANCE = null;
 	
 	final EntityManagerFactory emf = Persistence.createEntityManagerFactory("hibernate");

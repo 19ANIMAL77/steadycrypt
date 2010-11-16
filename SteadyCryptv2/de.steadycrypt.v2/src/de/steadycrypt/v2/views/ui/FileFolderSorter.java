@@ -13,8 +13,8 @@ import de.steadycrypt.v2.bob.EncryptedFolder;
 
 public class FileFolderSorter extends ViewerSorter {
 	
-	/** Orders the items in such a way that files appear 
-	 * before moving folders, which appear before board games. */
+	/** Orders the items in such a way that folders appear 
+	 * before files. */
 	public int category(Object element)
 	{
 		if(element instanceof EncryptedFile) return 1;

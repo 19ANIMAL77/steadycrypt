@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 public class PasswordInterpreter {
 
-	private static org.apache.log4j.Logger log = Logger.getLogger(PasswordInterpreter.class);
+	private static Logger log = Logger.getLogger(PasswordInterpreter.class);
 	
 	public static String createPassword (String input) {
 		

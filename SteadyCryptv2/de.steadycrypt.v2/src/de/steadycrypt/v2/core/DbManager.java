@@ -16,7 +16,7 @@ import java.util.Properties;
 
 public class DbManager {
 	
-	private static org.apache.log4j.Logger log = Logger.getLogger(DbManager.class);
+	private static Logger log = Logger.getLogger(DbManager.class);
 	private static DbManager INSTANCE = null;
     private static String driver = "org.apache.derby.jdbc.EmbeddedDriver";
     private static String protocol = "jdbc:derby:steadyDB";
