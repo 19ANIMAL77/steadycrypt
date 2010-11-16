@@ -177,8 +177,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         });
 		
 		// Drag-Part //////////////////////////////////////////////////////////
-		int operations = DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK;
-		final DragSource source = new DragSource(tree, operations);
+		DragSource source = new DragSource(tree, DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK);
 	    // TODO: welchen TransferType muss man wählen?
 	    source.setTransfer(new Transfer[] {TextTransfer.getInstance()});
 	    source.addDragListener(new TreeDragSourceListener(tree));
