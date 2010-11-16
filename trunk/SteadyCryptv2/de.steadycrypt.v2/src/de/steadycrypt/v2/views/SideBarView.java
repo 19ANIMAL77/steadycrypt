@@ -424,7 +424,7 @@ public class SideBarView extends ViewPart {
         deleteFavoriteAction.setImageDescriptor(Activator.getImageDescriptor("icons/favorite-delete.png"));
 	}
 	
-	protected static void updateFileTypeFilter()
+	public static void updateFileTypeFilter()
 	{
     	comboFileTypes.removeAll();
     	comboFileTypes.add(Messages.Filter_NONE);
