@@ -16,6 +16,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -51,6 +52,7 @@ import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.DecryptHandler;
+import de.steadycrypt.v2.core.DeleteFileHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
@@ -76,6 +78,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private Action selectAllAction;
 
 	private DecryptHandler decryptHandler = new DecryptHandler();
+	private DeleteFileHandler deleteFileHandler = new DeleteFileHandler();
 	
 	private EncryptedFolderDao encryptedFolderDao;
 	private EncryptedFileDao encryptedFileDao;
@@ -113,6 +116,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
         toolBarManager = new ToolBarManager();
         toolBarManager.add(exportSelectionAction);
+        toolBarManager.add(deleteSelectionAction);
         toolBarManager.add(expandAllAction);
         toolBarManager.add(collapseAllAction);
         toolBarManager.add(selectAllAction);
@@ -203,6 +207,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         IMenuListener listener = new IMenuListener() { 
         public void menuAboutToShow(IMenuManager manager) { 
             manager.add(exportSelectionAction); 
+            manager.add(deleteSelectionAction); 
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
             } 
         }; 
@@ -244,14 +249,17 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         deleteSelectionAction = new Action() {
         	public void run()
         	{
-                decryptHandler.processData((TreeSelection)treeViewer.getSelection());
-                treeViewer.refresh();
-	        	SideBarView.updateFileTypeFilter();
+        		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_WarningDialog_Title, Messages.TableView_WarningDialog_Delete))
+        		{
+                    deleteFileHandler.processData((TreeSelection)treeViewer.getSelection());
+                    treeViewer.refresh();
+    	        	SideBarView.updateFileTypeFilter();	
+        		}
         	}
         };
         
-        deleteSelectionAction.setText(Messages.TableView_ExportFile);
-        deleteSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
+        deleteSelectionAction.setText(Messages.TableView_DeleteFile);
+        deleteSelectionAction.setToolTipText(Messages.TableView_DeleteFile_Tooltip);
         deleteSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL));
         
         expandAllAction = new Action() {
