@@ -81,7 +81,7 @@ public class SideBarView extends ViewPart {
     private Text txtSearchField;
     private Text txtSaveFavorite;
     private static Combo comboFileTypes;
-    private static Combo comboEncryptionDate;
+    private Combo comboEncryptionDate;
     private Button saveButton;
     private Button loadButton;
     private Button deleteButton;
@@ -139,7 +139,7 @@ public class SideBarView extends ViewPart {
 
 		comboEncryptionDate = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 		comboEncryptionDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		updateEncryptionDateFilter();
+		initializeEncryptionDateFilter();
 
 		// Save Filter Part
 		
@@ -473,7 +473,7 @@ public class SideBarView extends ViewPart {
 	    comboFileTypes.setText(Messages.Filter_NONE);
 	}
 	
-	public static void updateEncryptionDateFilter()
+	private void initializeEncryptionDateFilter()
 	{
 		comboEncryptionDate.removeAll();
 		comboEncryptionDate.add(Messages.Filter_NONE);
