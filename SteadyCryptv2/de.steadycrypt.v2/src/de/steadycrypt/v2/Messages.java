@@ -50,11 +50,12 @@ public class Messages extends NLS
     public static String SideBarView_DateFilter;
     public static String SideBarView_DateFilterFrom;
     public static String SideBarView_DateFilterTo;
+    public static String SideBarView_Favorites;
     public static String SideBarView_SaveFavorite;
     public static String SideBarView_SaveFavoriteButton;
-    public static String SideBarView_Favorites;
-    public static String SideBarView_DeleteFavorite;
+    public static String SideBarView_LoadFavorite;
     public static String SideBarView_LoadFavoriteButton;
+    public static String SideBarView_DeleteFavorite;
     public static String SideBarView_DeleteFavoriteButton;
 
     public static String SideBarView_ErrorDialog_Title;
