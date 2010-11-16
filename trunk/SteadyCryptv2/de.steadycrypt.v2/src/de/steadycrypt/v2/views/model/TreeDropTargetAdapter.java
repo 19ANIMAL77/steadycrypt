@@ -6,6 +6,8 @@
 
 package de.steadycrypt.v2.views.model;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.dnd.DND;
@@ -22,6 +24,8 @@ import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.FileDropHandler;
+import de.steadycrypt.v2.dao.EncryptedFileDao;
+import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.SideBarView;
 
 public class TreeDropTargetAdapter extends DropTargetAdapter {
@@ -30,16 +34,20 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 
 	private FileTransfer fileTransfer = FileTransfer.getInstance();
 	private Tree tree;
-	private EncryptedFolderDob dragOverFolder;
-	private FileDropHandler fileDropHandler = new FileDropHandler();
 	private TreeViewer treeViewer;
+	private EncryptedFolderDob root;
+	private EncryptedFolderDob currentDragOverFolder;
+
+	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
+	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+	private FileDropHandler fileDropHandler = new FileDropHandler();
 	
-	public TreeDropTargetAdapter(Tree tree, TreeViewer treeViewer, EncryptedFolderDob dragOverFolder){
-		
+	public TreeDropTargetAdapter(Tree tree, TreeViewer treeViewer, EncryptedFolderDob dragOverFolder)
+	{
 		this.tree = tree;
 		this.treeViewer = treeViewer;
-		this.dragOverFolder = dragOverFolder;
-		
+		this.root = dragOverFolder;
+		this.currentDragOverFolder = root;
 	}
 	
 	public void dragEnter(DropTargetEvent event)
@@ -57,24 +65,21 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
     public void dragOver(DropTargetEvent event)
     {
 		event.feedback = DND.FEEDBACK_EXPAND | DND.FEEDBACK_SCROLL;
-		if (event.item != null) 
-		{
+		
+		if (event.item != null) {
 			TreeItem item = (TreeItem)event.item;
 //			DroppedElement dragOverElement = (DroppedElement)item.getData();
 //			log.debug(dragOverElement.getName());
 			
-			Point pt = PlatformUI.getWorkbench().getDisplay().map(null, this.tree, event.x, event.y);
+			Point pt = PlatformUI.getWorkbench().getDisplay().map(null, tree, event.x, event.y);
 			Rectangle bounds = item.getBounds();
-			if (pt.y < bounds.y + bounds.height/3) 
-			{
+			if (pt.y < bounds.y + bounds.height/3) {
 				event.feedback |= DND.FEEDBACK_INSERT_BEFORE;
 			} 
-			else if (pt.y > bounds.y + 2*bounds.height/3) 
-			{
+			else if (pt.y > bounds.y + 2*bounds.height/3) {
 				event.feedback |= DND.FEEDBACK_INSERT_AFTER;
 			} 
-			else 
-			{
+			else {
 				event.feedback |= DND.FEEDBACK_SELECT;
 			}
 		}
@@ -89,58 +94,69 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
     		
     		log.debug(droppedFileInformation.length + " Files dropt.");
     		
-			TreeItem item = (TreeItem)event.item;
+			TreeItem item = null;
 			
-			try 
-			{				
-				if(item.getData() instanceof EncryptedFolderDob){
-					dragOverFolder = (EncryptedFolderDob) item.getData();
+			if(event.item != null) {
+				item = (TreeItem)event.item;
+					
+				if(item.getData() instanceof EncryptedFolderDob) {
+					currentDragOverFolder = (EncryptedFolderDob) item.getData();
 				}
-				else
-				{
-					dragOverFolder = ((DroppedElement)item.getData()).getParent();
+				else {
+					currentDragOverFolder = ((DroppedElement)item.getData()).getParent();
 				}
-			} catch (NullPointerException e) {
-				log.debug("dragOverFolder is root per default.");
-			} 
-			
-			log.debug("Parent-Folder: "+dragOverFolder);
-    		
-			try
-			{
-				fileDropHandler.processData(droppedFileInformation, dragOverFolder);
 			}
-			catch(Exception e)
-			{
+			
+			log.debug("Parent-Folder: "+currentDragOverFolder.getName());
+    		
+			try {
+				fileDropHandler.processData(droppedFileInformation, currentDragOverFolder);
+			}
+			catch(Exception e) {
 				log.error("Error at proccessing dropped data. " + e);
 			}
-        } 
+        }
+    	
     	// This part handles Drag'N'Drop within the tree
     	else 
     	{
-        	        	
         	// DraggedElement within the tree
-        	DroppedElement draggedElement = TreeDragSourceListener.draggedDroppedElement;
-    		TreeItem item = (TreeItem)event.item;
-
-			try 
-			{				
-				if(item.getData() instanceof EncryptedFolderDob){
-					dragOverFolder = (EncryptedFolderDob) item.getData();
-				}
-				else
+        	List<DroppedElement> draggedElements = TreeDragSourceListener.draggedDroppedElements;
+        	
+        	for(DroppedElement draggedElement : draggedElements) {
+	    		TreeItem item = null; 
+				
+				if(event.item != null)
 				{
-					dragOverFolder = ((DroppedElement)item.getData()).getParent();
+					item = (TreeItem)event.item;
+						
+					if(item.getData() instanceof EncryptedFolderDob) {
+						currentDragOverFolder = (EncryptedFolderDob) item.getData();
+					}
+					else {
+						currentDragOverFolder = ((DroppedElement)item.getData()).getParent();
+					}
 				}
-			} catch (NullPointerException e) {
-				log.debug("dragOverFolder is root per default.");
-			} 
-        	
-    		draggedElement.getParent().removeFile((EncryptedFileDob) draggedElement);
-    		dragOverFolder.addFile((EncryptedFileDob) draggedElement);
-        	
+	        	
+				if(draggedElement instanceof EncryptedFileDob) {
+					EncryptedFileDob draggedFile = (EncryptedFileDob) draggedElement;
+		    		draggedElement.getParent().removeFile(draggedFile);
+		    		draggedFile.setParent(currentDragOverFolder);
+		    		encryptedFileDao.updateFile(draggedFile);
+		    		currentDragOverFolder.addFile(draggedFile);
+				}
+				else if(draggedElement instanceof EncryptedFolderDob) {
+					EncryptedFolderDob draggedFolder = (EncryptedFolderDob) draggedElement;
+		    		draggedElement.getParent().removeFolder(draggedFolder);
+		    		draggedFolder.setParent(currentDragOverFolder);
+		    		encryptedFolderDao.updateFolder(draggedFolder);
+		    		currentDragOverFolder.addFolder(draggedFolder);
+				}
+	    		currentDragOverFolder=root;
+        	}
         }
     	
+    	TreeDragSourceListener.draggedDroppedElements.clear();
     	treeViewer.refresh();
     	SideBarView.updateFileTypeFilter();
     }
