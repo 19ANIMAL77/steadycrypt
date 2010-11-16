@@ -165,7 +165,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer.expandToLevel(1);
 		
 		// Drag-Part //////////////////////////////////////////////////////////
-		DragSource source = new DragSource(tree, DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK);
+		DragSource source = new DragSource(tree, DND.DROP_COPY | DND.DROP_MOVE);
 	    // TODO: welchen TransferType muss man wählen?
 	    source.setTransfer(new Transfer[] {TextTransfer.getInstance()});
 	    source.addDragListener(new TreeDragSourceListener(tree));
@@ -174,7 +174,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);    
 	    // TODO: und welchen TransferType muss man hier wählen?
 	    dropTarget.setTransfer(new Transfer[] {TextTransfer.getInstance(), FileTransfer.getInstance()});
-	    dropTarget.addDropListener(new TreeDropTargetAdapter(tree, treeViewer));
+	    dropTarget.addDropListener(new TreeDropTargetAdapter(tree, treeViewer, root));
 
 	    addListeners();
         createContextMenu();

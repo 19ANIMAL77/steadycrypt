@@ -13,11 +13,15 @@ import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
+import de.steadycrypt.v2.bob.DroppedElement;
+
 public class TreeDragSourceListener implements DragSourceListener {
 	
 	private static Logger log = Logger.getLogger(TreeDragSourceListener.class);
 	private final TreeItem[] dragSourceItem;
 	private Tree tree;
+	
+	public static DroppedElement draggedDroppedElement;
 	
 	public TreeDragSourceListener(Tree tree) {
 		
@@ -30,22 +34,22 @@ public class TreeDragSourceListener implements DragSourceListener {
 	 */
 	public void dragStart(DragSourceEvent event) {
 		
-	  	log.debug("NOT VALID TYPE #1");
+//	  	log.debug("NOT VALID TYPE #1");
   	  
 		TreeItem[] selection = this.tree.getSelection();
 		if (selection.length > 0 && selection[0].getItemCount() == 0) 
 		{
 			event.doit = true;
 			dragSourceItem[0] = selection[0];
-			log.debug("NOT VALID TYPE doit = true #1");
+//			log.debug("NOT VALID TYPE doit = true #1");
 		}
 		else 
 		{
 			event.doit = false;
-			log.debug("NOT VALID TYPE doit = false #1");
+//			log.debug("NOT VALID TYPE doit = false #1");
 		}
 	  
-		log.debug("NOT VALID TYPE #2");
+//		log.debug("NOT VALID TYPE #2");
 		
 	}
 
@@ -54,10 +58,13 @@ public class TreeDragSourceListener implements DragSourceListener {
 	 */
 	public void dragSetData(DragSourceEvent event) {
 		
-		log.debug("NOT VALID TYPE #3");
+//		log.debug("NOT VALID TYPE #3");
 		// TODO: was muss event.data sein??
-		event.data = dragSourceItem[0].getText();
-		log.debug("NOT VALID TYPE #4");
+//		event.data = (DroppedElement)dragSourceItem[0].getData();
+		event.data = "sc";
+		TreeDragSourceListener.draggedDroppedElement = (DroppedElement)dragSourceItem[0].getData();
+		
+//		log.debug("NOT VALID TYPE #4");
 		
 	}
 
@@ -66,13 +73,13 @@ public class TreeDragSourceListener implements DragSourceListener {
 	 */
 	public void dragFinished(DragSourceEvent event) {
 		
-		log.debug("NOT VALID TYPE #5");
+//		log.debug("NOT VALID TYPE #5");
 		if (event.detail == DND.DROP_MOVE)
 			dragSourceItem[0].dispose();
 	  
 		dragSourceItem[0] = null;
 	  
-		log.debug("NOT VALID TYPE #6");
+		log.debug("Drag finished...");
 		
 	}
 }
