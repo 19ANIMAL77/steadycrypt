@@ -36,7 +36,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 	private Tree tree;
 	private TreeViewer treeViewer;
 	private EncryptedFolderDob root;
-	private EncryptedFolderDob currentDragOverFolder;
+	private EncryptedFolderDob dragOverFolder;
 
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
@@ -47,7 +47,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 		this.tree = tree;
 		this.treeViewer = treeViewer;
 		this.root = dragOverFolder;
-		this.currentDragOverFolder = root;
+		this.dragOverFolder = root;
 	}
 	
 	public void dragEnter(DropTargetEvent event)
@@ -100,17 +100,17 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 				item = (TreeItem)event.item;
 					
 				if(item.getData() instanceof EncryptedFolderDob) {
-					currentDragOverFolder = (EncryptedFolderDob) item.getData();
+					dragOverFolder = (EncryptedFolderDob) item.getData();
 				}
 				else {
-					currentDragOverFolder = ((DroppedElement)item.getData()).getParent();
+					dragOverFolder = ((DroppedElement)item.getData()).getParent();
 				}
 			}
 			
-			log.debug("Parent-Folder: "+currentDragOverFolder.getName());
+			log.debug("Parent-Folder: "+dragOverFolder.getName());
     		
 			try {
-				fileDropHandler.processData(droppedFileInformation, currentDragOverFolder);
+				fileDropHandler.processData(droppedFileInformation, dragOverFolder);
 			}
 			catch(Exception e) {
 				log.error("Error at proccessing dropped data. " + e);
@@ -131,28 +131,28 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 					item = (TreeItem)event.item;
 						
 					if(item.getData() instanceof EncryptedFolderDob) {
-						currentDragOverFolder = (EncryptedFolderDob) item.getData();
+						dragOverFolder = (EncryptedFolderDob) item.getData();
 					}
 					else {
-						currentDragOverFolder = ((DroppedElement)item.getData()).getParent();
+						dragOverFolder = ((DroppedElement)item.getData()).getParent();
 					}
 				}
 	        	
 				if(draggedElement instanceof EncryptedFileDob) {
 					EncryptedFileDob draggedFile = (EncryptedFileDob) draggedElement;
 		    		draggedElement.getParent().removeFile(draggedFile);
-		    		draggedFile.setParent(currentDragOverFolder);
+		    		draggedFile.setParent(dragOverFolder);
 		    		encryptedFileDao.updateFile(draggedFile);
-		    		currentDragOverFolder.addFile(draggedFile);
+		    		dragOverFolder.addFile(draggedFile);
 				}
 				else if(draggedElement instanceof EncryptedFolderDob) {
 					EncryptedFolderDob draggedFolder = (EncryptedFolderDob) draggedElement;
 		    		draggedElement.getParent().removeFolder(draggedFolder);
-		    		draggedFolder.setParent(currentDragOverFolder);
+		    		draggedFolder.setParent(dragOverFolder);
 		    		encryptedFolderDao.updateFolder(draggedFolder);
-		    		currentDragOverFolder.addFolder(draggedFolder);
+		    		dragOverFolder.addFolder(draggedFolder);
 				}
-	    		currentDragOverFolder=root;
+	    		dragOverFolder=root;
         	}
         }
     	

@@ -36,7 +36,7 @@ public class TreeDragSourceListener implements DragSourceListener {
 	public void dragStart(DragSourceEvent event)
 	{
 		TreeItem[] selection = this.tree.getSelection();
-		if (selection.length > 0 && selection[0].getItemCount() == 0) {
+		if (selection.length > 0 && selection[0].getItemCount() >= 0) {
 			event.doit = true;
 			for(TreeItem currentSelection : selection) {
 				dragSourceItems.add(currentSelection);
