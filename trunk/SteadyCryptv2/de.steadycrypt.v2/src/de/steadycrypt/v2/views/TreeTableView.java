@@ -55,7 +55,6 @@ import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.DecryptHandler;
-import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
@@ -81,7 +80,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	private Action addFileAction, removeAction;
 
 	private DecryptHandler decryptHandler = new DecryptHandler();
-	private FileDropHandler fileDropHandler = new FileDropHandler();
 	
 	private EncryptedFolderDao encryptedFolderDao;
 	private EncryptedFileDao encryptedFileDao;
