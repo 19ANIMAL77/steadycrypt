@@ -16,6 +16,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -33,7 +34,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
@@ -47,6 +47,8 @@ import org.eclipse.ui.part.ViewPart;
 import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
+import de.steadycrypt.v2.bob.EncryptedFolder;
+import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.DecryptHandler;
 import de.steadycrypt.v2.core.DeleteFileHandler;
@@ -70,6 +72,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
     private Action exportSelectionAction;
     private Action deleteSelectionAction;
+    private Action newFolderAction;
     private Action expandAllAction;
     private Action collapseAllAction;
     private Action selectAllAction;
@@ -115,15 +118,14 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         toolBarManager = new ToolBarManager();
         toolBarManager.add(exportSelectionAction);
         toolBarManager.add(deleteSelectionAction);
+        toolBarManager.add(newFolderAction);
+        toolBarManager.add(new Separator("static"));
         toolBarManager.add(expandAllAction);
         toolBarManager.add(collapseAllAction);
         toolBarManager.add(selectAllAction);
 
         ToolBar toolbar = toolBarManager.createControl(content);
         toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
-
-        Label horizontalSeparator = new Label(content, SWT.SEPARATOR | SWT.HORIZONTAL);
-        horizontalSeparator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         // Create the tree viewer as a child of the composite parent
 		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);		
@@ -205,7 +207,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         		{
                     deleteFileHandler.processData((TreeSelection)treeViewer.getSelection());
                     treeViewer.refresh();
-    	        	SideBarView.updateFileTypeFilter();	
+    	        	SideBarView.updateFileTypeFilter();
         		}
         	}
         };
@@ -213,6 +215,29 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         deleteSelectionAction.setText(Messages.TableView_DeleteFile);
         deleteSelectionAction.setToolTipText(Messages.TableView_DeleteFile_Tooltip);
         deleteSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE));
+        
+        newFolderAction = new Action() {
+        	public void run()
+        	{
+        		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_InfoDialog_Title, "Bitte name eingeben", "", null);
+        		newFolderDialog.open();
+        		EncryptedFolderDob parentFolder = root;
+        		if(treeViewer.getSelection() != null) {
+        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
+
+        			if(selectedElement instanceof EncryptedFolderDob)
+        				parentFolder = (EncryptedFolderDob)selectedElement;
+        			else if(selectedElement instanceof EncryptedFileDob)
+        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
+        		}
+        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue(), new Date(System.currentTimeMillis()), "", root)));
+        		treeViewer.refresh();
+        	}
+        };
+        
+        newFolderAction.setText(Messages.TableView_NewFolder);
+        newFolderAction.setToolTipText(Messages.TableView_NewFolder_Tooltip);
+        newFolderAction.setImageDescriptor(Activator.getImageDescriptor("icons/folder_add.png"));
         
         expandAllAction = new Action() {
         	public void run()

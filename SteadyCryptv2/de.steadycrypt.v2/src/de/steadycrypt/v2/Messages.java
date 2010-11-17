@@ -35,6 +35,8 @@ public class Messages extends NLS
     public static String TableView_ExportFile_Tooltip;
     public static String TableView_DeleteFile;
     public static String TableView_DeleteFile_Tooltip;
+    public static String TableView_NewFolder;
+    public static String TableView_NewFolder_Tooltip;
     public static String TableView_ExpandAll;
     public static String TableView_ExpandAll_Tooltip;
     public static String TableView_CollapseAll;
