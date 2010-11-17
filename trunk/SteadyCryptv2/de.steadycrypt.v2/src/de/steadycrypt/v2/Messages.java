@@ -18,12 +18,9 @@ public class Messages extends NLS
 
     public static String DATE_FORMAT;
 	public static String FILE;
-	public static String RESET_FAVORIT;
 	
     public static String Filter_NONE;
-	
     public static String FileTypeFilter_FOLDER;
-	
     public static String EncryptionDateFilter_WEEK;
     public static String EncryptionDateFilter_MONTH;
     public static String EncryptionDateFilter_YEAR;
@@ -58,13 +55,12 @@ public class Messages extends NLS
     public static String SideBarView_Favorites;
     public static String SideBarView_SaveFavorite;
     public static String SideBarView_SaveFavoriteButton;
-    public static String SideBarView_LoadFavorite;
-    public static String SideBarView_LoadFavoriteButton;
+    public static String SideBarView_ClearFilters;
+    public static String SideBarView_ClearFiltersButton;
     public static String SideBarView_DeleteFavorite;
     public static String SideBarView_DeleteFavoriteButton;
 
     public static String SideBarView_ErrorDialog_Title;
-    public static String SideBarView_ErrorDialog_CantDelete;
     public static String SideBarView_ErrorDialog_MissingName;
     public static String SideBarView_WarningDialog_Title;
     public static String SideBarView_WarningDialog_Override;

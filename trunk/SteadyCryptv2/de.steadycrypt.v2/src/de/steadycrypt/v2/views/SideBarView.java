@@ -21,11 +21,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -77,13 +77,14 @@ public class SideBarView extends ViewPart {
     private Action saveFavoriteAction;
     private Action loadFavoriteAction;
     private Action deleteFavoriteAction;
+    private Action clearFiltersAction;
     
     private Text txtSearchField;
     private Text txtSaveFavorite;
     private static Combo comboFileTypes;
     private Combo comboEncryptionDate;
     private Button saveButton;
-    private Button loadButton;
+    private Button clearButton;
     private Button deleteButton;
     private Table table;
     private TableViewer tableViewer;
@@ -99,7 +100,7 @@ public class SideBarView extends ViewPart {
 		
 	    favorites = filterFavoriteDao.getFavorites();		
 	
-		// First part - Properties for filters
+		// General layout / creating FormToolKit
 		FormToolkit toolKit = new FormToolkit(PlatformUI.getWorkbench().getDisplay());
 
 		GridLayout layout = new GridLayout(1, true);
@@ -107,7 +108,7 @@ public class SideBarView extends ViewPart {
 		layout.marginHeight = 0;
 		parent.setLayout(layout);
 
-		// Filters Section
+		// Filters Section - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		
 		Section filterSection = toolKit.createSection(parent, Section.TITLE_BAR);
 		filterSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -141,10 +142,11 @@ public class SideBarView extends ViewPart {
 		comboEncryptionDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		initializeEncryptionDateFilter();
 
-		// Save Filter Part
+		// Save Filter Part - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		
         Label horizontalSeparator = new Label(filterComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
         horizontalSeparator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 2, 1));
+        horizontalSeparator.setVisible(false);
 		
 		final Label lblSaveFavorite = new Label(filterComposite, SWT.FLAT);
 		lblSaveFavorite.setText(Messages.SideBarView_SaveFavorite);
@@ -154,11 +156,11 @@ public class SideBarView extends ViewPart {
 		txtSaveFavorite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		
 		saveButton = new Button(filterComposite, SWT.FLAT);
-		saveButton.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false, 1, 1));
+		saveButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		saveButton.setText(Messages.SideBarView_SaveFavoriteButton);
 		saveButton.setImage(Activator.getImageDescriptor("icons/favorite-add.png").createImage());
 		
-		// Favorites Section
+		// Favorites Section - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 		Section favoritesSection = toolKit.createSection(parent, Section.TITLE_BAR);
 		favoritesSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -214,10 +216,9 @@ public class SideBarView extends ViewPart {
         
         tableViewer.setInput(favorites.toArray());
 		
-		loadButton = new Button(favoritesComposite, SWT.FLAT);
-		loadButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-		loadButton.setText(Messages.SideBarView_LoadFavoriteButton);
-		loadButton.setImage(Activator.getImageDescriptor("icons/favorite.png").createImage());
+		clearButton = new Button(favoritesComposite, SWT.FLAT);
+		clearButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		clearButton.setText(Messages.SideBarView_ClearFiltersButton);
 		
 		deleteButton = new Button(favoritesComposite, SWT.FLAT);
 		deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -232,10 +233,9 @@ public class SideBarView extends ViewPart {
 	
 	private void createActions()
 	{
+		// to save current filter settings to favorites - name needs to be specified, if selected name exists, confirmation is required
     	saveFavoriteAction = new Action() {
-            
-			public void run()
-        	{	
+			public void run() {	
 				if(!(txtSaveFavorite.getText().length() > 0))
 				{
 					MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_ErrorDialog_Title, Messages.SideBarView_ErrorDialog_MissingName);
@@ -271,10 +271,10 @@ public class SideBarView extends ViewPart {
         	}
         };
         
+        // to load selected favorite
     	loadFavoriteAction = new Action() {
-            
 			public void run()
-        	{	
+			{	
 				FilterFavoriteDob filter;
 				filter = (FilterFavoriteDob)((StructuredSelection)tableViewer.getSelection()).getFirstElement();
 				
@@ -301,17 +301,14 @@ public class SideBarView extends ViewPart {
 				encryptionDateFilterString = comboEncryptionDate.getText();
 				calculateEncryptionDateFilter();
 				txtSaveFavorite.setText(filter.getName());
+                fireSideBarEvent();
         	}
         };
-
-        loadFavoriteAction.setText(Messages.SideBarView_LoadFavorite);
-        loadFavoriteAction.setToolTipText(Messages.SideBarView_LoadFavorite);
-        loadFavoriteAction.setImageDescriptor(Activator.getImageDescriptor("icons/favorite.png"));
         
+        // to delete the selected favorite - Message dialog asks for confirmation
     	deleteFavoriteAction = new Action() {
             @SuppressWarnings("rawtypes")
-			public void run()
-        	{
+			public void run() {
             	try
                 {
                 	StructuredSelection selection;
@@ -325,11 +322,6 @@ public class SideBarView extends ViewPart {
 	                {
 	                	Object nextElement = iterator.next();
 	                	if(nextElement instanceof FilterFavoriteDob) {
-	                		if(((FilterFavoriteDob)nextElement).getName().equalsIgnoreCase(Messages.RESET_FAVORIT))
-	                		{
-	                			MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_ErrorDialog_Title, Messages.SideBarView_ErrorDialog_CantDelete);
-	                			continue;
-	                		}
 	                		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_WarningDialog_Title, NLS.bind(Messages.SideBarView_WarningDialog_Delete, ((FilterFavoriteDob)nextElement).getName())))
 	                    	{
 	                    		filterFavoriteDao.deleteFavorite((FilterFavoriteDob)nextElement);
@@ -349,18 +341,38 @@ public class SideBarView extends ViewPart {
         deleteFavoriteAction.setText(Messages.SideBarView_DeleteFavorite);
         deleteFavoriteAction.setToolTipText(Messages.SideBarView_DeleteFavorite);
         deleteFavoriteAction.setImageDescriptor(Activator.getImageDescriptor("icons/favorite-delete.png"));
+        
+        // clearing all filters currently set
+    	clearFiltersAction = new Action() {
+			public void run()
+			{
+				// clear favorite name text field
+				txtSaveFavorite.setText("");
+				// clear filename filter
+				txtSearchField.setText("");
+				fileNameFilterString = txtSearchField.getText();
+				// clear file type filter
+				comboFileTypes.setText(Messages.Filter_NONE);
+				fileTypeFilterString = comboFileTypes.getText();
+				// clear encryption date filter
+				comboEncryptionDate.setText(Messages.Filter_NONE);
+				encryptionDateFilterString = comboEncryptionDate.getText();
+				calculateEncryptionDateFilter();
+				fireSideBarEvent();
+        	}
+        };
 	}
 	
+	/**
+	 * Adds all needed listeners to the corresponding gui elements
+	 */
 	private void addListeners()
 	{
-		
-		tableViewer.addDoubleClickListener(new IDoubleClickListener(){
-            public void doubleClick(DoubleClickEvent event)
-            {
+		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
                 loadFavoriteAction.run();
-                fireSideBarEvent();
-            }
-        });
+			}
+		});
 		
 		/**
 		 * Refresh the static fileNameFilterString every time a key is
@@ -423,10 +435,10 @@ public class SideBarView extends ViewPart {
 			public void widgetDefaultSelected(SelectionEvent e) { }
 		});
 		
-		loadButton.addSelectionListener(new SelectionListener() {
+		clearButton.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				loadFavoriteAction.run();
+				clearFiltersAction.run();
 			}
 
 			@Override
@@ -444,12 +456,14 @@ public class SideBarView extends ViewPart {
 		});
 	}
 	
+	/**
+	 * Creates the context menu for the favorites table
+	 */
 	private void createContextMenu()
 	{   
         MenuManager popupMenuManager = new MenuManager("PopupMenu");
         IMenuListener listener = new IMenuListener() { 
         public void menuAboutToShow(IMenuManager manager) { 
-            manager.add(loadFavoriteAction); 
             manager.add(deleteFavoriteAction); 
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
             } 
@@ -461,6 +475,9 @@ public class SideBarView extends ViewPart {
         table.setMenu(menu);
 	}
 	
+	/**
+	 * Fills the file type combo with all found file types.
+	 */
 	public static void updateFileTypeFilter()
 	{
     	comboFileTypes.removeAll();
@@ -473,6 +490,9 @@ public class SideBarView extends ViewPart {
 	    comboFileTypes.setText(Messages.Filter_NONE);
 	}
 	
+	/**
+	 * Fills the encryptionDate filter combo with its values.
+	 */
 	private void initializeEncryptionDateFilter()
 	{
 		comboEncryptionDate.removeAll();
@@ -484,6 +504,11 @@ public class SideBarView extends ViewPart {
 		comboEncryptionDate.setText(Messages.Filter_NONE);
 	}
 	
+	/**
+	 * Converts the selected filter into a date that can be compared to the files/folders
+	 * encryption date. Also stores an enum value to eP, which will be written to the database
+	 * in case the filter is being saved.
+	 */
 	private void calculateEncryptionDateFilter() 
 	{
 		GregorianCalendar gc = new GregorianCalendar();
@@ -547,6 +572,10 @@ public class SideBarView extends ViewPart {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
+	/**
+	 * One of those values is written into the database. This enum is required to be able
+	 * to keep the filter multi language compatible.
+	 */
 	private enum EncryptionPeriod {
 		YEAR, MONTH, WEEK;
 	}
