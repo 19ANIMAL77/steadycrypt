@@ -18,9 +18,6 @@ public class EncryptedFolderDob extends EncryptedFolder {
 	private List<EncryptedFolderDob> folders;
 	private List<EncryptedFileDob> files;
 
-//	private static IDroppedElementVisitor adder = new Adder();
-//	private static IDroppedElementVisitor remover = new Remover();
-
 	private int id;
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -121,53 +118,9 @@ public class EncryptedFolderDob extends EncryptedFolder {
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-//	public void add(DroppedElement toAdd) {
-//		toAdd.accept(adder, this);
-//	}
-//
-//	public void remove(DroppedElement toRemove)
-//	{
-//		toRemove.accept(remover, this);
-//	}
-
 	public int size()
 	{
 		return getFolders().size() + getFiles().size();
 	}
-
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-//	private static class Adder implements IDroppedElementVisitor
-//	{
-//		public void visitFolder(EncryptedFolderDob folder, Object argument)
-//		{
-//			((EncryptedFolderDob) argument).addFolder(folder);
-//		}
-//
-//		public void visitFile(EncryptedFileDob file, Object argument)
-//		{
-//			((EncryptedFolderDob) argument).addFile(file);
-//		}
-//	}
-//
-//	private static class Remover implements IDroppedElementVisitor
-//	{
-//		public void visitFolder(EncryptedFolderDob folder, Object argument)
-//		{
-//			((EncryptedFolderDob) argument).removeFolder(folder);
-//		}
-//
-//		public void visitFile(EncryptedFileDob file, Object argument)
-//		{
-//			((EncryptedFolderDob) argument).removeFile(file);
-//		}
-//	}
-	
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-//	public void accept(IDroppedElementVisitor visitor, Object passAlongArgument)
-//	{
-//		visitor.visitFolder(this, passAlongArgument);
-//	}
 
 }

@@ -48,8 +48,6 @@ public abstract class DroppedElement {
 			this.listener = NullDeltaListener.getSoleInstance();
 		}
 	}
-	
-//	public abstract void accept(IDroppedElementVisitor visitor, Object passAlongArgument);
 
 	protected void fireAdd(Object added) {
 		listener.add(new DeltaEvent(added));
