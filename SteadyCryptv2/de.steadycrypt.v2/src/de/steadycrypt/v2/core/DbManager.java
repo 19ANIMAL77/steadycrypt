@@ -148,10 +148,7 @@ public class DbManager {
 	        sql.append("encryptionperiod VARCHAR(5),");
 	        sql.append("PRIMARY KEY (id))");
 	    s.execute(sql.toString());
-            
-        // Insert "(Reset)" entry into table "favorite"
-        s.execute("INSERT INTO favorite (name, filename, filetype, encryptionperiod) VALUES ('(Reset)', null, null, null)");
-        log.info("Added (Reset)-Favorite");
+        log.info("Created table FAVORITE");
         DbManager.conn.commit();        
     }
     
