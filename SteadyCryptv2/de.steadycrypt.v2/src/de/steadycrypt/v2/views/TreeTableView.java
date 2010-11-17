@@ -7,6 +7,7 @@
 package de.steadycrypt.v2.views;
 
 import java.sql.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -194,9 +195,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	exportSelectionAction = new Action() {
         	public void run()
         	{
-                decryptHandler.processData((TreeSelection)treeViewer.getSelection());
-                treeViewer.refresh();
-	        	SideBarView.updateFileTypeFilter();
+                if(!treeViewer.getSelection().isEmpty()) {
+	                decryptHandler.processData((TreeSelection)treeViewer.getSelection());
+	                treeViewer.refresh();
+		        	SideBarView.updateFileTypeFilter();
+                }
         	}
         };
         
@@ -207,12 +210,14 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         deleteSelectionAction = new Action() {
         	public void run()
         	{
-        		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_WarningDialog_Title, Messages.TableView_WarningDialog_Delete))
-        		{
-                    deleteFileHandler.processData((TreeSelection)treeViewer.getSelection());
-                    treeViewer.refresh();
-    	        	SideBarView.updateFileTypeFilter();
-        		}
+    			if(!treeViewer.getSelection().isEmpty()) {
+	        		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_WarningDialog_Title, Messages.TableView_WarningDialog_Delete))
+	        		{
+	                    deleteFileHandler.processData((TreeSelection)treeViewer.getSelection());
+	                    treeViewer.refresh();
+	    	        	SideBarView.updateFileTypeFilter();
+	        		}
+    			}
         	}
         };
         
@@ -226,7 +231,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_NewFolderDialog_Title, Messages.TableView_NewFolderDialog, "", new SteadyInputValidator());
         		if(newFolderDialog.open() == Window.OK) {
 	        		EncryptedFolderDob parentFolder = root;
-	        		if(treeViewer.getSelection() != null) {
+	        		if(!treeViewer.getSelection().isEmpty()) {
 	        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
 	
 	        			if(selectedElement instanceof EncryptedFolderDob)
@@ -245,25 +250,29 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         newFolderAction.setImageDescriptor(Activator.getImageDescriptor("icons/folder_add.png"));
         
         renameAction = new Action() {
-        	public void run()
+        	@SuppressWarnings("unchecked")
+			public void run()
         	{
-        		if(treeViewer.getSelection() != null) {
-        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
-        			String nameWithoutExtension = selectedElement instanceof EncryptedFileDob ? selectedElement.getName().substring(0, selectedElement.getName().lastIndexOf(".")) : selectedElement.getName();
-        			InputDialog renameDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_RenameDialog_Title, NLS.bind(Messages.TableView_RenameDialog, nameWithoutExtension), nameWithoutExtension, new SteadyInputValidator());
+        		if(!treeViewer.getSelection().isEmpty()) {
+        			Iterator<DroppedElement> selectedElementsIterator = ((TreeSelection)treeViewer.getSelection()).iterator();
         			
-        			if(renameDialog.open() == Window.OK) {
-        				System.out.println("in if");
-	
-	        			if(selectedElement instanceof EncryptedFolderDob) {
-	        				selectedElement.setName(renameDialog.getValue());
-	        				encryptedFolderDao.updateFolder((EncryptedFolderDob)selectedElement);
-	        			}
-	        			else if(selectedElement instanceof EncryptedFileDob) {
-	        				selectedElement.setName(renameDialog.getValue() + "." + ((EncryptedFileDob)selectedElement).getType());
-	        				encryptedFileDao.updateFile((EncryptedFileDob)selectedElement);
-	        			}
-	        		}
+        			while(selectedElementsIterator.hasNext())
+        			{
+        				DroppedElement selectedElement = selectedElementsIterator.next();
+        				String nameWithoutExtension = selectedElement instanceof EncryptedFileDob ? selectedElement.getName().substring(0, selectedElement.getName().lastIndexOf(".")) : selectedElement.getName();
+	        			InputDialog renameDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_RenameDialog_Title, NLS.bind(Messages.TableView_RenameDialog, nameWithoutExtension), nameWithoutExtension, new SteadyInputValidator());
+	        			
+	        			if(renameDialog.open() == Window.OK) {
+		        			if(selectedElement instanceof EncryptedFolderDob) {
+		        				selectedElement.setName(renameDialog.getValue());
+		        				encryptedFolderDao.updateFolder((EncryptedFolderDob)selectedElement);
+		        			}
+		        			else if(selectedElement instanceof EncryptedFileDob) {
+		        				selectedElement.setName(renameDialog.getValue() + "." + ((EncryptedFileDob)selectedElement).getType());
+		        				encryptedFileDao.updateFile((EncryptedFileDob)selectedElement);
+		        			}
+		        		}
+        			}
 	        		treeViewer.refresh();
         		}
         	}
