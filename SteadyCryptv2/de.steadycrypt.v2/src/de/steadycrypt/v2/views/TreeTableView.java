@@ -174,7 +174,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);    
 	    // TODO: und welchen TransferType muss man hier wählen?
 	    dropTarget.setTransfer(new Transfer[] {TextTransfer.getInstance(), FileTransfer.getInstance()});
-	    dropTarget.addDropListener(new TreeDropTargetAdapter(tree, treeViewer, root));
+	    dropTarget.addDropListener(new TreeDropTargetAdapter(treeViewer, root));
 
 	    addListeners();
         createContextMenu();

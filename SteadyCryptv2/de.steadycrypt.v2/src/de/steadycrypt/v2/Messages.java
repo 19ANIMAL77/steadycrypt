@@ -43,6 +43,8 @@ public class Messages extends NLS
     public static String TableView_SelectAll_Tooltip;
 
     public static String TableView_ExportFileDialog_Title;
+    public static String TableView_InfoDialog_Title;
+    public static String TableView_InfoDialog_CantMove;
     public static String TableView_WarningDialog_Title;
     public static String TableView_WarningDialog_Delete;
 
