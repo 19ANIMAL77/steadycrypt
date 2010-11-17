@@ -9,17 +9,17 @@ package de.steadycrypt.v2.views.model;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.FileTransfer;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
 
+import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
@@ -33,7 +33,6 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 	private static Logger log = Logger.getLogger(TreeDropTargetAdapter.class);
 
 	private FileTransfer fileTransfer = FileTransfer.getInstance();
-	private Tree tree;
 	private TreeViewer treeViewer;
 	private EncryptedFolderDob root;
 	private EncryptedFolderDob dragOverFolder;
@@ -42,9 +41,8 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	private FileDropHandler fileDropHandler = new FileDropHandler();
 	
-	public TreeDropTargetAdapter(Tree tree, TreeViewer treeViewer, EncryptedFolderDob dragOverFolder)
+	public TreeDropTargetAdapter(TreeViewer treeViewer, EncryptedFolderDob dragOverFolder)
 	{
-		this.tree = tree;
 		this.treeViewer = treeViewer;
 		this.root = dragOverFolder;
 		this.dragOverFolder = root;
@@ -68,15 +66,9 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 		
 		if (event.item != null) {
 			TreeItem item = (TreeItem)event.item;
-//			DroppedElement dragOverElement = (DroppedElement)item.getData();
-//			log.debug(dragOverElement.getName());
+			DroppedElement dragOverElement = (DroppedElement)item.getData();
 			
-			Point pt = PlatformUI.getWorkbench().getDisplay().map(null, tree, event.x, event.y);
-			Rectangle bounds = item.getBounds();
-			if (pt.y < bounds.y + bounds.height/3) {
-				event.feedback |= DND.FEEDBACK_INSERT_BEFORE;
-			} 
-			else if (pt.y > bounds.y + 2*bounds.height/3) {
+			if (dragOverElement instanceof EncryptedFileDob) {
 				event.feedback |= DND.FEEDBACK_INSERT_AFTER;
 			} 
 			else {
@@ -122,8 +114,9 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
     	{
         	// DraggedElement within the tree
         	List<DroppedElement> draggedElements = TreeDragSourceListener.draggedDroppedElements;
+        	int itemsNotMoved = 0;
         	
-        	for(DroppedElement draggedElement : draggedElements) {
+        	draggedElements : for(DroppedElement draggedElement : draggedElements) {
 	    		TreeItem item = null; 
 				
 				if(event.item != null)
@@ -140,20 +133,38 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 	        	
 				if(draggedElement instanceof EncryptedFileDob) {
 					EncryptedFileDob draggedFile = (EncryptedFileDob) draggedElement;
-		    		draggedElement.getParent().removeFile(draggedFile);
+					draggedFile.getParent().removeFile(draggedFile);
 		    		draggedFile.setParent(dragOverFolder);
 		    		encryptedFileDao.updateFile(draggedFile);
 		    		dragOverFolder.addFile(draggedFile);
 				}
 				else if(draggedElement instanceof EncryptedFolderDob) {
 					EncryptedFolderDob draggedFolder = (EncryptedFolderDob) draggedElement;
-		    		draggedElement.getParent().removeFolder(draggedFolder);
+					
+					EncryptedFolderDob currentDragOverFolder = dragOverFolder;
+					
+					while(!currentDragOverFolder.equals(root)) {
+						if(currentDragOverFolder.equals(draggedFolder)) {
+							itemsNotMoved++;
+							continue draggedElements;
+						}
+						currentDragOverFolder = currentDragOverFolder.getParent();
+					}
+					
+					draggedFolder.getParent().removeFolder(draggedFolder);
 		    		draggedFolder.setParent(dragOverFolder);
 		    		encryptedFolderDao.updateFolder(draggedFolder);
 		    		dragOverFolder.addFolder(draggedFolder);
 				}
 	    		dragOverFolder=root;
         	}
+        	
+        	if(itemsNotMoved > 0) {
+        		MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_InfoDialog_Title, NLS.bind(Messages.TableView_InfoDialog_CantMove, itemsNotMoved));
+        		System.out.println(itemsNotMoved);
+        	}
+        	
+        	itemsNotMoved = 0;
         }
     	
     	TreeDragSourceListener.draggedDroppedElements.clear();
