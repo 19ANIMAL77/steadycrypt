@@ -219,7 +219,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         newFolderAction = new Action() {
         	public void run()
         	{
-        		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_InfoDialog_Title, "Bitte name eingeben", "", null);
+        		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_NewFolderDialog_Title, Messages.TableView_NewFolderDialog, "", null);
         		newFolderDialog.open();
         		EncryptedFolderDob parentFolder = root;
         		if(treeViewer.getSelection() != null) {
