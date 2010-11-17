@@ -358,6 +358,7 @@ public class SideBarView extends ViewPart {
 				comboEncryptionDate.setText(Messages.Filter_NONE);
 				encryptionDateFilterString = comboEncryptionDate.getText();
 				calculateEncryptionDateFilter();
+				table.deselectAll();
 				fireSideBarEvent();
         	}
         };
