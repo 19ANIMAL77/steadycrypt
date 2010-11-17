@@ -481,6 +481,7 @@ public class SideBarView extends ViewPart {
 	 */
 	public static void updateFileTypeFilter()
 	{
+		String currentValue = comboFileTypes.getText();
     	comboFileTypes.removeAll();
     	comboFileTypes.add(Messages.Filter_NONE);
     	comboFileTypes.add(Messages.FileTypeFilter_FOLDER);
@@ -488,7 +489,7 @@ public class SideBarView extends ViewPart {
 	    {
 	    	comboFileTypes.add(fileType);
 	    }
-	    comboFileTypes.setText(Messages.Filter_NONE);
+	    comboFileTypes.setText(currentValue != null ? currentValue : Messages.Filter_NONE);
 	}
 	
 	/**
