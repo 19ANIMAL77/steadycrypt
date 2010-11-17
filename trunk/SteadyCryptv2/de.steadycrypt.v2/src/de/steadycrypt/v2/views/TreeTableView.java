@@ -23,6 +23,8 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.dnd.DND;
@@ -52,6 +54,7 @@ import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.DecryptHandler;
 import de.steadycrypt.v2.core.DeleteFileHandler;
+import de.steadycrypt.v2.core.SteadyInputValidator;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
@@ -73,6 +76,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private Action exportSelectionAction;
     private Action deleteSelectionAction;
     private Action newFolderAction;
+    private Action renameAction;
     private Action expandAllAction;
     private Action collapseAllAction;
     private Action selectAllAction;
@@ -219,25 +223,54 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         newFolderAction = new Action() {
         	public void run()
         	{
-        		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_NewFolderDialog_Title, Messages.TableView_NewFolderDialog, "", null);
-        		newFolderDialog.open();
-        		EncryptedFolderDob parentFolder = root;
-        		if(treeViewer.getSelection() != null) {
-        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
-
-        			if(selectedElement instanceof EncryptedFolderDob)
-        				parentFolder = (EncryptedFolderDob)selectedElement;
-        			else if(selectedElement instanceof EncryptedFileDob)
-        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
+        		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_NewFolderDialog_Title, Messages.TableView_NewFolderDialog, "", new SteadyInputValidator());
+        		if(newFolderDialog.open() == Window.OK) {
+	        		EncryptedFolderDob parentFolder = root;
+	        		if(treeViewer.getSelection() != null) {
+	        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
+	
+	        			if(selectedElement instanceof EncryptedFolderDob)
+	        				parentFolder = (EncryptedFolderDob)selectedElement;
+	        			else if(selectedElement instanceof EncryptedFileDob)
+	        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
+	        		}
+	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue(), new Date(System.currentTimeMillis()), "", root)));
+	        		treeViewer.refresh();
         		}
-        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue(), new Date(System.currentTimeMillis()), "", root)));
-        		treeViewer.refresh();
         	}
         };
         
         newFolderAction.setText(Messages.TableView_NewFolder);
         newFolderAction.setToolTipText(Messages.TableView_NewFolder_Tooltip);
         newFolderAction.setImageDescriptor(Activator.getImageDescriptor("icons/folder_add.png"));
+        
+        renameAction = new Action() {
+        	public void run()
+        	{
+        		if(treeViewer.getSelection() != null) {
+        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
+        			String nameWithoutExtension = selectedElement instanceof EncryptedFileDob ? selectedElement.getName().substring(0, selectedElement.getName().lastIndexOf(".")) : selectedElement.getName();
+        			InputDialog renameDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_RenameDialog_Title, NLS.bind(Messages.TableView_RenameDialog, nameWithoutExtension), nameWithoutExtension, new SteadyInputValidator());
+        			
+        			if(renameDialog.open() == Window.OK) {
+        				System.out.println("in if");
+	
+	        			if(selectedElement instanceof EncryptedFolderDob) {
+	        				selectedElement.setName(renameDialog.getValue());
+	        				encryptedFolderDao.updateFolder((EncryptedFolderDob)selectedElement);
+	        			}
+	        			else if(selectedElement instanceof EncryptedFileDob) {
+	        				selectedElement.setName(renameDialog.getValue() + "." + ((EncryptedFileDob)selectedElement).getType());
+	        				encryptedFileDao.updateFile((EncryptedFileDob)selectedElement);
+	        			}
+	        		}
+	        		treeViewer.refresh();
+        		}
+        	}
+        };
+        
+        renameAction.setText(Messages.TableView_Rename);
+        renameAction.setImageDescriptor(Activator.getImageDescriptor("icons/rename.png"));
         
         expandAllAction = new Action() {
         	public void run()
@@ -306,13 +339,14 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         MenuManager popupMenuManager = new MenuManager("PopupMenu");
         IMenuListener listener = new IMenuListener() { 
         public void menuAboutToShow(IMenuManager manager) { 
-            manager.add(exportSelectionAction); 
-            manager.add(deleteSelectionAction); 
-            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS)); 
-            } 
-        }; 
-        popupMenuManager.addMenuListener(listener); 
-        popupMenuManager.setRemoveAllWhenShown(true); 
+            manager.add(exportSelectionAction);
+            manager.add(renameAction);
+            manager.add(deleteSelectionAction);
+            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            }
+        };
+        popupMenuManager.addMenuListener(listener);
+        popupMenuManager.setRemoveAllWhenShown(true);
         getSite().registerContextMenu(popupMenuManager, getSite().getSelectionProvider());
         Menu menu = popupMenuManager.createContextMenu(tree);
         tree.setMenu(menu);

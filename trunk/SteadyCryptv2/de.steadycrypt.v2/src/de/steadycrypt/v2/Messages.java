@@ -37,6 +37,7 @@ public class Messages extends NLS
     public static String TableView_DeleteFile_Tooltip;
     public static String TableView_NewFolder;
     public static String TableView_NewFolder_Tooltip;
+    public static String TableView_Rename;
     public static String TableView_ExpandAll;
     public static String TableView_ExpandAll_Tooltip;
     public static String TableView_CollapseAll;
@@ -47,6 +48,8 @@ public class Messages extends NLS
     public static String TableView_ExportFileDialog_Title;
     public static String TableView_NewFolderDialog_Title;
     public static String TableView_NewFolderDialog;
+    public static String TableView_RenameDialog_Title;
+    public static String TableView_RenameDialog;
     public static String TableView_InfoDialog_Title;
     public static String TableView_InfoDialog_CantMove;
     public static String TableView_WarningDialog_Title;
@@ -71,6 +74,11 @@ public class Messages extends NLS
     public static String SideBarView_WarningDialog_Title;
     public static String SideBarView_WarningDialog_Override;
     public static String SideBarView_WarningDialog_Delete;
+    
+    public static String SteadyInputValidator_Error_NoName;
+    public static String SteadyInputValidator_Error_ToLong;
+    public static String SteadyInputValidator_Error_DontBeginnWithDot;
+    public static String SteadyInputValidator_Error_SpecialCharacter;
 
     // =========================================================================
 
