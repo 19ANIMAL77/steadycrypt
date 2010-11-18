@@ -489,7 +489,7 @@ public class SideBarView extends ViewPart {
 	    {
 	    	comboFileTypes.add(fileType);
 	    }
-	    comboFileTypes.setText(currentValue != null ? currentValue : Messages.Filter_NONE);
+	    comboFileTypes.setText(!currentValue.equalsIgnoreCase("") ? currentValue : Messages.Filter_NONE);
 	}
 	
 	/**
