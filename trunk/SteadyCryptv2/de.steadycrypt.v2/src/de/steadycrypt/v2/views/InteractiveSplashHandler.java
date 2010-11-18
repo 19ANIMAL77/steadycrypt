@@ -1,6 +1,7 @@
 
 package de.steadycrypt.v2.views;
 
+import java.io.File;
 import java.sql.SQLException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -32,11 +33,18 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private final static int F_COLUMN_COUNT = 3;
 	private static int loginCount = 1;
 	
+	private static boolean isFirstStartUp = true;
+	
 	private Composite fCompositeLogin;
 	private Text fTextPassword;
+	private Text fTextPasswordValidate;
+	
+	private Button fButtonRegister;
 	private Button fButtonOK;
 	private Button fButtonCancel;
 	private boolean fAuthenticated;
+	
+	private File scDirectory;
 	
 	/**
 	 * 
@@ -44,9 +52,12 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	public InteractiveSplashHandler() {
 		fCompositeLogin = null;
 		fTextPassword = null;
+		fTextPasswordValidate = null;
+		fButtonRegister = null;
 		fButtonOK = null;
 		fButtonCancel = null;
 		fAuthenticated = false;
+		scDirectory = null;
 	}
 	
 	/*
@@ -55,6 +66,16 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	 * @see org.eclipse.ui.splash.AbstractSplashHandler#init(org.eclipse.swt.widgets.Shell)
 	 */
 	public void init(final Shell splash) {
+		
+		scDirectory = new File(System.getProperty("user.dir")+"/sc-files/");
+		
+		if (scDirectory.exists())
+			isFirstStartUp = false;
+		else
+		{
+			isFirstStartUp = true;
+		}
+		
 		// Store the shell
 		super.init(splash);
 		// Configure the shell layout
@@ -67,7 +88,10 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		splash.layout(true);
 		
 		// Set default button
-		splash.setDefaultButton(this.fButtonOK);
+		if(!isFirstStartUp)
+			splash.setDefaultButton(this.fButtonOK);
+		else
+			splash.setDefaultButton(this.fButtonRegister);
 		
 		// Keep the splash screen visible and prevent the RCP application from 
 		// loading until the close button is clicked.
@@ -90,8 +114,18 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	 * 
 	 */
 	private void createUIListeners() {
-		// Create the OK button listeners
-		createUIListenersButtonOK();
+		
+		if(!isFirstStartUp)
+		{
+			// Create the OK button listeners
+			createUIListenersButtonOK();
+		}
+		else
+		{
+			// Create the Register button listeners
+			createUIListenersButtonRegister();
+		}
+
 		// Create the cancel button listeners
 		createUIListenersButtonCancel();
 	}
@@ -119,6 +153,57 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	/**
 	 * 
 	 */
+	private void createUIListenersButtonRegister() {
+		fButtonRegister.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				handleButtonRegisterWidgetSelected();
+			}
+		});
+	}
+	
+	/**
+	 * 
+	 */
+	private void handleButtonRegisterWidgetSelected() {
+		String regPassword = fTextPassword.getText();
+		String regPasswordValidate = fTextPasswordValidate.getText();
+		
+		DbManager manager = DbManager.getInstance();
+		manager.startDb();
+		
+		// Check for > 6 chars
+		// Check for equals entries
+		if((regPassword.length() > 6 && regPasswordValidate.length() > 6)
+				&& (String.valueOf(regPassword).equals(String.valueOf(regPasswordValidate))))
+		{			
+			try 
+			{
+				// Initiate the awesome derby
+				manager.initiateDb("steady", PasswordInterpreter.createPassword(regPassword));
+			}
+			catch (SQLException sqle) {
+				DbManager.printSQLException(sqle);
+			}
+			
+			// Create sc-files directory
+			scDirectory.mkdir();
+			
+			// do login
+			fAuthenticated = true;
+		}
+		else
+		{
+			//TODO: internationalisieren....
+			MessageDialog.openError(
+					getSplash(),
+					"Registration Failed",
+					"A password with a minimum of seven chars must be specified to register. They should be equal also."); 
+		}
+	}
+	
+	/**
+	 * 
+	 */
 	private void createUIListenersButtonOK() {
 		fButtonOK.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -133,7 +218,8 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void handleButtonOKWidgetSelected() {
 		String password = fTextPassword.getText();
 
-		if ((password.length() > 0)) {
+		if (password.length() > 6)
+		{
 			
 			DbManager manager = DbManager.getInstance();
 			manager.startDb();
@@ -142,15 +228,18 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			 * User got 3 chances to enter correct password. After that the application exits.
 			 * Small protection against brute-force.
 			 */
-			try {
+			try 
+			{
 				manager.connectToDb("steady", PasswordInterpreter.createPassword(password));
 				
 				// Login
 				fAuthenticated = true;
 
 			}
-			catch (SQLException sqle) {
+			catch (SQLException sqle)
+			{
 	    		
+				//TODO: internationalisieren....
 				MessageDialog.openError(getSplash(), "Falsches Passwort", "Es wurde kein korrektes Password eingegeben! Versuch "+loginCount+" von 3.");
 	    		
 	    		if(loginCount==3)
@@ -161,11 +250,14 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	    		DbManager.printSQLException(sqle);
 			}
 			
-		} else {
+		} 
+		else 
+		{
+			//TODO: internationalisieren....
 			MessageDialog.openError(
 					getSplash(),
 					"Authentication Failed",
-					"A username and password must be specified to login."); 
+					"A password could not be smaller than six chars."); 
 		}
 	}
 	
@@ -181,10 +273,28 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		createUILabelPassword();
 		// Create the password text widget
 		createUITextPassword();
+		
+		// Create the password validate label & text
+		if(isFirstStartUp){
+			createUILabelPasswordValidate();
+			createUITextPasswordValidate();
+		}
+		
 		// Create the blank label
 		createUILabelBlank();
-		// Create the OK button
-		createUIButtonOK();
+		
+		if(!isFirstStartUp)
+		{
+			// Create the OK button
+			createUIButtonOK();	
+		}
+		else
+		{
+			// Create the Register Button
+			createUIButtonRegister();
+		}
+
+		
 		// Create the cancel button
 		createUIButtonCancel();
 	}		
@@ -217,6 +327,21 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		data.verticalIndent = 10;
 		fButtonOK.setLayoutData(data);
 	}
+	
+	/**
+	 * 
+	 */
+	private void createUIButtonRegister() {
+		// Create the button
+		fButtonRegister = new Button(fCompositeLogin, SWT.PUSH);
+		fButtonRegister.setText("Register"); //$NON-NLS-1$
+		
+		// Configure layout data
+		GridData data = new GridData(SWT.NONE, SWT.NONE, false, false);
+		data.widthHint = F_BUTTON_WIDTH_HINT;
+		data.verticalIndent = 10;
+		fButtonRegister.setLayoutData(data);
+	}	
 
 	/**
 	 * 
@@ -240,6 +365,20 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		fTextPassword.setLayoutData(data);		
 		fTextPassword.setFocus();
 	}
+	
+	/**
+	 * 
+	 */
+	private void createUITextPasswordValidate() {
+		// Create the text widget
+		int style = SWT.PASSWORD | SWT.BORDER;
+		fTextPasswordValidate = new Text(fCompositeLogin, style);
+		// Configure layout data
+		GridData data = new GridData(SWT.NONE, SWT.NONE, false, false);
+		data.widthHint = F_TEXT_WIDTH_HINT;
+		data.horizontalSpan = 2;
+		fTextPasswordValidate.setLayoutData(data);		
+	}
 
 	/**
 	 * 
@@ -254,6 +393,19 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		label.setLayoutData(data);					
 	}
 
+	/**
+	 * 
+	 */
+	private void createUILabelPasswordValidate() {
+		// Create the label
+		Label label = new Label(fCompositeLogin, SWT.NONE);
+		label.setText("&Password 2:"); //$NON-NLS-1$
+		// Configure layout data
+		GridData data = new GridData();
+		data.horizontalIndent = F_LABEL_HORIZONTAL_INDENT;
+		label.setLayoutData(data);					
+	}
+	
 	/**
 	 * 
 	 */
