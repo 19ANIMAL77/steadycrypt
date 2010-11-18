@@ -26,24 +26,26 @@ public class Application implements IApplication {
 	/* (non-Javadoc)
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
 	 */
-	public Object start(IApplicationContext context) throws Exception {
-		DbManager manager = DbManager.getInstance();
-		manager.startDb();
-
-		File f = new File(System.getProperty("user.dir")+"/sc-files/");
+	public Object start(IApplicationContext context) {
 		
-		if (f.exists()) {
-			manager.connectToDb("steady", PasswordInterpreter.createPassword("crypt"));
-		}
-		else {
-			try {
-				manager.initiateDb("steady", PasswordInterpreter.createPassword("crypt"));
-				f.mkdir();
-			}
-			catch (SQLException sqle) {
-				DbManager.printSQLException(sqle);
-			}
-		}
+//		TODO: old startup style - remove if register & login works
+//		DbManager manager = DbManager.getInstance();
+//		manager.startDb();
+//
+//		File f = new File(System.getProperty("user.dir")+"/sc-files/");
+//		
+//		if (f.exists()) {
+//			manager.connectToDb("steady", PasswordInterpreter.createPassword("crypt"));
+//		}
+//		else {
+//			try {
+//				manager.initiateDb("steady", PasswordInterpreter.createPassword("crypt"));
+//				f.mkdir();
+//			}
+//			catch (SQLException sqle) {
+//				DbManager.printSQLException(sqle);
+//			}
+//		}
 		
 		Display display = PlatformUI.createDisplay();
 		try {
