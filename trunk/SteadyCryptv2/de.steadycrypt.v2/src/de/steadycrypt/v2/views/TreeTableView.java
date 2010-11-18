@@ -7,6 +7,7 @@
 package de.steadycrypt.v2.views;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,6 +22,8 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -88,13 +91,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	private EncryptedFolderDao encryptedFolderDao;
 	private EncryptedFileDao encryptedFileDao;
 	private EncryptedFolderDob root;
-	private List<DroppedElement> checkedElements;
 	
 	private Tree tree;
 	private TreeViewer treeViewer;
 	private ViewerFilter searchFilter;
 	private DataTypeFilter dataTypeFilter;
 	private EncryptionDateFilter encryptionDateFilter;
+	private boolean currentCheckState = true;
 	
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 
@@ -133,7 +136,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 
         // Create the tree viewer as a child of the composite parent
-		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);		
+		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);		
 		
 		// Anpassungen für TreeTable
 		tree = treeViewer.getTree();
@@ -173,13 +176,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		
 		// Drag-Part //////////////////////////////////////////////////////////
 		DragSource source = new DragSource(tree, DND.DROP_COPY | DND.DROP_MOVE);
-	    // TODO: welchen TransferType muss man wählen?
 	    source.setTransfer(new Transfer[] {TextTransfer.getInstance()});
 	    source.addDragListener(new TreeDragSourceListener(tree));
 		
 		// Drop-Part //////////////////////////////////////////////////////////
-	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);    
-	    // TODO: und welchen TransferType muss man hier wählen?
+	    DropTarget dropTarget = new DropTarget(tree, DND.DROP_COPY | DND.DROP_DEFAULT);   
 	    dropTarget.setTransfer(new Transfer[] {TextTransfer.getInstance(), FileTransfer.getInstance()});
 	    dropTarget.addDropListener(new TreeDropTargetAdapter(treeViewer, root));
 
@@ -195,6 +196,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	exportSelectionAction = new Action() {
         	public void run()
         	{
+        		getSelection();
                 if(!treeViewer.getSelection().isEmpty()) {
 	                decryptHandler.processData((TreeSelection)treeViewer.getSelection());
 	                treeViewer.refresh();
@@ -245,7 +247,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         	}
         };
         
-        newFolderAction.setText(Messages.TableView_NewFolder);
         newFolderAction.setToolTipText(Messages.TableView_NewFolder_Tooltip);
         newFolderAction.setImageDescriptor(Activator.getImageDescriptor("icons/folder_add.png"));
         
@@ -288,19 +289,19 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         	}
         };
         
-        expandAllAction.setText(Messages.TableView_ExpandAll);
         expandAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
         expandAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
         
         collapseAllAction = new Action() {
         	public void run()
         	{
-        		treeViewer.collapseAll();
-    			treeViewer.expandToLevel(1);
+        		for(TreeItem item : treeViewer.getTree().getItems()) {
+        			if(item.getItems().length > 0)
+        				treeViewer.collapseToLevel(item.getData(), 1);
+        		}
         	}
         };
         
-        collapseAllAction.setText(Messages.TableView_CollapseAll);
         collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
         collapseAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
         
@@ -312,37 +313,105 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         		
         		if(levelItems.length > 0)
         		{
-        			checkItemsOfLevel(levelItems);
+        			checkChildren(levelItems);
         		}
-        	}
-        	private void checkItemsOfLevel(TreeItem[] levelItems)
-        	{
-        		for(TreeItem item : levelItems)
-        		{
-        			item.setChecked(true);
-        			if(item.getItems().length > 0)
-        				checkItemsOfLevel(item.getItems());
-        		}
+        		currentCheckState = !currentCheckState;
+                selectAllAction.setToolTipText(currentCheckState ? Messages.TableView_SelectAll_Tooltip : Messages.TableView_DeselectAll_Tooltip);
+                selectAllAction.setImageDescriptor(currentCheckState ? Activator.getImageDescriptor("icons/selectall.gif") : Activator.getImageDescriptor("icons/deselectall.gif"));
         	}
         };
         
-        selectAllAction.setText(Messages.TableView_SelectAll);
         selectAllAction.setToolTipText(Messages.TableView_SelectAll_Tooltip);
         selectAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/selectall.gif"));
     }
     
+    /**
+     * Adding listeners to corresponding GUI elements
+     */
     private void addListeners()
     {	
 		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
             public void doubleClick(DoubleClickEvent event)
             {
+				for(TreeItem item : treeViewer.getTree().getItems())
+				{
+					if(item.getData().equals(((TreeSelection)event.getSelection()).getFirstElement())) {
+						item.setChecked(true);
+						checkChildren(item.getItems());
+						break;
+					}
+				}
                 decryptHandler.processData((TreeSelection)event.getSelection());
 	        	treeViewer.refresh();
 	        	SideBarView.updateFileTypeFilter();
             }
         });
+		
+		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event)
+			{
+				DroppedElement currentSelection = (DroppedElement)((TreeSelection)event.getSelection()).getFirstElement();
+				for(TreeItem item : treeViewer.getTree().getItems())
+				{
+					if(item.getData().equals(currentSelection)) {
+						item.setChecked(!item.getChecked());
+						if(item.getItems().length > 0 && item.getExpanded())
+							checkChildren(item.getItems());
+						uncheckParents(item);
+						break;
+					}
+					else if(item.getItems().length > 0 && item.getExpanded())
+						findMeOnTheNextLevel(item, currentSelection);
+				}
+			}
+		});
+    }
+
+    /**
+     * Needed by treeViewers selectionChangedListener to browse deeper then root level.
+     */
+    private void findMeOnTheNextLevel(TreeItem item, DroppedElement currentSelection)
+    {
+		for(TreeItem childItem : item.getItems())
+		{
+			if(childItem.getData().equals(currentSelection)) {
+				childItem.setChecked(!childItem.getChecked());
+				if(childItem.getItems().length > 0 && childItem.getExpanded())
+					checkChildren(childItem.getItems());
+				uncheckParents(childItem);
+				break;
+			}
+			else if(childItem.getItems().length > 0 && childItem.getExpanded())
+				findMeOnTheNextLevel(childItem, currentSelection);
+		}
     }
     
+    /**
+     * When a folder gets (un)checked in the table, all his children and their children get (un)checked too.
+     */
+    private void checkChildren(TreeItem[] item)
+    {
+    	for(TreeItem childItem : item) {
+    		childItem.setChecked(childItem.getParentItem() != null ? childItem.getParentItem().getChecked() : currentCheckState);
+    		if(childItem.getItems().length > 0 && childItem.getExpanded())
+    			checkChildren(childItem.getItems());
+    	}
+    }
+    
+    /**
+     * When a file or folder gets unchecked in the table, all parent folders get unchecked too.
+     */
+    private void uncheckParents(TreeItem item)
+    {
+    	while(item.getParentItem() != null) {
+    		item.getParentItem().setChecked(false);
+    		item=item.getParentItem();
+    	}
+    }
+    
+    /**
+     * Creates the context menu for the table
+     */
     private void createContextMenu()
     {
         MenuManager popupMenuManager = new MenuManager("PopupMenu");
@@ -364,17 +433,47 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	/**
 	 * Instantiate all Filters needed.
 	 */
-	private void createFiltersAndSorters() {
+	private void createFiltersAndSorters()
+	{
 		searchFilter = new SearchFilter();
 		dataTypeFilter = new DataTypeFilter();
 		encryptionDateFilter = new EncryptionDateFilter();
 	}
 
-    public List<DroppedElement> getCheckedElements()
+	/**
+	 * Returns a List of all checked elements. If a folder is checked, all children are affected - no further checking here.
+	 * Selection listeners act accordingly when checking files/folders to have the user visually updated of his changes.
+	 */
+	private List<DroppedElement> getSelection()
     {
-        return checkedElements;
+    	List<DroppedElement> checkedElements = new ArrayList<DroppedElement>();
+    	
+    	for(TreeItem treeItem : treeViewer.getTree().getItems()) {
+    		if(treeItem.getChecked()) 
+    			checkedElements.add((DroppedElement)treeItem.getData());
+    		else if(treeItem.getItems().length > 0 && treeItem.getExpanded())
+    			getSubSelection(treeItem, checkedElements);
+    	}
+    	
+    	return checkedElements;
+    }
+    
+	/**
+	 * Needed by getSelection() to browse deeper then root level.
+	 */
+    private void getSubSelection(TreeItem currentFolder, List<DroppedElement> chosenElements)
+    {
+    	for(TreeItem treeItem : currentFolder.getItems()) {
+    		if(treeItem.getChecked()) 
+    			chosenElements.add((DroppedElement)treeItem.getData());
+    		else if(treeItem.getItems().length > 0 && treeItem.getExpanded())
+    			getSubSelection(treeItem, chosenElements);
+    	}
     }
 	
+    /**
+     * Returns the initial input for the table, right after application start.
+     */
 	private EncryptedFolderDob getInitialInput()
 	{
     	root = new EncryptedFolderDob(0, "Root-Folder", new Date(System.currentTimeMillis()), "");
@@ -387,6 +486,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	return root;
 	}
 	
+	/**
+	 * Needed by getInitialInput() to fill all (sub)folders with files.
+	 */
 	private void getFolderContent(EncryptedFolderDob folder)
 	{
 		folder.addFiles(encryptedFileDao.getFilesForFolder(folder));
