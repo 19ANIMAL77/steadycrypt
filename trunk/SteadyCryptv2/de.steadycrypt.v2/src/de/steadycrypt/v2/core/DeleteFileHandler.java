@@ -8,10 +8,9 @@ package de.steadycrypt.v2.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.jface.viewers.TreeSelection;
 
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
@@ -26,15 +25,12 @@ public class DeleteFileHandler {
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	
-	@SuppressWarnings("unchecked")
-	public void processData(TreeSelection filesToDecrypt)
+	public void processData(List<DroppedElement> filesToDecrypt)
 	{
-		Iterator<DroppedElement> droppedElementsIterator = filesToDecrypt.iterator();
-		
-		while(droppedElementsIterator.hasNext())
+		for(DroppedElement currentElement : filesToDecrypt)
 		{
 			try {
-				browseFolders(droppedElementsIterator.next(), true);
+				browseFolders(currentElement, true);
 			} catch(IOException e) {
         		log.error(e.getMessage());
         		e.printStackTrace();
