@@ -8,7 +8,7 @@ package de.steadycrypt.v2.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -43,10 +43,9 @@ public class DecryptHandler {
 		log.debug("Crypt instance created");
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void processData(TreeSelection filesToDecrypt)
 	{
-		Iterator<DroppedElement> droppedElementsIterator = filesToDecrypt.iterator();
+		DroppedElement selectedElement = (DroppedElement)filesToDecrypt.getFirstElement();
 		
 		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
 		directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
@@ -54,13 +53,33 @@ public class DecryptHandler {
 		
 		if(path != null)
 		{
-			while(droppedElementsIterator.hasNext())
+			try {
+				browseFolders(selectedElement, path, true);
+			} catch(IOException e) {
+        		log.error(e.getMessage());
+        		e.printStackTrace();
+			}
+		}
+	}
+	
+	public void processData(List<DroppedElement> filesToDecrypt)
+	{
+		if(!filesToDecrypt.isEmpty())
+		{
+			DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
+			directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
+			String path = directoryDialog.open();
+			
+			if(path != null)
 			{
-				try {
-					browseFolders(droppedElementsIterator.next(), path, true);
-				} catch(IOException e) {
-	        		log.error(e.getMessage());
-	        		e.printStackTrace();
+				for(DroppedElement currentElement : filesToDecrypt)
+				{
+					try {
+						browseFolders(currentElement, path, true);
+					} catch(IOException e) {
+		        		log.error(e.getMessage());
+		        		e.printStackTrace();
+					}
 				}
 			}
 		}

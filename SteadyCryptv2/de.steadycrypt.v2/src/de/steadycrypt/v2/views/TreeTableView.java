@@ -8,7 +8,6 @@ package de.steadycrypt.v2.views;
 
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -22,8 +21,6 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -37,9 +34,13 @@ import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
@@ -84,6 +85,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private Action expandAllAction;
     private Action collapseAllAction;
     private Action selectAllAction;
+    private Action deselectAllAction;
 
 	private DecryptHandler decryptHandler = new DecryptHandler();
 	private DeleteFileHandler deleteFileHandler = new DeleteFileHandler();
@@ -97,7 +99,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	private ViewerFilter searchFilter;
 	private DataTypeFilter dataTypeFilter;
 	private EncryptionDateFilter encryptionDateFilter;
-	private boolean currentCheckState = true;
 	
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 
@@ -131,6 +132,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         toolBarManager.add(expandAllAction);
         toolBarManager.add(collapseAllAction);
         toolBarManager.add(selectAllAction);
+        toolBarManager.add(deselectAllAction);
 
         ToolBar toolbar = toolBarManager.createControl(content);
         toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
@@ -196,12 +198,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	exportSelectionAction = new Action() {
         	public void run()
         	{
-        		getSelection();
-                if(!treeViewer.getSelection().isEmpty()) {
-	                decryptHandler.processData((TreeSelection)treeViewer.getSelection());
-	                treeViewer.refresh();
-		        	SideBarView.updateFileTypeFilter();
-                }
+        		decryptHandler.processData(getCheckedElements());
+                treeViewer.refresh();
+	        	SideBarView.updateFileTypeFilter();
         	}
         };
         
@@ -212,14 +211,12 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         deleteSelectionAction = new Action() {
         	public void run()
         	{
-    			if(!treeViewer.getSelection().isEmpty()) {
-	        		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_WarningDialog_Title, Messages.TableView_WarningDialog_Delete))
-	        		{
-	                    deleteFileHandler.processData((TreeSelection)treeViewer.getSelection());
-	                    treeViewer.refresh();
-	    	        	SideBarView.updateFileTypeFilter();
-	        		}
-    			}
+    			if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_WarningDialog_Title, Messages.TableView_WarningDialog_Delete))
+        		{
+                    deleteFileHandler.processData(getCheckedElements());
+                    treeViewer.refresh();
+    	        	SideBarView.updateFileTypeFilter();
+        		}
         	}
         };
         
@@ -251,16 +248,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         newFolderAction.setImageDescriptor(Activator.getImageDescriptor("icons/folder_add.png"));
         
         renameAction = new Action() {
-        	@SuppressWarnings("unchecked")
-			public void run()
+        	public void run()
         	{
-        		if(!treeViewer.getSelection().isEmpty()) {
-        			Iterator<DroppedElement> selectedElementsIterator = ((TreeSelection)treeViewer.getSelection()).iterator();
-        			
-        			while(selectedElementsIterator.hasNext())
-        			{
-        				DroppedElement selectedElement = selectedElementsIterator.next();
-        				String nameWithoutExtension = selectedElement instanceof EncryptedFileDob ? selectedElement.getName().substring(0, selectedElement.getName().lastIndexOf(".")) : selectedElement.getName();
+        		List<DroppedElement> elementsToRename = getCheckedElements();
+        		if(!elementsToRename.isEmpty()) {
+	        		for(DroppedElement selectedElement : elementsToRename)
+	    			{
+	    				String nameWithoutExtension = selectedElement instanceof EncryptedFileDob ? selectedElement.getName().substring(0, selectedElement.getName().lastIndexOf(".")) : selectedElement.getName();
 	        			InputDialog renameDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_RenameDialog_Title, NLS.bind(Messages.TableView_RenameDialog, nameWithoutExtension), nameWithoutExtension, new SteadyInputValidator());
 	        			
 	        			if(renameDialog.open() == Window.OK) {
@@ -273,7 +267,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		        				encryptedFileDao.updateFile((EncryptedFileDob)selectedElement);
 		        			}
 		        		}
-        			}
+	    			}
 	        		treeViewer.refresh();
         		}
         	}
@@ -308,87 +302,100 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         selectAllAction = new Action() {
         	public void run()
         	{
-        		Tree tree = treeViewer.getTree();
-        		TreeItem[] levelItems = tree.getItems();
-        		
-        		if(levelItems.length > 0)
-        		{
-        			checkChildren(levelItems);
-        		}
-        		currentCheckState = !currentCheckState;
-                selectAllAction.setToolTipText(currentCheckState ? Messages.TableView_SelectAll_Tooltip : Messages.TableView_DeselectAll_Tooltip);
-                selectAllAction.setImageDescriptor(currentCheckState ? Activator.getImageDescriptor("icons/selectall.gif") : Activator.getImageDescriptor("icons/deselectall.gif"));
+        		checkAll();
         	}
         };
         
         selectAllAction.setToolTipText(Messages.TableView_SelectAll_Tooltip);
         selectAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/selectall.gif"));
+        
+        deselectAllAction = new Action() {
+        	public void run()
+        	{
+        		uncheckAll();
+        	}
+        };
+        
+        deselectAllAction.setToolTipText(Messages.TableView_DeselectAll_Tooltip);
+        deselectAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/deselectall.gif"));
     }
     
     /**
      * Adding listeners to corresponding GUI elements
      */
     private void addListeners()
-    {	
-    	//TODO: double click removes parent selections
+    {
 		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
             public void doubleClick(DoubleClickEvent event)
             {
-				DroppedElement currentSelection = (DroppedElement)((TreeSelection)event.getSelection()).getFirstElement();
-				for(TreeItem item : treeViewer.getTree().getItems())
-				{
-					if(item.getData().equals(currentSelection)) {
-						item.setChecked(true);
-						if(item.getItems().length > 0 && item.getExpanded())
-							checkChildren(item.getItems());
-						break;
-					}
-					else if(item.getItems().length > 0 && item.getExpanded())
-						findMeOnTheNextLevel(item, currentSelection, true);
+				if(tree.getSelection().length > 0) {                	
+	            	uncheckAll();
+	            	
+                	TreeItem[] items = tree.getSelection();
+                	TreeItem selectedItem = items[0];
+                	selectedItem.setChecked(true);
+                	
+					decryptHandler.processData((TreeSelection)event.getSelection());
+		        	treeViewer.refresh();
+		        	SideBarView.updateFileTypeFilter();
 				}
-                decryptHandler.processData((TreeSelection)event.getSelection());
-	        	treeViewer.refresh();
-	        	SideBarView.updateFileTypeFilter();
             }
         });
 		
-		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event)
-			{
-				DroppedElement currentSelection = (DroppedElement)((TreeSelection)event.getSelection()).getFirstElement();
-				for(TreeItem item : treeViewer.getTree().getItems())
-				{
-					if(item.getData().equals(currentSelection)) {
-						item.setChecked(!item.getChecked());
-						if(item.getItems().length > 0 && item.getExpanded())
-							checkChildren(item.getItems());
-						uncheckParents(item);
-						break;
-					}
-					else if(item.getItems().length > 0 && item.getExpanded())
-						findMeOnTheNextLevel(item, currentSelection, false);
-				}
+		tree.addListener(SWT.Selection, new Listener() {
+			
+			@Override
+			public void handleEvent(Event event) {
+				event.detail = SWT.SELECTED;
 			}
 		});
-    }
-
-    /**
-     * Needed by treeViewers selectionChangedListener to browse deeper then root level.
-     */
-    private void findMeOnTheNextLevel(TreeItem item, DroppedElement currentSelection, boolean setChecked)
-    {
-		for(TreeItem childItem : item.getItems())
-		{
-			if(childItem.getData().equals(currentSelection)) {
-				childItem.setChecked(setChecked ? true : !childItem.getChecked());
-				if(childItem.getItems().length > 0 && childItem.getExpanded())
-					checkChildren(childItem.getItems());
-				uncheckParents(childItem);
-				break;
+    	
+    	tree.addMouseListener(new MouseListener() {
+    		// used to remember the state after mouse down event
+    		boolean state;
+    		
+    		/**
+    		 * When an element is clicked invert the check state and care about children and parents,
+    		 * using according methods.
+    		 */
+			public void mouseDown(MouseEvent e)
+			{
+				if(tree.getSelection().length > 0) {
+                	TreeItem[] items = tree.getSelection();
+                	TreeItem item = items[0];
+                	if(e.button == 1) {
+	                	item.setChecked(!item.getChecked());
+	                	state=item.getChecked();
+						if(item.getItems().length > 0 && item.getExpanded())
+							checkChildren(item.getItems());
+						if(!item.getChecked())
+							uncheckParents(item);
+                	}
+                	else if(e.button == 3) {
+                		if (!item.getChecked()) {
+	                		uncheckAll();
+	                		item.setChecked(true);
+                		}
+                	}
+            	}
 			}
-			else if(childItem.getItems().length > 0 && childItem.getExpanded())
-				findMeOnTheNextLevel(childItem, currentSelection, setChecked);
-		}
+
+			/**
+			 * If the elements check box is clicked, the checked state would be double inverted, so it has
+			 * to be inverted a third time, to set it the way the user wants it to be set.
+			 */
+			public void mouseUp(MouseEvent e)
+			{
+				if(tree.getSelection().length > 0) {
+                	TreeItem[] items = tree.getSelection();
+                	TreeItem item = items[0];
+            		item.setChecked(state);
+            	}
+			}
+			
+			// unused methods
+			public void mouseDoubleClick(MouseEvent e) { }
+		});
     }
     
     /**
@@ -397,7 +404,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private void checkChildren(TreeItem[] item)
     {
     	for(TreeItem childItem : item) {
-    		childItem.setChecked(childItem.getParentItem() != null ? childItem.getParentItem().getChecked() : currentCheckState);
+    		childItem.setChecked(childItem.getParentItem().getChecked());
     		if(childItem.getItems().length > 0 && childItem.getExpanded())
     			checkChildren(childItem.getItems());
     	}
@@ -411,6 +418,30 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	while(item.getParentItem() != null) {
     		item.getParentItem().setChecked(false);
     		item=item.getParentItem();
+    	}
+    }
+    
+    /**
+     * Checks all Items of the tree
+     */
+    private void checkAll()
+    {
+    	for(TreeItem item : treeViewer.getTree().getItems()) {
+    		item.setChecked(true);
+    		if(item.getItems().length > 0) 
+    			checkChildren(item.getItems());
+    	}
+    }
+    
+    /**
+     * Unchecks all Items of the tree
+     */
+    private void uncheckAll()
+    {
+    	for(TreeItem item : treeViewer.getTree().getItems()) {
+    		item.setChecked(false);
+    		if(item.getItems().length > 0) 
+    			checkChildren(item.getItems());
     	}
     }
     
@@ -449,7 +480,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	 * Returns a List of all checked elements. If a folder is checked, all children are affected - no further checking here.
 	 * Selection listeners act accordingly when checking files/folders to have the user visually updated of his changes.
 	 */
-	private List<DroppedElement> getSelection()
+	private List<DroppedElement> getCheckedElements()
     {
     	List<DroppedElement> checkedElements = new ArrayList<DroppedElement>();
     	
