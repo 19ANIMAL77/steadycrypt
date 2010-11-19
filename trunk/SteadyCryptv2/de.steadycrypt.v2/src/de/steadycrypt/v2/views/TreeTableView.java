@@ -330,16 +330,21 @@ public class TreeTableView extends ViewPart implements SideBarListener {
      */
     private void addListeners()
     {	
+    	//TODO: double click removes parent selections
 		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
             public void doubleClick(DoubleClickEvent event)
             {
+				DroppedElement currentSelection = (DroppedElement)((TreeSelection)event.getSelection()).getFirstElement();
 				for(TreeItem item : treeViewer.getTree().getItems())
 				{
-					if(item.getData().equals(((TreeSelection)event.getSelection()).getFirstElement())) {
+					if(item.getData().equals(currentSelection)) {
 						item.setChecked(true);
-						checkChildren(item.getItems());
+						if(item.getItems().length > 0 && item.getExpanded())
+							checkChildren(item.getItems());
 						break;
 					}
+					else if(item.getItems().length > 0 && item.getExpanded())
+						findMeOnTheNextLevel(item, currentSelection, true);
 				}
                 decryptHandler.processData((TreeSelection)event.getSelection());
 	        	treeViewer.refresh();
@@ -361,7 +366,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 						break;
 					}
 					else if(item.getItems().length > 0 && item.getExpanded())
-						findMeOnTheNextLevel(item, currentSelection);
+						findMeOnTheNextLevel(item, currentSelection, false);
 				}
 			}
 		});
@@ -370,19 +375,19 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     /**
      * Needed by treeViewers selectionChangedListener to browse deeper then root level.
      */
-    private void findMeOnTheNextLevel(TreeItem item, DroppedElement currentSelection)
+    private void findMeOnTheNextLevel(TreeItem item, DroppedElement currentSelection, boolean setChecked)
     {
 		for(TreeItem childItem : item.getItems())
 		{
 			if(childItem.getData().equals(currentSelection)) {
-				childItem.setChecked(!childItem.getChecked());
+				childItem.setChecked(setChecked ? true : !childItem.getChecked());
 				if(childItem.getItems().length > 0 && childItem.getExpanded())
 					checkChildren(childItem.getItems());
 				uncheckParents(childItem);
 				break;
 			}
 			else if(childItem.getItems().length > 0 && childItem.getExpanded())
-				findMeOnTheNextLevel(childItem, currentSelection);
+				findMeOnTheNextLevel(childItem, currentSelection, setChecked);
 		}
     }
     
