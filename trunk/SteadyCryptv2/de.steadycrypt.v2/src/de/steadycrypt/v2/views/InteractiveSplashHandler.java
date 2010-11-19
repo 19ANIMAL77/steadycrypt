@@ -5,6 +5,7 @@ import java.io.File;
 import java.sql.SQLException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -18,6 +19,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.splash.AbstractSplashHandler;
 
+import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.core.DbManager;
 import de.steadycrypt.v2.core.PasswordInterpreter;
 
@@ -27,9 +29,10 @@ import de.steadycrypt.v2.core.PasswordInterpreter;
  */
 public class InteractiveSplashHandler extends AbstractSplashHandler {
 	
-	private final static int F_LABEL_HORIZONTAL_INDENT = 175;
+	private final static int F_LABEL_HORIZONTAL_INDENT = 65;
 	private final static int F_BUTTON_WIDTH_HINT = 80;
-	private final static int F_TEXT_WIDTH_HINT = 175;
+	private final static int F_BUTTON_WIDTH_HINT_CREATE = 120;
+	private final static int F_TEXT_WIDTH_HINT = 195;
 	private final static int F_COLUMN_COUNT = 3;
 	private static int loginCount = 1;
 	
@@ -165,23 +168,31 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	 * 
 	 */
 	private void handleButtonRegisterWidgetSelected() {
+		
+		// Prevent of double-Clicks
+		fButtonRegister.setEnabled(false);
+		
 		String regPassword = fTextPassword.getText();
 		String regPasswordValidate = fTextPasswordValidate.getText();
-		
-		DbManager manager = DbManager.getInstance();
-		manager.startDb();
 		
 		// Check for > 6 chars
 		// Check for equals entries
 		if((regPassword.length() > 6 && regPasswordValidate.length() > 6)
 				&& (String.valueOf(regPassword).equals(String.valueOf(regPasswordValidate))))
-		{			
+		{
+			
+			DbManager manager = DbManager.getInstance();
+			manager.startDb();
+			
 			try 
-			{
+			{				
 				// Initiate the awesome derby
 				manager.initiateDb("steady", PasswordInterpreter.createPassword(regPassword));
 			}
 			catch (SQLException sqle) {
+				// Prevent of double-Clicks
+				fButtonRegister.setEnabled(true);
+				
 				DbManager.printSQLException(sqle);
 			}
 			
@@ -193,11 +204,10 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		}
 		else
 		{
-			//TODO: internationalisieren....
 			MessageDialog.openError(
 					getSplash(),
-					"Registration Failed",
-					"A password with a minimum of seven chars must be specified to register. They should be equal also."); 
+					Messages.InteractiveSplashHandler_Error_RegFailed_Title,
+					Messages.InteractiveSplashHandler_Error_RegFailed_Message);
 		}
 	}
 	
@@ -216,6 +226,10 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	 * 
 	 */
 	private void handleButtonOKWidgetSelected() {
+		
+		// Prevent of double-Clicks
+		fButtonOK.setEnabled(false);
+		
 		String password = fTextPassword.getText();
 
 		if (password.length() > 6)
@@ -229,7 +243,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			 * Small protection against brute-force.
 			 */
 			try 
-			{
+			{				
 				manager.connectToDb("steady", PasswordInterpreter.createPassword(password));
 				
 				// Login
@@ -239,13 +253,15 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			catch (SQLException sqle)
 			{
 	    		
-				//TODO: internationalisieren....
-				MessageDialog.openError(getSplash(), "Falsches Passwort", "Es wurde kein korrektes Password eingegeben! Versuch "+loginCount+" von 3.");
+				MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_WrongPW_Title, NLS.bind(Messages.InteractiveSplashHandler_Error_WrongPW_Message, loginCount));
 	    		
 	    		if(loginCount==3)
 	    			System.exit(0);
 	    		
 	    		loginCount++;
+	    		
+				// Prevent of double-Clicks
+				fButtonOK.setEnabled(true);
 	    		
 	    		DbManager.printSQLException(sqle);
 			}
@@ -253,11 +269,10 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		} 
 		else 
 		{
-			//TODO: internationalisieren....
 			MessageDialog.openError(
 					getSplash(),
-					"Authentication Failed",
-					"A password could not be smaller than six chars."); 
+					Messages.InteractiveSplashHandler_Error_AuthFailed_Title,
+					Messages.InteractiveSplashHandler_Error_AuthFailed_Message); 
 		}
 	}
 	
@@ -305,7 +320,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void createUIButtonCancel() {
 		// Create the button
 		fButtonCancel = new Button(fCompositeLogin, SWT.PUSH);
-		fButtonCancel.setText("Cancel"); //$NON-NLS-1$
+		fButtonCancel.setText(Messages.InteractiveSplashHandler_Cancel); //$NON-NLS-1$
 		// Configure layout data
 		GridData data = new GridData(SWT.NONE, SWT.NONE, false, false);
 		data.widthHint = F_BUTTON_WIDTH_HINT;	
@@ -334,11 +349,11 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void createUIButtonRegister() {
 		// Create the button
 		fButtonRegister = new Button(fCompositeLogin, SWT.PUSH);
-		fButtonRegister.setText("Register"); //$NON-NLS-1$
+		fButtonRegister.setText(Messages.InteractiveSplashHandler_Register); //$NON-NLS-1$
 		
 		// Configure layout data
 		GridData data = new GridData(SWT.NONE, SWT.NONE, false, false);
-		data.widthHint = F_BUTTON_WIDTH_HINT;
+		data.widthHint = F_BUTTON_WIDTH_HINT_CREATE;
 		data.verticalIndent = 10;
 		fButtonRegister.setLayoutData(data);
 	}	
@@ -386,7 +401,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void createUILabelPassword() {
 		// Create the label
 		Label label = new Label(fCompositeLogin, SWT.NONE);
-		label.setText("&Password:"); //$NON-NLS-1$
+		label.setText("&"+Messages.InteractiveSplashHandler_Password); //$NON-NLS-1$
 		// Configure layout data
 		GridData data = new GridData();
 		data.horizontalIndent = F_LABEL_HORIZONTAL_INDENT;
@@ -399,7 +414,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void createUILabelPasswordValidate() {
 		// Create the label
 		Label label = new Label(fCompositeLogin, SWT.NONE);
-		label.setText("&Password 2:"); //$NON-NLS-1$
+		label.setText("&"+Messages.InteractiveSplashHandler_PasswordValidate); //$NON-NLS-1$
 		// Configure layout data
 		GridData data = new GridData();
 		data.horizontalIndent = F_LABEL_HORIZONTAL_INDENT;
