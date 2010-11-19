@@ -102,11 +102,11 @@ public class Crypter
 			
 			StringBuilder filename = new StringBuilder();
 			filename.append(parentPath);
-			filename.append("/");
+			filename.append("/"); //$NON-NLS-1$
 			filename.append(currentFile.getName().substring(0,currentFile.getName().lastIndexOf(".")));
-			filename.append(" ");
+			filename.append(" "); //$NON-NLS-1$
 			filename.append(i);
-			filename.append(".");
+			filename.append("."); //$NON-NLS-1$
 			filename.append(currentFile.getType());
 			
 			outputFile = new File(filename.toString());
@@ -115,11 +115,11 @@ public class Crypter
 				i++;
 				filename = new StringBuilder();
 				filename.append(parentPath);
-				filename.append("/");
+				filename.append("/"); //$NON-NLS-1$
 				filename.append(currentFile.getName().substring(0,currentFile.getName().lastIndexOf(".")));
-				filename.append(" ");
+				filename.append(" "); //$NON-NLS-1$
 				filename.append(i);
-				filename.append(".");
+				filename.append("."); //$NON-NLS-1$
 				filename.append(currentFile.getType());
 				
 				outputFile = new File(filename.toString());
