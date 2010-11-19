@@ -26,7 +26,7 @@
             name="SteadyCrypt v2">
          <property
                name="windowImages"
-               value="icons/alt_window_16.gif,icons/alt_window_32.gif">
+               value="icons/app_icon_16.gif">
          </property>
          <property
                name="appName"
@@ -36,36 +36,10 @@
                name="preferenceCustomization"
                value="plugin_customization.ini">
          </property>
-         <property
-               name="startupProgressRect"
-               value="5,295,440,15">
-         </property>
-         <property
-               name="startupForegroundColor"
-               value="FFFFFF">
-         </property>
-         <property
-               name="startupMessageRect"
-               value="7,275,436,15">
-         </property>
       </product>
    </extension>
    <extension
          point="org.eclipse.ui.views">
-      <view
-            class="de.steadycrypt.v2.views.SideBarView"
-            icon="icons/alt_window_16.gif"
-            id="de.steadycrypt.v2.view.sideBar"
-            name="SideBar"
-            restorable="true">
-      </view>
-      <view
-            class="de.steadycrypt.v2.views.TableView"
-            icon="icons/alt_window_16.gif"
-            id="de.steadycrypt.v2.view.table"
-            name="Table"
-            restorable="true">
-      </view>
       <view
             class="de.steadycrypt.v2.views.TreeTableView"
             icon="icons/alt_window_16.gif"
@@ -73,6 +47,23 @@
             name="TreeTable"
             restorable="true">
       </view>
+      <view
+            class="de.steadycrypt.v2.views.SideBarView"
+            id="de.steadycrypt.v2.view.sideBar"
+            name="SideBar"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.splashHandlers">
+      <splashHandler
+            class="de.steadycrypt.v2.views.InteractiveSplashHandler"
+            id="de.steadycrypt.v2.splashHandlers.interactive">
+      </splashHandler>
+      <splashHandlerProductBinding
+            productId="de.steadycrypt.v2.product"
+            splashId="de.steadycrypt.v2.splashHandlers.interactive">
+      </splashHandlerProductBinding>
    </extension>
 
 </plugin>
