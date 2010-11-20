@@ -13,7 +13,7 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            name="RCP Perspective"
+            name="Default Perspective"
             class="de.steadycrypt.v2.SteadyPerspective"
             id="de.steadycrypt.v2.steadyPerspective">
       </perspective>
@@ -23,14 +23,10 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="de.steadycrypt.v2.application"
-            name="SteadyCrypt v2">
-         <property
-               name="windowImages"
-               value="icons/app_icon_16.gif">
-         </property>
+            name="SteadyCrypt">
          <property
                name="appName"
-               value="SteadyCrypt v2">
+               value="SteadyCrypt">
          </property>
          <property
                name="preferenceCustomization"
@@ -42,13 +38,14 @@
          point="org.eclipse.ui.views">
       <view
             class="de.steadycrypt.v2.views.TreeTableView"
-            icon="icons/alt_window_16.gif"
+            icon="icons/app_icon_16.gif"
             id="de.steadycrypt.v2.view.treeTable"
             name="TreeTable"
             restorable="true">
       </view>
       <view
             class="de.steadycrypt.v2.views.SideBarView"
+            icon="icons/app_icon_16.gif"
             id="de.steadycrypt.v2.view.sideBar"
             name="SideBar"
             restorable="true">
@@ -57,7 +54,7 @@
    <extension
          point="org.eclipse.ui.splashHandlers">
       <splashHandler
-            class="de.steadycrypt.v2.views.InteractiveSplashHandler"
+            class="de.steadycrypt.v2.splashHandlers.InteractiveSplashHandler"
             id="de.steadycrypt.v2.splashHandlers.interactive">
       </splashHandler>
       <splashHandlerProductBinding

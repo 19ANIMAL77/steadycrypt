@@ -8,6 +8,8 @@ package de.steadycrypt.v2.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -32,6 +34,9 @@ public class DecryptHandler {
 	
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
+
+	private List<EncryptedFolderDob> successfulDecryptedFolders = new ArrayList<EncryptedFolderDob>();
+	private List<EncryptedFileDob> successfulDecryptedFiles = new ArrayList<EncryptedFileDob>();
     
 	public DecryptHandler()
 	{
@@ -43,9 +48,10 @@ public class DecryptHandler {
 		log.debug("Crypt instance created");
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void processData(TreeSelection filesToDecrypt)
 	{
-		DroppedElement selectedElement = (DroppedElement)filesToDecrypt.getFirstElement();
+		Iterator<DroppedElement> selectedElementsIterator = filesToDecrypt.iterator();
 		
 		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
 		directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
@@ -53,13 +59,17 @@ public class DecryptHandler {
 		
 		if(path != null)
 		{
-			try {
-				browseFolders(selectedElement, path, true);
-			} catch(IOException e) {
-        		log.error(e.getMessage());
-        		e.printStackTrace();
+			while(selectedElementsIterator.hasNext()) {
+				try {
+					browseFolders(selectedElementsIterator.next(), path, true);
+				} catch(IOException e) {
+	        		log.error(e.getMessage());
+	        		e.printStackTrace();
+				}
 			}
 		}
+		successfulDecryptedFolders.clear();
+		successfulDecryptedFiles.clear();
 	}
 	
 	public void processData(List<DroppedElement> filesToDecrypt)
@@ -90,6 +100,8 @@ public class DecryptHandler {
 		if(elementToDecrypt instanceof EncryptedFileDob)
 		{
 			EncryptedFileDob fileToDecrypt = (EncryptedFileDob)elementToDecrypt;
+			if(successfulDecryptedFiles.contains(fileToDecrypt))
+				return;
 			log.debug("EncryptedFile handed over");
 			crypter.decrypt(fileToDecrypt, destination);
 			log.debug("File decrypted");
@@ -100,6 +112,7 @@ public class DecryptHandler {
 			
 			if(success)
 			{
+				successfulDecryptedFiles.add(fileToDecrypt);
 				this.encryptedFileDao.deleteFile(fileToDecrypt);
 				log.debug("database entry deleted");
 				if(rootFile)
@@ -109,6 +122,8 @@ public class DecryptHandler {
 		else if(elementToDecrypt instanceof EncryptedFolderDob)
 		{
 			EncryptedFolderDob folderToDecrypt = (EncryptedFolderDob)elementToDecrypt;
+			if(successfulDecryptedFolders.contains(folderToDecrypt))
+				return;
 			log.debug("EncryptedFolder handed over");
 			
 			File newSubDestination = new File(destination+"/"+folderToDecrypt.getName());

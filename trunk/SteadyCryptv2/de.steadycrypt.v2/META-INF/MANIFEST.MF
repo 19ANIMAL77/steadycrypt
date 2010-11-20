@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: SteadyCrypt v2
+Bundle-Name: SteadyCrypt
 Bundle-SymbolicName: de.steadycrypt.v2; singleton:=true
 Bundle-Version: 1.0.0.1
 Bundle-Activator: de.steadycrypt.v2.Activator
