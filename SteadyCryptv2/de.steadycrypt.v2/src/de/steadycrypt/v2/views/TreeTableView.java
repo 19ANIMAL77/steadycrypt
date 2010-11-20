@@ -39,8 +39,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
@@ -138,7 +136,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         toolbar.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 
         // Create the tree viewer as a child of the composite parent
-		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);		
+		treeViewer = new TreeViewer(content, SWT.FULL_SELECTION | SWT.MULTI |  SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);		
 		
 		// Anpassungen für TreeTable
 		tree = treeViewer.getTree();
@@ -325,7 +323,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
      */
     private void addListeners()
     {
-		treeViewer.addDoubleClickListener(new IDoubleClickListener(){
+    	treeViewer.addDoubleClickListener(new IDoubleClickListener(){
             public void doubleClick(DoubleClickEvent event)
             {
 				if(tree.getSelection().length > 0) {                	
@@ -335,23 +333,24 @@ public class TreeTableView extends ViewPart implements SideBarListener {
                 	TreeItem selectedItem = items[0];
                 	selectedItem.setChecked(true);
                 	
-					decryptHandler.processData((TreeSelection)event.getSelection());
+					decryptHandler.processData((TreeSelection)treeViewer.getSelection());
 		        	treeViewer.refresh();
 		        	SideBarView.updateFileTypeFilter();
 				}
             }
         });
 		
-		tree.addListener(SWT.Selection, new Listener() {
-			
-			@Override
-			public void handleEvent(Event event) {
-				event.detail = SWT.SELECTED;
-			}
-		});
+//		tree.addListener(SWT.Selection, new Listener() {
+//			
+//			@Override
+//			public void handleEvent(Event event) {
+//				if(event.detail == SWT.CHECK) {
+//					System.out.println(tree.getItem(event.index));
+//				}
+//			}
+//		});
     	
     	tree.addMouseListener(new MouseListener() {
-    		// used to remember the state after mouse down event
     		boolean state;
     		
     		/**
@@ -365,11 +364,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
                 	TreeItem item = items[0];
                 	if(e.button == 1) {
 	                	item.setChecked(!item.getChecked());
-	                	state=item.getChecked();
-						if(item.getItems().length > 0 && item.getExpanded())
-							checkChildren(item.getItems());
-						if(!item.getChecked())
-							uncheckParents(item);
+	                	state = item.getChecked();
                 	}
                 	else if(e.button == 3) {
                 		if (!item.getChecked()) {
@@ -389,7 +384,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 				if(tree.getSelection().length > 0) {
                 	TreeItem[] items = tree.getSelection();
                 	TreeItem item = items[0];
-            		item.setChecked(state);
+                	if(e.button == 1) {
+	                	item.setChecked(state);
+						if(item.getItems().length > 0 && item.getExpanded())
+							checkChildren(item.getItems());
+						if(!item.getChecked())
+							uncheckParents(item);
+                	}
             	}
 			}
 			

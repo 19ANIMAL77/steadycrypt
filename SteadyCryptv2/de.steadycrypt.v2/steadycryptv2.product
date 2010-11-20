@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="SteadyCrypt v2" uid="de.steadycrypt.v2" id="de.steadycrypt.v2.product" application="de.steadycrypt.v2.application" version="1.0.0.1" useFeatures="false" includeLaunchers="true">
+<product name="SteadyCrypt" uid="de.steadycrypt.v2" id="de.steadycrypt.v2.product" application="de.steadycrypt.v2.application" version="1.0.0.1" useFeatures="false" includeLaunchers="true">
 
 
    <configIni use="default">
@@ -12,11 +12,12 @@
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/app_icon_16.gif"/>
+   <windowImages/>
 
    <splash
       handlerType="interactive" />
-   <launcher>
+   <launcher name="SteadyCrypt">
+      <macosx icon="/de.steadycrypt.v2/icons/SteadyCrypt.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp/>
@@ -26,6 +27,7 @@
 
    <vm>
    </vm>
+
 
    <plugins>
       <plugin id="com.ibm.icu"/>

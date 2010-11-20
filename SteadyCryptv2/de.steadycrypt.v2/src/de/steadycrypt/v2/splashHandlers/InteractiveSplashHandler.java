@@ -1,5 +1,5 @@
 
-package de.steadycrypt.v2.views;
+package de.steadycrypt.v2.splashHandlers;
 
 import java.io.File;
 import java.sql.SQLException;
