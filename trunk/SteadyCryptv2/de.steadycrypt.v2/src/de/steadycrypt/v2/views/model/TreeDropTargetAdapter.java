@@ -39,7 +39,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
-	private FileDropHandler fileDropHandler = new FileDropHandler();
+	private FileDropHandler fileDropHandler;
 	
 	public TreeDropTargetAdapter(TreeViewer treeViewer, EncryptedFolderDob dragOverFolder)
 	{
@@ -102,6 +102,8 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 			log.debug("Parent-Folder: "+dragOverFolder.getName());
     		
 			try {
+				if(fileDropHandler == null)
+					fileDropHandler = new FileDropHandler();
 				fileDropHandler.processData(droppedFileInformation, dragOverFolder);
 			}
 			catch(Exception e) {

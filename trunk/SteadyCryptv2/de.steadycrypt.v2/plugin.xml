@@ -2,6 +2,17 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
+         point="org.eclipse.ui.splashHandlers">
+      <splashHandler
+            class="de.steadycrypt.v2.splashHandlers.InteractiveSplashHandler"
+            id="de.steadycrypt.v2.splashHandlers.interactive">
+      </splashHandler>
+      <splashHandlerProductBinding
+            productId="de.steadycrypt.v2.product"
+            splashId="de.steadycrypt.v2.splashHandlers.interactive">
+      </splashHandlerProductBinding>
+   </extension>
+   <extension
          id="application"
          point="org.eclipse.core.runtime.applications">
       <application>
@@ -9,14 +20,6 @@
                class="de.steadycrypt.v2.Application">
          </run>
       </application>
-   </extension>
-   <extension
-         point="org.eclipse.ui.perspectives">
-      <perspective
-            name="Default Perspective"
-            class="de.steadycrypt.v2.SteadyPerspective"
-            id="de.steadycrypt.v2.steadyPerspective">
-      </perspective>
    </extension>
    <extension
          id="product"
@@ -35,6 +38,14 @@
       </product>
    </extension>
    <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="Default Perspective"
+            class="de.steadycrypt.v2.SteadyPerspective"
+            id="de.steadycrypt.v2.steadyPerspective">
+      </perspective>
+   </extension>
+   <extension
          point="org.eclipse.ui.views">
       <view
             class="de.steadycrypt.v2.views.TreeTableView"
@@ -50,17 +61,6 @@
             name="SideBar"
             restorable="true">
       </view>
-   </extension>
-   <extension
-         point="org.eclipse.ui.splashHandlers">
-      <splashHandler
-            class="de.steadycrypt.v2.splashHandlers.InteractiveSplashHandler"
-            id="de.steadycrypt.v2.splashHandlers.interactive">
-      </splashHandler>
-      <splashHandlerProductBinding
-            productId="de.steadycrypt.v2.product"
-            splashId="de.steadycrypt.v2.splashHandlers.interactive">
-      </splashHandlerProductBinding>
    </extension>
 
 </plugin>

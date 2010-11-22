@@ -81,8 +81,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private Action expandAllAction;
     private Action collapseAllAction;
 
-	private DecryptHandler decryptHandler = new DecryptHandler();
-	private DeleteFileHandler deleteFileHandler = new DeleteFileHandler();
+	private DecryptHandler decryptHandler;
+	private DeleteFileHandler deleteFileHandler;
 	
 	private EncryptedFolderDao encryptedFolderDao;
 	private EncryptedFileDao encryptedFileDao;
@@ -191,6 +191,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         	public void run()
         	{
         		if(!treeViewer.getSelection().isEmpty()) {
+        			if(decryptHandler == null)
+        				decryptHandler = new DecryptHandler();
 		    		decryptHandler.processData((TreeSelection)treeViewer.getSelection());
 		            treeViewer.refresh();
 		        	SideBarView.updateFileTypeFilter();
@@ -307,11 +309,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     	treeViewer.addDoubleClickListener(new IDoubleClickListener(){
             public void doubleClick(DoubleClickEvent event)
             {
-				if(!treeViewer.getSelection().isEmpty()) {
-                	decryptHandler.processData((TreeSelection)treeViewer.getSelection());
-		        	treeViewer.refresh();
-		        	SideBarView.updateFileTypeFilter();
-				}
+            	exportSelectionAction.run();
             }
         });
     }
