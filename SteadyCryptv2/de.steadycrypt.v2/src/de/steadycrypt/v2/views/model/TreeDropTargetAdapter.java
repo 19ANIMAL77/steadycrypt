@@ -107,6 +107,8 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 			catch(Exception e) {
 				log.error("Error at proccessing dropped data. " + e);
 			}
+			// set dragOverFolder back to root for next drop. Otherwise dropping to root wont be possible.
+    		dragOverFolder=root;
         }
     	
     	// This part handles Drag'N'Drop within the tree
@@ -156,6 +158,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 		    		encryptedFolderDao.updateFolder(draggedFolder);
 		    		dragOverFolder.addFolder(draggedFolder);
 				}
+				// set dragOverFolder back to root for next drop. Otherwise dropping to root wont be possible.
 	    		dragOverFolder=root;
         	}
         	

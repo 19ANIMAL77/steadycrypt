@@ -339,16 +339,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 				}
             }
         });
-		
-//		tree.addListener(SWT.Selection, new Listener() {
-//			
-//			@Override
-//			public void handleEvent(Event event) {
-//				if(event.detail == SWT.CHECK) {
-//					System.out.println(tree.getItem(event.index));
-//				}
-//			}
-//		});
     	
     	tree.addMouseListener(new MouseListener() {
     		boolean state;
