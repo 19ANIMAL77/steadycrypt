@@ -71,29 +71,6 @@ public class DecryptHandler {
 		successfulDecryptedFolders.clear();
 		successfulDecryptedFiles.clear();
 	}
-	
-	public void processData(List<DroppedElement> filesToDecrypt)
-	{
-		if(!filesToDecrypt.isEmpty())
-		{
-			DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
-			directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
-			String path = directoryDialog.open();
-			
-			if(path != null)
-			{
-				for(DroppedElement currentElement : filesToDecrypt)
-				{
-					try {
-						browseFolders(currentElement, path, true);
-					} catch(IOException e) {
-		        		log.error(e.getMessage());
-		        		e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
 
 	public void browseFolders(DroppedElement elementToDecrypt, String destination, boolean rootFile) throws IOException
 	{
@@ -143,6 +120,7 @@ public class DecryptHandler {
 					browseFolders(nextFileToDecrypt, newSubDestination.getPath(), false);
 				}
 				
+				successfulDecryptedFolders.add(folderToDecrypt);
 				encryptedFolderDao.deleteFolder(folderToDecrypt);
 				log.debug("database entry deleted");
 				if(rootFile)
