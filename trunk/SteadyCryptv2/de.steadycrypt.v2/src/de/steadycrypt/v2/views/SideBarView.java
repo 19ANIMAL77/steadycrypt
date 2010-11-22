@@ -178,7 +178,7 @@ public class SideBarView extends ViewPart {
         table.setLayoutData(gridData);
         
         TableColumn column = new TableColumn(table, SWT.NONE);
-        column.setWidth(192);
+        column.setWidth(186);
 
         tableViewer = new TableViewer(table);
         tableViewer.setLabelProvider(new ITableLabelProvider()
