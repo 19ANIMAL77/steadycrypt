@@ -15,7 +15,6 @@ import org.eclipse.swt.graphics.Image;
 
 import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
-import de.steadycrypt.v2.bob.EncryptedFolder;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 
@@ -40,9 +39,6 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	            	//TODO: Konfigurierbar machen?
 	                text = ((EncryptedFileDob)element).getName().substring(0, ((EncryptedFileDob)element).getName().lastIndexOf("."));
 	                break;
-	            case PATH:
-	                text = ((EncryptedFileDob)element).getPath();
-	                break;
 	            case SIZE:
 	                BigDecimal size = new BigDecimal(((EncryptedFileDob)element).getSize()/1024);
 	                text = size.compareTo(new BigDecimal(1000)) > 0 ? size.divide(new BigDecimal(1024)).setScale(2,BigDecimal.ROUND_HALF_UP).toString() +" MB" : size.setScale(0,BigDecimal.ROUND_HALF_UP).toString() + " KB";
@@ -56,18 +52,15 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	        }
         }
         
-        else if(element instanceof EncryptedFolder)
+        else if(element instanceof EncryptedFolderDob)
         {
 	        switch(identifier)
 	        {
 	            case DATE:
-	                text = sdf.format(((EncryptedFolder)element).getDate());
+	                text = sdf.format(((EncryptedFolderDob)element).getDate());
 	                break;
 	            case NAME:
-	                text = ((EncryptedFolder)element).getName();
-	                break;
-	            case PATH:
-	                text = ((EncryptedFolder)element).getPath();
+	                text = ((EncryptedFolderDob)element).getName();
 	                break;
 	            case SIZE:
 	                text = "";

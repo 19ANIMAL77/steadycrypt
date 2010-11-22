@@ -8,7 +8,7 @@ package de.steadycrypt.v2.views.ui;
 
 public enum SteadyTableIdentifier {
 
-	NAME(300), TYPE(65), SIZE(90), DATE(100), PATH(80);
+	NAME(391), TYPE(100), SIZE(70), DATE(95);
 	
 	public final int columnWidth;
 	

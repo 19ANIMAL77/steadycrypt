@@ -29,7 +29,6 @@ public class Messages extends NLS
     public static String CryptedFilesTableIdentifier_TYPE;
     public static String CryptedFilesTableIdentifier_SIZE;
     public static String CryptedFilesTableIdentifier_DATE;
-    public static String CryptedFilesTableIdentifier_PATH;
 
     public static String TableView_ExportFile;
     public static String TableView_ExportFile_Tooltip;
@@ -101,9 +100,6 @@ public class Messages extends NLS
                 break;
             case NAME:
                 title = CryptedFilesTableIdentifier_NAME;
-                break;
-            case PATH:
-                title = CryptedFilesTableIdentifier_PATH;
                 break;
             case SIZE:
                 title = CryptedFilesTableIdentifier_SIZE;
