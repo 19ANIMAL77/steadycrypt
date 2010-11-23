@@ -456,7 +456,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 				    	{
 				    		treeViewer.setSelection(oldSelection, true);
 				    		forbidden = true;
-				    	}			    	
+				    	}
 				    }
 				}
 
@@ -478,14 +478,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
      */
     private boolean isForbiddenCombo(DroppedElement lastSelected, DroppedElement selected){
     	
-    	if(selected instanceof EncryptedFolderDob)
-    	{
-    		if(lastSelected.getParent().equals(selected.getParent()))
-    		{
-    			return false;
-    		}
-    	}
-    	else if(lastSelected.getParent().equals(selected.getParent()))
+    	if(lastSelected.getParent().equals(selected.getParent()))
     	{
     		return false;
     	}
