@@ -28,6 +28,9 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -105,6 +108,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	private ViewerFilter searchFilter;
 	private DataTypeFilter dataTypeFilter;
 	private EncryptionDateFilter encryptionDateFilter;
+	
+	private IStructuredSelection oldSelection = new TreeSelection();
 	
 	public static String ID = "de.steadycrypt.v2.view.treeTable";
 
@@ -421,6 +426,97 @@ public class TreeTableView extends ViewPart implements SideBarListener {
             	exportSelectionAction.run();
             }
         });
+    	
+    	treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+    		
+			public void selectionChanged(SelectionChangedEvent event) {
+			
+				boolean forbidden = false;
+				DroppedElement elementCurrent;
+				DroppedElement lastSelected = null;
+				
+				IStructuredSelection currentSelection = (IStructuredSelection) event.getSelection();
+				
+				if (!oldSelection.isEmpty() && (currentSelection.size() > oldSelection.size()))
+				{
+				    // or iterate over all elements
+				    for (Iterator<?> iteratorCurrent = currentSelection.iterator(); iteratorCurrent.hasNext();) 
+				    {
+				        elementCurrent = (DroppedElement) iteratorCurrent.next();
+				        
+				        if(!selectionContains(oldSelection, elementCurrent))
+				        {
+				        	lastSelected = elementCurrent;
+				        }
+				    }
+
+				    if(lastSelected != null)
+				    {
+			    		if (isForbiddenCombo((DroppedElement) lastSelected, (DroppedElement)oldSelection.getFirstElement()))
+				    	{
+				    		treeViewer.setSelection(oldSelection, true);
+				    		forbidden = true;
+				    	}			    	
+				    }
+				}
+
+				if(!forbidden)
+					oldSelection = (IStructuredSelection) event.getSelection();
+				
+				forbidden = false;
+				
+			}
+		});
+    }
+    
+    /**
+     * Checks if this combination is forbidden, if true than no selection is allowed.
+     * 
+     * @param lastSelected
+     * @param selected
+     * @return boolean
+     */
+    private boolean isForbiddenCombo(DroppedElement lastSelected, DroppedElement selected){
+    	
+    	if(selected instanceof EncryptedFolderDob)
+    	{
+    		if(lastSelected.getParent().equals(selected.getParent()))
+    		{
+    			return false;
+    		}
+    	}
+    	else if(lastSelected.getParent().equals(selected.getParent()))
+    	{
+    		return false;
+    	}
+    	else if((lastSelected instanceof EncryptedFileDob) && 
+    			(selected instanceof EncryptedFileDob))
+    	{
+    		return false;
+    	}
+    	
+    	return true;
+    }
+    
+    /**
+     * Returns true if oldSelection contains element, false if not.
+     * 
+     * @param oldSelection
+     * @param element
+     * @return boolean
+     */
+    private boolean selectionContains(IStructuredSelection oldSelection, DroppedElement element){
+    	
+    	for (Iterator<?> iterator = oldSelection.iterator(); iterator.hasNext();)
+    	{
+    		DroppedElement oldElement = (DroppedElement) iterator.next();
+    		
+    		if(oldElement.getName().equals(element.getName())){
+    			return true;
+    		}    		
+    	}
+    	
+    	return false;
     }
     
     /**
