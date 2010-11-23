@@ -6,11 +6,14 @@
 
 package de.steadycrypt.v2.views;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -19,6 +22,8 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -37,6 +42,8 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
@@ -55,6 +62,7 @@ import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
 import de.steadycrypt.v2.core.DecryptHandler;
 import de.steadycrypt.v2.core.DeleteFileHandler;
+import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.core.SteadyInputValidator;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
@@ -70,10 +78,10 @@ import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
 
 public class TreeTableView extends ViewPart implements SideBarListener {
 	
-	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(TreeTableView.class);
     private ToolBarManager toolBarManager;
 
+    private Action encryptFilesAction;
     private Action exportSelectionAction;
     private Action deleteSelectionAction;
     private Action newFolderAction;
@@ -81,6 +89,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private Action expandAllAction;
     private Action collapseAllAction;
 
+    private FileDropHandler fileDropHandler;
 	private DecryptHandler decryptHandler;
 	private DeleteFileHandler deleteFileHandler;
 	
@@ -119,6 +128,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         scrolledComposite.setContent(content);
 
         toolBarManager = new ToolBarManager();
+        toolBarManager.add(encryptFilesAction);
+        toolBarManager.add(new Separator("static"));
         toolBarManager.add(exportSelectionAction);
         toolBarManager.add(deleteSelectionAction);
         toolBarManager.add(newFolderAction);
@@ -187,14 +198,84 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
 	private void makeActions()
     {
+    	encryptFilesAction = new Action() {
+        	public void run()
+        	{
+        		FileDialog fileDialog = new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.MULTI);
+        		final File path = new File(fileDialog.open());
+        		final String[] selectedFiles = fileDialog.getFileNames();
+        		
+        		EncryptedFolderDob parentFolder = root;
+        		
+        		if(!treeViewer.getSelection().isEmpty()) {
+        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
+        			if(selectedElement instanceof EncryptedFileDob)
+        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
+        			else if(selectedElement instanceof EncryptedFolderDob)
+        				parentFolder = (EncryptedFolderDob)selectedElement;
+        		}
+        		
+        		final EncryptedFolderDob parentFolderFinal = parentFolder;
+        		
+        		ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+        		try {
+        			progressDialog.open();
+					progressDialog.run(false, false, new IRunnableWithProgress() {
+						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {	        		
+			        		monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, selectedFiles.length);
+			        		
+			        		if(fileDropHandler == null)
+			        			fileDropHandler = new FileDropHandler();
+			        		fileDropHandler.processData(selectedFiles, path.getParent(), parentFolderFinal, monitor);
+			        		
+			        		monitor.done();
+						}
+					});
+				} catch (InvocationTargetException e) {
+					log.error(e.getMessage());
+				} catch (InterruptedException e) {
+					log.error(e.getMessage());
+				}
+	            treeViewer.refresh();
+	        	SideBarView.updateFileTypeFilter();
+        	}
+        };
+        
+        encryptFilesAction.setToolTipText(Messages.TableView_EncryptFile_Tooltip);
+        encryptFilesAction.setImageDescriptor(Activator.getImageDescriptor("icons/encrypt.png"));
+        
     	exportSelectionAction = new Action() {
         	public void run()
         	{
         		if(!treeViewer.getSelection().isEmpty()) {
-        			if(decryptHandler == null)
-        				decryptHandler = new DecryptHandler();
-		    		decryptHandler.processData((TreeSelection)treeViewer.getSelection());
-		            treeViewer.refresh();
+        			final TreeSelection currentSelection = (TreeSelection)treeViewer.getSelection();
+            		
+    				DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
+    				directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
+    				final String path = directoryDialog.open();
+
+            		ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+            		try {
+            			progressDialog.open();
+						progressDialog.run(false, false, new IRunnableWithProgress() {
+							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+								monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, currentSelection.size());
+								
+								if(decryptHandler == null)
+									decryptHandler = new DecryptHandler();
+								decryptHandler.processData(currentSelection, path, monitor);
+								
+								monitor.done();
+								
+							}
+						});
+					} catch (InvocationTargetException e) {
+						log.error(e.getMessage());
+					} catch (InterruptedException e) {
+						log.error(e.getMessage());
+					}
+    				
+        			treeViewer.refresh();
 		        	SideBarView.updateFileTypeFilter();
         		}
         	}
@@ -202,16 +283,37 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         
         exportSelectionAction.setText(Messages.TableView_ExportFile);
         exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
-        exportSelectionAction.setImageDescriptor(Activator.getImageDescriptor("icons/export2.png"));
+        exportSelectionAction.setImageDescriptor(Activator.getImageDescriptor("icons/export.png"));
         
         deleteSelectionAction = new Action() {
         	public void run()
         	{
         		if(!treeViewer.getSelection().isEmpty()) {
+        			final TreeSelection currentSelection = (TreeSelection)treeViewer.getSelection();
     		    	if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_WarningDialog_Title, Messages.TableView_WarningDialog_Delete))
 	        		{
-	                    deleteFileHandler.processData((TreeSelection)treeViewer.getSelection());
-	                    treeViewer.refresh();
+	                    ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+	            		try {
+	            			progressDialog.open();
+	    					progressDialog.run(false, false, new IRunnableWithProgress() {
+	    						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {	        		
+	    							monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Delete, currentSelection.size());
+		    		        		
+	    							if(deleteFileHandler == null)
+	    								deleteFileHandler = new DeleteFileHandler();
+		    		        		deleteFileHandler.processData(currentSelection, monitor);
+		    	                    	    		        		
+		    		        		monitor.done();
+	    						}
+	    					});
+	    				} catch (InvocationTargetException e) {
+	    					log.error(e.getMessage());
+	    					e.printStackTrace();
+	    				} catch (InterruptedException e) {
+	    					log.error(e.getMessage());
+	    				}
+	    				
+	        			treeViewer.refresh();
 	    	        	SideBarView.updateFileTypeFilter();
 	        		}
         		}

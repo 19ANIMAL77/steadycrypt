@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import de.steadycrypt.v2.bob.EncryptedFile;
 import de.steadycrypt.v2.bob.EncryptedFolder;
@@ -43,15 +44,28 @@ public class FileDropHandler {
 		this.crypter = new Crypter(this.keyman.getKey());	
 	}
 	
-	public void processData(String[] droppedFileInformation, EncryptedFolderDob parent)
-	{	
-        for (int i = 0 ; i < droppedFileInformation.length ; i++)
+	public void processData(String[] droppedFileInformation, EncryptedFolderDob parent, IProgressMonitor monitor)
+	{
+        for (String currentDroppedElement : droppedFileInformation)
         {
         	try {
-        		browseFolders(new File(droppedFileInformation[i]), parent);
+        		browseFolders(new File(currentDroppedElement), parent);
+        		monitor.worked(1);
         	} catch(IOException e) {
         		log.error(e.getMessage());
-        		e.printStackTrace();
+        	}
+        }
+	}
+	
+	public void processData(String[] fileNames, String filePath, EncryptedFolderDob parent, IProgressMonitor monitor)
+	{
+        for (String currentDroppedElement : fileNames)
+        {
+        	try {
+        		browseFolders(new File(filePath+"/"+currentDroppedElement), parent);
+        		monitor.worked(1);
+        	} catch(IOException e) {
+        		log.error(e.getMessage());
         	}
         }
 	}
@@ -63,7 +77,7 @@ public class FileDropHandler {
     		log.debug("File dropped");
     		if(droppedElement.getName().contains(".DS_Store"))
     		{
-    			System.out.println(".ds_store File ignored!");
+    			log.info(".ds_store File ignored!");
     			return;
     		}
     		EncryptedFile droppedFile = crypter.encrypt(droppedElement, parent);

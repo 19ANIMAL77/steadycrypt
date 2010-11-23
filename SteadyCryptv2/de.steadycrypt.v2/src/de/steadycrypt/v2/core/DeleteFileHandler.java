@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.TreeSelection;
 
 import de.steadycrypt.v2.bob.DroppedElement;
@@ -27,59 +28,59 @@ public class DeleteFileHandler {
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	
 	@SuppressWarnings("unchecked")
-	public void processData(TreeSelection filesToDecrypt)
+	public void processData(TreeSelection filesToDelete, IProgressMonitor monitor)
 	{
-		Iterator<DroppedElement> droppedElementsIterator = filesToDecrypt.iterator();
+		Iterator<DroppedElement> droppedElementsIterator = filesToDelete.iterator();
 		
 		while(droppedElementsIterator.hasNext())
 		{
 			try {
 				browseFolders(droppedElementsIterator.next(), true);
+				monitor.worked(1);
 			} catch(IOException e) {
         		log.error(e.getMessage());
-        		e.printStackTrace();
-			}
-		}
+        	}
+        }
 	}
 
-	public void browseFolders(DroppedElement elementToDecrypt, boolean rootFile) throws IOException
+	public void browseFolders(DroppedElement elementToDelete, boolean rootFile) throws IOException
 	{
-		if(elementToDecrypt instanceof EncryptedFileDob)
+		if(elementToDelete instanceof EncryptedFileDob)
 		{
-			EncryptedFileDob fileToDecrypt = (EncryptedFileDob)elementToDecrypt;
+			EncryptedFileDob fileToDelete = (EncryptedFileDob)elementToDelete;
 			log.debug("EncryptedFile handed over");
 			
-			File file = new File(Crypter.encryptionPath+(fileToDecrypt).getFile());
+			File file = new File(Crypter.encryptionPath+(fileToDelete).getFile());
 			boolean success = file.delete();
 			log.debug("scFile deleted");
 			
 			if(success)
 			{
-				this.encryptedFileDao.deleteFile(fileToDecrypt);
+				this.encryptedFileDao.deleteFile(fileToDelete);
 				log.debug("database entry deleted");
 				if(rootFile)
-					(fileToDecrypt).getParent().removeFile(fileToDecrypt);
+					(fileToDelete).getParent().removeFile(fileToDelete);
 			}
 		}
-		else if(elementToDecrypt instanceof EncryptedFolderDob)
+		else if(elementToDelete instanceof EncryptedFolderDob)
 		{
-			EncryptedFolderDob folderToDecrypt = (EncryptedFolderDob)elementToDecrypt;
+			EncryptedFolderDob folderToDelete = (EncryptedFolderDob)elementToDelete;
 			log.debug("EncryptedFolder handed over");
 			
-			for(EncryptedFolderDob nextFolderToDecrypt : folderToDecrypt.getFolders())
+			for(EncryptedFolderDob nextFolderToDecrypt : folderToDelete.getFolders())
 			{
 				browseFolders(nextFolderToDecrypt, false);
 			}
 			
-			for(EncryptedFileDob nextFileToDecrypt : folderToDecrypt.getFiles())
+			for(EncryptedFileDob nextFileToDecrypt : folderToDelete.getFiles())
 			{
 				browseFolders(nextFileToDecrypt, false);
 			}
 			
-			encryptedFolderDao.deleteFolder(folderToDecrypt);
+			encryptedFolderDao.deleteFolder(folderToDelete);
 			log.debug("database entry deleted");
 			if(rootFile)
-				folderToDecrypt.getParent().removeFolder(folderToDecrypt);
+				folderToDelete.getParent().removeFolder(folderToDelete);
 		}
 	}
 
