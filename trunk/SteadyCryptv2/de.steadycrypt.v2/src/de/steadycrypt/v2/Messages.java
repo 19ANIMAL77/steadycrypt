@@ -30,6 +30,7 @@ public class Messages extends NLS
     public static String CryptedFilesTableIdentifier_SIZE;
     public static String CryptedFilesTableIdentifier_DATE;
 
+    public static String TableView_EncryptFile_Tooltip;
     public static String TableView_ExportFile;
     public static String TableView_ExportFile_Tooltip;
     public static String TableView_DeleteFile;
@@ -38,8 +39,10 @@ public class Messages extends NLS
     public static String TableView_Rename;
     public static String TableView_ExpandAll_Tooltip;
     public static String TableView_CollapseAll_Tooltip;
-    public static String TableView_SelectAll_Tooltip;
-    public static String TableView_DeselectAll_Tooltip;
+
+    public static String TableView_ProgressMonitorDialog_Encrypt;
+    public static String TableView_ProgressMonitorDialog_Decrypt;
+    public static String TableView_ProgressMonitorDialog_Delete;
 
     public static String TableView_ExportFileDialog_Title;
     public static String TableView_NewFolderDialog_Title;
@@ -80,8 +83,6 @@ public class Messages extends NLS
     public static String InteractiveSplashHandler_Error_RegFailed_Message;
     public static String InteractiveSplashHandler_Error_WrongPW_Title;
     public static String InteractiveSplashHandler_Error_WrongPW_Message;
-    public static String InteractiveSplashHandler_Error_AuthFailed_Title;
-    public static String InteractiveSplashHandler_Error_AuthFailed_Message;
     public static String InteractiveSplashHandler_Password;
     public static String InteractiveSplashHandler_PasswordValidate;
     public static String InteractiveSplashHandler_Register;

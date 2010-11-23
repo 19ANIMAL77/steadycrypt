@@ -13,12 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.TreeSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.ui.PlatformUI;
 
-import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
@@ -49,24 +46,20 @@ public class DecryptHandler {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void processData(TreeSelection filesToDecrypt)
+	public void processData(TreeSelection filesToDecrypt, String path, IProgressMonitor monitor)
 	{
 		Iterator<DroppedElement> selectedElementsIterator = filesToDecrypt.iterator();
-		
-		DirectoryDialog directoryDialog = new DirectoryDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SAVE);
-		directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
-		String path = directoryDialog.open();
-		
+
 		if(path != null)
 		{
 			while(selectedElementsIterator.hasNext()) {
 				try {
 					browseFolders(selectedElementsIterator.next(), path, true);
+	        		monitor.worked(1);
 				} catch(IOException e) {
 	        		log.error(e.getMessage());
-	        		e.printStackTrace();
-				}
-			}
+	        	}
+	        }
 		}
 		successfulDecryptedFolders.clear();
 		successfulDecryptedFiles.clear();

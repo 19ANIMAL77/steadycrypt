@@ -6,10 +6,14 @@
 
 package de.steadycrypt.v2.views.model;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.dnd.DND;
@@ -82,9 +86,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
     	// Handle Drag'N'Drop from Desktop into tree
     	if (fileTransfer.isSupportedType(event.currentDataType))
         {
-    		String[] droppedFileInformation = (String[]) event.data;
-    		
-    		log.debug(droppedFileInformation.length + " Files dropt.");
+    		final String[] droppedFileInformation = (String[]) event.data;
     		
 			TreeItem item = null;
 			
@@ -98,13 +100,21 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 					dragOverFolder = ((DroppedElement)item.getData()).getParent();
 				}
 			}
-			
-			log.debug("Parent-Folder: "+dragOverFolder.getName());
     		
 			try {
-				if(fileDropHandler == null)
-					fileDropHandler = new FileDropHandler();
-				fileDropHandler.processData(droppedFileInformation, dragOverFolder);
+				ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+        		progressDialog.open();
+				progressDialog.run(false, false, new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {	        		
+						monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, droppedFileInformation.length);
+		        		
+		        		if(fileDropHandler == null)
+							fileDropHandler = new FileDropHandler();
+						fileDropHandler.processData(droppedFileInformation, dragOverFolder, monitor);
+	                    	    		        		
+		        		monitor.done();
+					}
+				});
 			}
 			catch(Exception e) {
 				log.error("Error at proccessing dropped data. " + e);
