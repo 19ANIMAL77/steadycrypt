@@ -137,10 +137,10 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 
         toolBarManager = new ToolBarManager();
         toolBarManager.add(encryptFilesAction);
+        toolBarManager.add(newFolderAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(exportSelectionAction);
         toolBarManager.add(deleteSelectionAction);
-        toolBarManager.add(newFolderAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(expandAllAction);
         toolBarManager.add(collapseAllAction);
