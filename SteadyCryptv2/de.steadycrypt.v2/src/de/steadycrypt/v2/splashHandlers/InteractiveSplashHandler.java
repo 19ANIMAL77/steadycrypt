@@ -228,7 +228,16 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void handleButtonOKWidgetSelected()
 	{
 		String password = fTextPassword.getText();
-
+		if(password.length() == 0) {
+			fButtonOK.setEnabled(true);
+			MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_WrongPW_Title, NLS.bind(Messages.InteractiveSplashHandler_Error_WrongPW_Message, loginCount++));
+    		
+    		if(loginCount==4)
+    			System.exit(0);
+    		
+			return;
+		}
+			
 		DbManager manager = DbManager.getInstance();
 		manager.startDb();
 		
@@ -245,12 +254,10 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			// Prevent from double-Clicks
 			fButtonOK.setEnabled(true);
 			
-			MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_WrongPW_Title, NLS.bind(Messages.InteractiveSplashHandler_Error_WrongPW_Message, loginCount));
+			MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_WrongPW_Title, NLS.bind(Messages.InteractiveSplashHandler_Error_WrongPW_Message, loginCount++));
     		
-    		if(loginCount==3)
+    		if(loginCount==4)
     			System.exit(0);
-    		
-    		loginCount++;
     		
     		DbManager.printSQLException(sqle);
 		}
