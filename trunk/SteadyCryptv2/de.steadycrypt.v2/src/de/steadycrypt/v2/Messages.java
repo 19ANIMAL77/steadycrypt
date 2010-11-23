@@ -73,6 +73,14 @@ public class Messages extends NLS
     public static String SideBarView_WarningDialog_Title;
     public static String SideBarView_WarningDialog_Override;
     public static String SideBarView_WarningDialog_Delete;
+
+    public static String StatusLine_DropFilesHint;
+    public static String StatusLine_Added;
+    public static String StatusLine_SDeleted;
+    public static String StatusLine_Encrypted;
+    public static String StatusLine_Decrypted;
+    public static String StatusLine_TDeleted;
+    public static String StatusLine_FolderCreated;
     
     public static String SteadyInputValidator_Error_NoName;
     public static String SteadyInputValidator_Error_ToLong;
@@ -114,6 +122,10 @@ public class Messages extends NLS
         }
 
         return title;
+    }
+    
+    public static String getScFolder() {
+        return System.getProperty("user.dir")+"/sc-files/";
     }
     
     static {
