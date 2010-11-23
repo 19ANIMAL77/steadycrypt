@@ -6,6 +6,7 @@
 
 package de.steadycrypt.v2;
 
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -28,4 +29,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.setShowCoolBar(false);
         configurer.setShowStatusLine(true);
     }
+    
+	public void postWindowOpen() {
+		IStatusLineManager statusline = getWindowConfigurer().getActionBarConfigurer().getStatusLineManager();
+		statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), Messages.StatusLine_DropFilesHint);
+	}
 }

@@ -31,6 +31,7 @@ import de.steadycrypt.v2.core.FileDropHandler;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.EncryptedFolderDao;
 import de.steadycrypt.v2.views.SideBarView;
+import de.steadycrypt.v2.views.TreeTableView;
 
 public class TreeDropTargetAdapter extends DropTargetAdapter {
 	
@@ -115,6 +116,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 		        		monitor.done();
 					}
 				});
+				TreeTableView.setSuccessfullyImported();
 			}
 			catch(Exception e) {
 				log.error("Error at proccessing dropped data. " + e);

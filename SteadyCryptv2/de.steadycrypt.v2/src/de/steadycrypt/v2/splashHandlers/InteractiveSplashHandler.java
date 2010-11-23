@@ -23,7 +23,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.splash.AbstractSplashHandler;
 
 import de.steadycrypt.v2.Messages;
-import de.steadycrypt.v2.core.Crypter;
 import de.steadycrypt.v2.core.DbManager;
 import de.steadycrypt.v2.core.PasswordInterpreter;
 
@@ -66,7 +65,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	
 	public void init(final Shell splash)
 	{
-		scDirectory = new File(Crypter.encryptionPath);
+		scDirectory = new File(Messages.getScFolder());
 		isFirstStartUp = !scDirectory.exists();
 		
 		// Store the shell

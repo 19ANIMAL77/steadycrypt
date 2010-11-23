@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.TreeSelection;
 
+import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.DroppedElement;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
@@ -76,7 +77,7 @@ public class DecryptHandler {
 			crypter.decrypt(fileToDecrypt, destination);
 			log.debug("File decrypted");
 			
-			File file = new File(Crypter.encryptionPath+(fileToDecrypt).getFile());
+			File file = new File(Messages.getScFolder()+(fileToDecrypt).getFile());
 			boolean success = file.delete();
 			log.debug("scFile deleted");
 			

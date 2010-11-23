@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -69,6 +70,7 @@ public class SideBarView extends ViewPart {
 	public static Date encryptionDateFilter;
 	
 	private static Logger log = Logger.getLogger(SideBarView.class);
+    private IStatusLineManager statusline;
 	private static EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	private FilterFavoriteDao filterFavoriteDao = new FilterFavoriteDao();
     private List<FilterFavoriteDob> favorites;
@@ -96,6 +98,8 @@ public class SideBarView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent)
 	{
+		statusline = getViewSite().getActionBars().getStatusLineManager();
+		statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), Messages.StatusLine_DropFilesHint);
 		createActions();
 		
 	    favorites = filterFavoriteDao.getFavorites();		
@@ -259,14 +263,14 @@ public class SideBarView extends ViewPart {
 								}
 							}
 							filterFavoriteDao.updateFavorite(filterToUpdate);
-							tableViewer.refresh();
 						}
 					}
 					else
 					{
 						favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(txtSaveFavorite.getText(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText(), comboEncryptionDate.getText().equals(Messages.Filter_NONE) ? null : eP.toString())));
-						tableViewer.refresh();
 					}
+					statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Added, txtSaveFavorite.getText()));
+					tableViewer.refresh();
 				}
         	}
         };
@@ -326,6 +330,7 @@ public class SideBarView extends ViewPart {
 	                    	{
 	                    		filterFavoriteDao.deleteFavorite((FilterFavoriteDob)nextElement);
 	                    		favorites.remove((FilterFavoriteDob)nextElement);
+	        					statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_SDeleted, ((FilterFavoriteDob)nextElement).getName()));
 	                    	}
 	                	}
 	                }

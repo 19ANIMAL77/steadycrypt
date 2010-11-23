@@ -20,6 +20,7 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
+import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.EncryptedFile;
 import de.steadycrypt.v2.bob.dob.EncryptedFileDob;
 import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
@@ -29,7 +30,6 @@ import de.steadycrypt.v2.bob.dob.EncryptedFolderDob;
  */
 public class Crypter
 {
-	public static final String encryptionPath = System.getProperty("user.dir")+"/sc-files/";
 	private Cipher ecipher;
 	private Cipher dcipher;
 	
@@ -71,7 +71,7 @@ public class Crypter
 		EncryptedFile encryptedFile = new EncryptedFile(currentFile, parent);
 		
 		InputStream input = new FileInputStream(encryptedFile.getPath());
-		OutputStream output = new FileOutputStream(encryptionPath+encryptedFile.getFile());
+		OutputStream output = new FileOutputStream(Messages.getScFolder()+encryptedFile.getFile());
 	
 		output = new CipherOutputStream(output, ecipher);
 		
@@ -126,7 +126,7 @@ public class Crypter
 			}
 		}
 		
-		InputStream input = new FileInputStream(encryptionPath+currentFile.getFile());
+		InputStream input = new FileInputStream(Messages.getScFolder()+currentFile.getFile());
 		OutputStream output = new FileOutputStream(outputFile);
 	
 		input = new CipherInputStream(input, dcipher);

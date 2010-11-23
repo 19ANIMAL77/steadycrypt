@@ -8,6 +8,7 @@ package de.steadycrypt.v2.views;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
@@ -79,6 +81,7 @@ import de.steadycrypt.v2.views.ui.SteadyTreeTableLabelProvider;
 public class TreeTableView extends ViewPart implements SideBarListener {
 	
 	private static Logger log = Logger.getLogger(TreeTableView.class);
+    private static IStatusLineManager statusline;
     private ToolBarManager toolBarManager;
 
     private Action encryptFilesAction;
@@ -108,16 +111,16 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	public TreeTableView() {
-		
 		/**
 		 * Register me at SideBarListener, hi there.
 		 */
-		SideBarView.addSideBarListener(this);
-		
+		SideBarView.addSideBarListener(this);		
 	}
 
 	public void createPartControl(Composite parent)
 	{
+		statusline = getViewSite().getActionBars().getStatusLineManager();
+		statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), Messages.StatusLine_DropFilesHint);
 		makeActions();
 		
 		ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
@@ -236,6 +239,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 				} catch (InterruptedException e) {
 					log.error(e.getMessage());
 				}
+				setSuccessfullyImported();
 	            treeViewer.refresh();
 	        	SideBarView.updateFileTypeFilter();
         	}
@@ -274,7 +278,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 					} catch (InterruptedException e) {
 						log.error(e.getMessage());
 					}
-    				
+
+    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Decrypted, remainingHddSpace()));
         			treeViewer.refresh();
 		        	SideBarView.updateFileTypeFilter();
         		}
@@ -312,7 +317,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	    				} catch (InterruptedException e) {
 	    					log.error(e.getMessage());
 	    				}
-	    				
+
+	    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_TDeleted, remainingHddSpace()));
 	        			treeViewer.refresh();
 	    	        	SideBarView.updateFileTypeFilter();
 	        		}
@@ -322,7 +328,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         
         deleteSelectionAction.setText(Messages.TableView_DeleteFile);
         deleteSelectionAction.setToolTipText(Messages.TableView_DeleteFile_Tooltip);
-        deleteSelectionAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE));
+        deleteSelectionAction.setImageDescriptor(Activator.getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE));
         
         renameAction = new Action() {
             @SuppressWarnings("unchecked")
@@ -371,6 +377,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
 	        		}
 	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue(), new Date(System.currentTimeMillis()), "", root)));
+    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue()));
 	        		treeViewer.refresh();
         		}
         	}
@@ -400,7 +407,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         };
         
         collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
-        collapseAllAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+        collapseAllAction.setImageDescriptor(Activator.getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
     }
     
     /**
@@ -492,5 +499,15 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	}
 
 	public void setFocus() {}
+	
+	private static String remainingHddSpace()
+	{
+    	long space = (new File(Messages.getScFolder())).getUsableSpace()/1024/1024/1024;
+    	return new BigDecimal(space).setScale(2,BigDecimal.ROUND_HALF_UP).toString();
+	}
+	
+	public static void setSuccessfullyImported() {
+		statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Encrypted, remainingHddSpace()));
+	}
 
 }
