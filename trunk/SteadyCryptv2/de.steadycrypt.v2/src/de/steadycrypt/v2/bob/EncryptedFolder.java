@@ -20,7 +20,7 @@ public class EncryptedFolder extends DroppedElement {
 	 * @param parent
 	 */
 	public EncryptedFolder(File newFile, EncryptedFolderDob parent) {
-		super(newFile.getName(), new Date(System.currentTimeMillis()), newFile.getPath(), parent);
+		super(newFile.getName(), new Date(System.currentTimeMillis()), newFile.getPath().replace("\\", "/"), parent);
 	}
 
 	/**

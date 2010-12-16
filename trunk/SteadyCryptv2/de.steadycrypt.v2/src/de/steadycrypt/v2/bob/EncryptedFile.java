@@ -26,7 +26,7 @@ public class EncryptedFile extends DroppedElement {
 	 */
 	public EncryptedFile(File newFile, EncryptedFolderDob parent)
 	{
-		super(newFile.getName(), new Date(System.currentTimeMillis()), newFile.getPath(), parent);
+		super(newFile.getName(), new Date(System.currentTimeMillis()), newFile.getPath().replace("\\", "/"), parent);
 		this.type = defineFileType();
 		this.size = newFile.length();
 		this.file = System.nanoTime()+".sc";

@@ -88,9 +88,10 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private ToolBarManager toolBarManager;
 
     private Action encryptFilesAction;
-    private Action exportSelectionAction;
-    private Action deleteSelectionAction;
     private Action newFolderAction;
+    private Action exportSelectionAction;
+    private Action exportSelectionToOrigPathAction;
+    private Action deleteSelectionAction;
     private Action renameAction;
     private Action expandAllAction;
     private Action collapseAllAction;
@@ -140,6 +141,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         toolBarManager.add(newFolderAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(exportSelectionAction);
+        toolBarManager.add(exportSelectionToOrigPathAction);
         toolBarManager.add(deleteSelectionAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(expandAllAction);
@@ -253,6 +255,30 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         encryptFilesAction.setToolTipText(Messages.TableView_EncryptFile_Tooltip);
         encryptFilesAction.setImageDescriptor(Activator.getImageDescriptor("icons/encrypt.png"));
         
+        newFolderAction = new Action() {
+        	public void run()
+        	{
+        		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_NewFolderDialog_Title, Messages.TableView_NewFolderDialog, "", new SteadyInputValidator());
+        		if(newFolderDialog.open() == Window.OK) {
+	        		EncryptedFolderDob parentFolder = root;
+	        		if(!treeViewer.getSelection().isEmpty()) {
+	        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
+	
+	        			if(selectedElement instanceof EncryptedFolderDob)
+	        				parentFolder = (EncryptedFolderDob)selectedElement;
+	        			else if(selectedElement instanceof EncryptedFileDob)
+	        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
+	        		}
+	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue(), new Date(System.currentTimeMillis()), "", root)));
+    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue()));
+	        		treeViewer.refresh();
+        		}
+        	}
+        };
+        
+        newFolderAction.setToolTipText(Messages.TableView_NewFolder_Tooltip);
+        newFolderAction.setImageDescriptor(Activator.getImageDescriptor("icons/folder_add.png"));
+        
     	exportSelectionAction = new Action() {
         	public void run()
         	{
@@ -263,16 +289,57 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     				directoryDialog.setText(Messages.TableView_ExportFileDialog_Title);
     				final String path = directoryDialog.open();
 
-            		ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+    				if(path!=null) {
+	            		ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+	            		try {
+	            			progressDialog.open();
+							progressDialog.run(false, false, new IRunnableWithProgress() {
+								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, currentSelection.size());
+									
+									if(decryptHandler == null)
+										decryptHandler = new DecryptHandler();
+									decryptHandler.processData(currentSelection, path, monitor);
+									
+									monitor.done();
+									
+								}
+							});
+						} catch (InvocationTargetException e) {
+							log.error(e.getMessage());
+						} catch (InterruptedException e) {
+							log.error(e.getMessage());
+						}
+
+	    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Decrypted, remainingHddSpace()));
+	        			treeViewer.refresh();
+			        	SideBarView.updateFileTypeFilter();
+    				}
+        		}
+        	}
+        };
+
+        exportSelectionAction.setText(Messages.TableView_ExportFile);
+        exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
+        exportSelectionAction.setImageDescriptor(Activator.getImageDescriptor("icons/export.png"));
+        exportSelectionAction.setEnabled(false);
+        
+    	exportSelectionToOrigPathAction= new Action() {
+        	public void run()
+        	{
+        		if(!treeViewer.getSelection().isEmpty()) {
+        			final TreeSelection currentSelection = (TreeSelection)treeViewer.getSelection();
+            		
+					ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
             		try {
             			progressDialog.open();
 						progressDialog.run(false, false, new IRunnableWithProgress() {
 							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-								monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, currentSelection.size());
+								monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, 1);
 								
 								if(decryptHandler == null)
 									decryptHandler = new DecryptHandler();
-								decryptHandler.processData(currentSelection, path, monitor);
+								decryptHandler.processData((DroppedElement)currentSelection.getFirstElement(), monitor);
 								
 								monitor.done();
 								
@@ -290,10 +357,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         		}
         	}
         };
-        
-        exportSelectionAction.setText(Messages.TableView_ExportFile);
-        exportSelectionAction.setToolTipText(Messages.TableView_ExportFile_Tooltip);
-        exportSelectionAction.setImageDescriptor(Activator.getImageDescriptor("icons/export.png"));
+
+        exportSelectionToOrigPathAction.setText(Messages.TableView_ExportFileToOrigPath);
+        exportSelectionToOrigPathAction.setToolTipText(Messages.TableView_ExportFileToOrigPath_Tooltip);
+        exportSelectionToOrigPathAction.setImageDescriptor(Activator.getImageDescriptor("icons/export.png"));
+        exportSelectionToOrigPathAction.setEnabled(false);
         
         deleteSelectionAction = new Action() {
         	public void run()
@@ -334,6 +402,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         deleteSelectionAction.setText(Messages.TableView_DeleteFile);
         deleteSelectionAction.setToolTipText(Messages.TableView_DeleteFile_Tooltip);
         deleteSelectionAction.setImageDescriptor(Activator.getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE));
+        deleteSelectionAction.setEnabled(false);
         
         renameAction = new Action() {
             @SuppressWarnings("unchecked")
@@ -366,30 +435,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         
         renameAction.setText(Messages.TableView_Rename);
         renameAction.setImageDescriptor(Activator.getImageDescriptor("icons/rename.png"));
-        
-        newFolderAction = new Action() {
-        	public void run()
-        	{
-        		InputDialog newFolderDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_NewFolderDialog_Title, Messages.TableView_NewFolderDialog, "", new SteadyInputValidator());
-        		if(newFolderDialog.open() == Window.OK) {
-	        		EncryptedFolderDob parentFolder = root;
-	        		if(!treeViewer.getSelection().isEmpty()) {
-	        			DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
-	
-	        			if(selectedElement instanceof EncryptedFolderDob)
-	        				parentFolder = (EncryptedFolderDob)selectedElement;
-	        			else if(selectedElement instanceof EncryptedFileDob)
-	        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
-	        		}
-	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue(), new Date(System.currentTimeMillis()), "", root)));
-    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue()));
-	        		treeViewer.refresh();
-        		}
-        	}
-        };
-        
-        newFolderAction.setToolTipText(Messages.TableView_NewFolder_Tooltip);
-        newFolderAction.setImageDescriptor(Activator.getImageDescriptor("icons/folder_add.png"));
+        renameAction.setEnabled(false);
         
         expandAllAction = new Action() {
         	public void run()
@@ -436,6 +482,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 				DroppedElement lastSelected = null;
 				
 				IStructuredSelection currentSelection = (IStructuredSelection) event.getSelection();
+
+				exportSelectionAction.setEnabled(currentSelection.size() > 0 ? true : false);
+				exportSelectionToOrigPathAction.setEnabled(currentSelection.size() == 1 ? true : false);
+				deleteSelectionAction.setEnabled(currentSelection.size() > 0 ? true : false);
+				renameAction.setEnabled(currentSelection.size() > 0 ? true : false);
 				
 				if (!oldSelection.isEmpty() && (currentSelection.size() > oldSelection.size()))
 				{
@@ -519,8 +570,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     {
         MenuManager popupMenuManager = new MenuManager("PopupMenu");
         IMenuListener listener = new IMenuListener() { 
-        public void menuAboutToShow(IMenuManager manager) { 
+        public void menuAboutToShow(IMenuManager manager) {
             manager.add(exportSelectionAction);
+            manager.add(exportSelectionToOrigPathAction);
             manager.add(renameAction);
             manager.add(deleteSelectionAction);
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
