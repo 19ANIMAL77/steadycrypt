@@ -52,24 +52,21 @@ public class DecryptHandler {
 	{
 		Iterator<DroppedElement> selectedElementsIterator = filesToDecrypt.iterator();
 
-		if(path != null)
-		{
-			while(selectedElementsIterator.hasNext()) {
-				try {
-					browseFolders(selectedElementsIterator.next(), path, true);
-	        		monitor.worked(1);
-				} catch(IOException e) {
-	        		log.error(e.getMessage());
-	        	}
-	        }
-		}
+		while(selectedElementsIterator.hasNext()) {
+			try {
+				browseFolders(selectedElementsIterator.next(), path, true);
+        		monitor.worked(1);
+			} catch(IOException e) {
+        		log.error(e.getMessage());
+        	}
+        }
 		successfulDecryptedFolders.clear();
 		successfulDecryptedFiles.clear();
 		
 		// Opens the explorer/finder by using the extraction path
-		Desktop d = Desktop.getDesktop();
+		Desktop desktop = Desktop.getDesktop();
         try {
-            d.open(new File(path));
+        	desktop.open(new File(path));
         } catch(IOException e) {
             e.printStackTrace();
         }		
