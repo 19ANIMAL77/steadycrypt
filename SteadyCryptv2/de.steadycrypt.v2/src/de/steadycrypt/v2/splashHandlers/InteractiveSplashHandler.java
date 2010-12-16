@@ -258,10 +258,16 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			// Prevent from double-Clicks
 			fButtonOK.setEnabled(true);
 			
-			MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_WrongPW_Title, NLS.bind(Messages.InteractiveSplashHandler_Error_WrongPW_Message, loginCount++));
-    		
-    		if(loginCount==4)
-    			System.exit(0);
+			if(sqle.getCause().getCause().getMessage().contains("An encrypted database cannot be accessed without the correct boot password.")) {
+				MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_WrongPW_Title, NLS.bind(Messages.InteractiveSplashHandler_Error_WrongPW_Message, loginCount++));
+				
+	    		if(loginCount==4)
+	    			System.exit(0);
+			}
+			else if(sqle.getCause().getCause().getMessage().contains("Another instance of Derby may have already booted the database")) {
+				MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_AlreadyStarted_Title, Messages.InteractiveSplashHandler_Error_AlreadyStarted_Message);
+				System.exit(0);
+			}
     		
     		DbManager.printSQLException(sqle);
 		}
