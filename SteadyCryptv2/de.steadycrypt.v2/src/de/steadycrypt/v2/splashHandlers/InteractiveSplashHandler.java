@@ -16,6 +16,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -205,6 +206,9 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			// do login
 			fAuthenticated = true;
 		} else {
+			
+			fButtonRegister.setEnabled(true);
+			
 			MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_RegFailed_Title, Messages.InteractiveSplashHandler_Error_RegFailed_Message);
 		}
 	}
@@ -280,15 +284,23 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			// Create the OK button
 			createUIButtonOK();	
 			createUILabelBlank();
+			// Create the cancel button
+			createUIButtonCancel();
+			
+			fCompositeLogin.setTabList(new Control[]{fTextPassword, fButtonOK, fButtonCancel});
+			
 		} else {
 			// Create the Register Button
 			createUIButtonRegister();
 			createUILabelPasswordValidate();
 			createUITextPasswordValidate();
+			// Create the cancel button
+			createUIButtonCancel();
+			
+			fCompositeLogin.setTabList(new Control[]{fTextPassword, fTextPasswordValidate, fButtonRegister, fButtonCancel});
 		}
 		
-		// Create the cancel button
-		createUIButtonCancel();
+
 	}		
 	
 	/**
