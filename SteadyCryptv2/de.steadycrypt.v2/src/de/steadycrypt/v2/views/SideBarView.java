@@ -138,7 +138,9 @@ public class SideBarView extends ViewPart {
 		final Label lblFileTypes = new Label(filterComposite, SWT.FLAT);
 		lblFileTypes.setText(Messages.SideBarView_TypeFilter);
 		lblFileTypes.setFont(font);
-		lblFileTypes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gridData.verticalIndent = 10;
+		lblFileTypes.setLayoutData(gridData);
 
 	    comboFileTypes = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 	    comboFileTypes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
@@ -147,7 +149,7 @@ public class SideBarView extends ViewPart {
 		final Label lblDate = new Label(filterComposite, SWT.FLAT);
 		lblDate.setText(Messages.SideBarView_DateFilter);
 		lblDate.setFont(font);
-		lblDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		lblDate.setLayoutData(gridData);
 		
 		final Label lblDateExp = new Label(filterComposite, SWT.FLAT);
 		lblDateExp.setText(Messages.SideBarView_DateFilterExplanation);
@@ -188,7 +190,7 @@ public class SideBarView extends ViewPart {
 
         table = new Table(favoritesComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
         table.setHeaderVisible(false);
-        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+        gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gridData.heightHint = 100;
         table.setLayoutData(gridData);
         
