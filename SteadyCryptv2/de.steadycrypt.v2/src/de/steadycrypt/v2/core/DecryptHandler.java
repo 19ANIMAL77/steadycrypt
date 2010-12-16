@@ -6,6 +6,7 @@
 
 package de.steadycrypt.v2.core;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +65,14 @@ public class DecryptHandler {
 		}
 		successfulDecryptedFolders.clear();
 		successfulDecryptedFiles.clear();
+		
+		// Opens the explorer/finder by using the extraction path
+		Desktop d = Desktop.getDesktop();
+        try {
+            d.open(new File(path));
+        } catch(IOException e) {
+            e.printStackTrace();
+        }		
 	}
 
 	public void browseFolders(DroppedElement elementToDecrypt, String destination, boolean rootFile) throws IOException
