@@ -92,6 +92,8 @@ public class Messages extends NLS
     public static String InteractiveSplashHandler_Error_RegFailed_Message;
     public static String InteractiveSplashHandler_Error_WrongPW_Title;
     public static String InteractiveSplashHandler_Error_WrongPW_Message;
+    public static String InteractiveSplashHandler_Error_AlreadyStarted_Title;
+    public static String InteractiveSplashHandler_Error_AlreadyStarted_Message;
     public static String InteractiveSplashHandler_Password;
     public static String InteractiveSplashHandler_PasswordValidate;
     public static String InteractiveSplashHandler_Register;
