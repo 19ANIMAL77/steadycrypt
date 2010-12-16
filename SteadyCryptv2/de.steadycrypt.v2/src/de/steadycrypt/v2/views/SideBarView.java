@@ -36,6 +36,8 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -125,6 +127,9 @@ public class SideBarView extends ViewPart {
 		
 		final Label lblFileName = new Label(filterComposite, SWT.FLAT);
 		lblFileName.setText(Messages.SideBarView_NameFilter);
+		FontData fontData = lblFileName.getFont().getFontData()[0];
+		Font font = new Font(PlatformUI.getWorkbench().getDisplay(), new FontData(fontData.getName(), fontData.getHeight(), SWT.BOLD));
+		lblFileName.setFont(font);
 		lblFileName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 				
 		txtSearchField = new Text(filterComposite, SWT.BORDER);
@@ -132,6 +137,7 @@ public class SideBarView extends ViewPart {
 		
 		final Label lblFileTypes = new Label(filterComposite, SWT.FLAT);
 		lblFileTypes.setText(Messages.SideBarView_TypeFilter);
+		lblFileTypes.setFont(font);
 		lblFileTypes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
 	    comboFileTypes = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
@@ -140,7 +146,12 @@ public class SideBarView extends ViewPart {
 		
 		final Label lblDate = new Label(filterComposite, SWT.FLAT);
 		lblDate.setText(Messages.SideBarView_DateFilter);
+		lblDate.setFont(font);
 		lblDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		
+		final Label lblDateExp = new Label(filterComposite, SWT.FLAT);
+		lblDateExp.setText(Messages.SideBarView_DateFilterExplanation);
+		lblDateExp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
 		comboEncryptionDate = new Combo(filterComposite, SWT.VERTICAL | SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 		comboEncryptionDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));

@@ -71,6 +71,32 @@ public class DecryptHandler {
             e.printStackTrace();
         }		
 	}
+	
+	public void processData(DroppedElement filesToDecrypt, IProgressMonitor monitor)
+	{
+		String path = filesToDecrypt.getPath().substring(0, filesToDecrypt.getPath().lastIndexOf("/"));
+		File destination = new File(path);
+		if(!destination.exists())
+			destination.mkdir();
+		
+		System.out.println(path);
+		try {
+			browseFolders(filesToDecrypt, path, true);
+    		monitor.worked(1);
+		} catch(IOException e) {
+    		log.error(e.getMessage());
+    	}
+    	successfulDecryptedFolders.clear();
+		successfulDecryptedFiles.clear();
+		
+		// Opens the explorer/finder by using the extraction path
+		Desktop desktop = Desktop.getDesktop();
+        try {
+        	desktop.open(destination);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }		
+	}
 
 	public void browseFolders(DroppedElement elementToDecrypt, String destination, boolean rootFile) throws IOException
 	{
@@ -104,28 +130,24 @@ public class DecryptHandler {
 			log.debug("EncryptedFolder handed over");
 			
 			File newSubDestination = new File(destination+"/"+folderToDecrypt.getName());
-			boolean success = newSubDestination.exists();
-			if(!success)
-				success = newSubDestination.mkdir();
+			if(!newSubDestination.exists())
+				newSubDestination.mkdir();
 			
-			if(success)
+			for(EncryptedFolderDob nextFolderToDecrypt : folderToDecrypt.getFolders())
 			{
-				for(EncryptedFolderDob nextFolderToDecrypt : folderToDecrypt.getFolders())
-				{
-					browseFolders(nextFolderToDecrypt, newSubDestination.getPath(), false);
-				}
-				
-				for(EncryptedFileDob nextFileToDecrypt : folderToDecrypt.getFiles())
-				{
-					browseFolders(nextFileToDecrypt, newSubDestination.getPath(), false);
-				}
-				
-				successfulDecryptedFolders.add(folderToDecrypt);
-				encryptedFolderDao.deleteFolder(folderToDecrypt);
-				log.debug("database entry deleted");
-				if(rootFile)
-					folderToDecrypt.getParent().removeFolder(folderToDecrypt);
+				browseFolders(nextFolderToDecrypt, newSubDestination.getPath(), false);
 			}
+			
+			for(EncryptedFileDob nextFileToDecrypt : folderToDecrypt.getFiles())
+			{
+				browseFolders(nextFileToDecrypt, newSubDestination.getPath(), false);
+			}
+			
+			successfulDecryptedFolders.add(folderToDecrypt);
+			encryptedFolderDao.deleteFolder(folderToDecrypt);
+			log.debug("database entry deleted");
+			if(rootFile)
+				folderToDecrypt.getParent().removeFolder(folderToDecrypt);
 		}
 	}
 
