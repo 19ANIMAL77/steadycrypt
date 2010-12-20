@@ -9,7 +9,6 @@ package de.steadycrypt.v2.views;
 import java.sql.Date;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.event.EventListenerList;
@@ -298,6 +297,25 @@ public class SideBarView extends ViewPart {
 				if(filter == null)
 					return;
 				
+				boolean filetypeExists = false;
+				
+				if(filter.getFiletype() == null)
+					filetypeExists=true;
+				else {
+					for(String entry : comboFileTypes.getItems()) {
+						if(entry.equalsIgnoreCase(filter.getFiletype()))
+							filetypeExists=true;
+					}
+				}
+				
+				if(!filetypeExists) {
+					Object[] bindings = {filter.getFiletype(), filter.getName()};
+					if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_InfoDialog_Title, NLS.bind(Messages.SideBarView_WarningDialog_FileTypeDoesntExist, bindings)))
+						deleteFavoriteAction.run();
+					clearFiltersAction.run();
+					return;
+				}
+				
 				txtSearchField.setText(filter.getFilename() == null ? "" : filter.getFilename());
 				fileNameFilterString = txtSearchField.getText();
 				comboFileTypes.setText(filter.getFiletype() == null ? Messages.Filter_NONE : filter.getFiletype());
@@ -324,8 +342,7 @@ public class SideBarView extends ViewPart {
         
         // to delete the selected favorite - Message dialog asks for confirmation
     	deleteFavoriteAction = new Action() {
-            @SuppressWarnings("rawtypes")
-			public void run() {
+            public void run() {
             	try
                 {
                 	StructuredSelection selection;
@@ -334,20 +351,15 @@ public class SideBarView extends ViewPart {
                 	if(selection == null)
                 		return;
                 	
-					Iterator iterator = selection.iterator();
-	                while(iterator.hasNext())
-	                {
-	                	Object nextElement = iterator.next();
-	                	if(nextElement instanceof FilterFavoriteDob) {
-	                		if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_WarningDialog_Title, NLS.bind(Messages.SideBarView_WarningDialog_Delete, ((FilterFavoriteDob)nextElement).getName())))
-	                    	{
-	                    		filterFavoriteDao.deleteFavorite((FilterFavoriteDob)nextElement);
-	                    		favorites.remove((FilterFavoriteDob)nextElement);
-	        					statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_SDeleted, ((FilterFavoriteDob)nextElement).getName()));
-	                    	}
-	                	}
-	                }
+                	FilterFavoriteDob selectedFavorite = (FilterFavoriteDob)selection.getFirstElement();
+	                if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_WarningDialog_Title, NLS.bind(Messages.SideBarView_WarningDialog_Delete, selectedFavorite.getName())))
+                	{
+                		filterFavoriteDao.deleteFavorite(selectedFavorite);
+                		favorites.remove(selectedFavorite);
+    					statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_SDeleted, selectedFavorite.getName()));
+                	}
 	                tableViewer.refresh();
+	                clearFiltersAction.run();
                 }
                 catch(ClassCastException e) {
                 	log.error(e.getMessage());

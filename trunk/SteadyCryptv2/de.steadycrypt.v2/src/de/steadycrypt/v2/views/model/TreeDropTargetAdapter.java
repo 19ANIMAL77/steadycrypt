@@ -96,6 +96,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 					
 				if(item.getData() instanceof EncryptedFolderDob) {
 					dragOverFolder = (EncryptedFolderDob) item.getData();
+					item.setExpanded(true);
 				}
 				else {
 					dragOverFolder = ((DroppedElement)item.getData()).getParent();
@@ -141,6 +142,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 						
 					if(item.getData() instanceof EncryptedFolderDob) {
 						dragOverFolder = (EncryptedFolderDob) item.getData();
+						item.setExpanded(true);
 					}
 					else {
 						dragOverFolder = ((DroppedElement)item.getData()).getParent();
