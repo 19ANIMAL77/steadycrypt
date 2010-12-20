@@ -210,6 +210,8 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			fButtonRegister.setEnabled(true);
 			
 			MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_RegFailed_Title, Messages.InteractiveSplashHandler_Error_RegFailed_Message);
+			fTextPassword.setText("");
+			fTextPasswordValidate.setText("");
 		}
 	}
 	
@@ -261,11 +263,14 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			if(sqle.getCause().getCause().getMessage().contains("An encrypted database cannot be accessed without the correct boot password.")) {
 				MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_WrongPW_Title, NLS.bind(Messages.InteractiveSplashHandler_Error_WrongPW_Message, loginCount++));
 				
+				fTextPassword.setText("");
+				
 	    		if(loginCount==4)
 	    			System.exit(0);
 			}
 			else if(sqle.getCause().getCause().getMessage().contains("Another instance of Derby may have already booted the database")) {
 				MessageDialog.openError(getSplash(), Messages.InteractiveSplashHandler_Error_AlreadyStarted_Title, Messages.InteractiveSplashHandler_Error_AlreadyStarted_Message);
+				fTextPassword.setText("");
 				System.exit(0);
 			}
     		

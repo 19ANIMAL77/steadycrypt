@@ -55,6 +55,7 @@ public class Messages extends NLS
     public static String TableView_InfoDialog_CantMove;
     public static String TableView_WarningDialog_Title;
     public static String TableView_WarningDialog_Delete;
+    public static String TableView_ErrorDialog_SCFolder;
 
     public static String SideBarView_Filters;
     public static String SideBarView_NameFilter;
@@ -73,6 +74,7 @@ public class Messages extends NLS
     public static String SideBarView_ErrorDialog_MissingName;
     public static String SideBarView_WarningDialog_Title;
     public static String SideBarView_WarningDialog_Override;
+    public static String SideBarView_WarningDialog_FileTypeDoesntExist;
     public static String SideBarView_WarningDialog_Delete;
 
     public static String StatusLine_DropFilesHint;

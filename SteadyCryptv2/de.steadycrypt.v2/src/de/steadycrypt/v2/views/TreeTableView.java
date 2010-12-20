@@ -269,7 +269,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	        			else if(selectedElement instanceof EncryptedFileDob)
 	        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
 	        		}
-	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue(), new Date(System.currentTimeMillis()), "", root)));
+	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue().trim(), new Date(System.currentTimeMillis()), "", parentFolder)));
     				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue()));
 	        		treeViewer.refresh();
         		}
@@ -329,31 +329,39 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         	{
         		if(!treeViewer.getSelection().isEmpty()) {
         			final TreeSelection currentSelection = (TreeSelection)treeViewer.getSelection();
-            		
-					ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-            		try {
-            			progressDialog.open();
-						progressDialog.run(false, false, new IRunnableWithProgress() {
-							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-								monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, 1);
-								
-								if(decryptHandler == null)
-									decryptHandler = new DecryptHandler();
-								decryptHandler.processData((DroppedElement)currentSelection.getFirstElement(), monitor);
-								
-								monitor.done();
-								
-							}
-						});
-					} catch (InvocationTargetException e) {
-						log.error(e.getMessage());
-					} catch (InterruptedException e) {
-						log.error(e.getMessage());
-					}
 
-    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Decrypted, remainingHddSpace()));
-        			treeViewer.refresh();
-		        	SideBarView.updateFileTypeFilter();
+					if(!(((DroppedElement)currentSelection.getFirstElement()).getPath().length() == 0))
+					{
+						ProgressMonitorDialog progressDialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+		        		try {
+		        			progressDialog.open();
+							progressDialog.run(false, false, new IRunnableWithProgress() {
+								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, 1);
+									
+									if(decryptHandler == null)
+										decryptHandler = new DecryptHandler();
+									decryptHandler.processData((DroppedElement)currentSelection.getFirstElement(), monitor);
+									
+									monitor.done();
+									
+								}
+							});
+						} catch (InvocationTargetException e) {
+							log.error(e.getMessage());
+						} catch (InterruptedException e) {
+							log.error(e.getMessage());
+						}
+		
+						statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Decrypted, remainingHddSpace()));
+		    			treeViewer.refresh();
+			        	SideBarView.updateFileTypeFilter();
+					}
+					else
+					{
+						MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.TableView_InfoDialog_Title, Messages.TableView_ErrorDialog_SCFolder);
+						exportSelectionAction.run();
+					}
         		}
         	}
         };
@@ -637,6 +645,11 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer.addFilter(searchFilter);
 		treeViewer.addFilter(dataTypeFilter);
 		treeViewer.addFilter(encryptionDateFilter);
+		if(SideBarView.fileNameFilterString.length() == 0 && SideBarView.encryptionDateFilterString.equalsIgnoreCase(Messages.Filter_NONE) 
+				&& SideBarView.fileTypeFilterString.equalsIgnoreCase(Messages.Filter_NONE))
+			collapseAllAction.run();
+		else
+			treeViewer.expandAll();
 	}
 
 	public void setFocus() {}
