@@ -26,10 +26,10 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="de.steadycrypt.v2.application"
-            name="SteadyCrypt">
+            name="SteadyCrypt.de">
          <property
                name="appName"
-               value="SteadyCrypt">
+               value="SteadyCrypt.de">
          </property>
          <property
                name="preferenceCustomization"
