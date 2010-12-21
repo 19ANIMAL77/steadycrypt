@@ -30,6 +30,7 @@ public class DecryptHandler {
 	
 	private KeyManager keyman;
 	private Crypter crypter;
+	private IProgressMonitor monitor;
 	
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
@@ -50,6 +51,7 @@ public class DecryptHandler {
 	@SuppressWarnings("unchecked")
 	public void processData(TreeSelection filesToDecrypt, String path, IProgressMonitor monitor)
 	{
+		this.monitor = monitor;
 		Iterator<DroppedElement> selectedElementsIterator = filesToDecrypt.iterator();
 
 		while(selectedElementsIterator.hasNext()) {
@@ -74,6 +76,7 @@ public class DecryptHandler {
 	
 	public void processData(DroppedElement filesToDecrypt, IProgressMonitor monitor)
 	{
+		this.monitor = monitor;
 		String path = filesToDecrypt.getPath().substring(0, filesToDecrypt.getPath().lastIndexOf("/"));
 		File destination = new File(path);
 		if(!destination.exists())
@@ -102,6 +105,7 @@ public class DecryptHandler {
 	{
 		if(elementToDecrypt instanceof EncryptedFileDob)
 		{
+			monitor.subTask(elementToDecrypt.getName());
 			EncryptedFileDob fileToDecrypt = (EncryptedFileDob)elementToDecrypt;
 			if(successfulDecryptedFiles.contains(fileToDecrypt))
 				return;

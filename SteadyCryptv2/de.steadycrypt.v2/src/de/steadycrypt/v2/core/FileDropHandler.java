@@ -27,6 +27,7 @@ public class FileDropHandler {
 
 	private KeyManager keyman;
 	private Crypter crypter;
+	private IProgressMonitor monitor;
 
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
@@ -46,6 +47,7 @@ public class FileDropHandler {
 	
 	public void processData(String[] droppedFileInformation, EncryptedFolderDob parent, IProgressMonitor monitor)
 	{
+		this.monitor = monitor;
         for (String currentDroppedElement : droppedFileInformation)
         {
         	try {
@@ -59,6 +61,7 @@ public class FileDropHandler {
 	
 	public void processData(String[] fileNames, String filePath, EncryptedFolderDob parent, IProgressMonitor monitor)
 	{
+		this.monitor = monitor;
         for (String currentDroppedElement : fileNames)
         {
         	try {
@@ -74,6 +77,7 @@ public class FileDropHandler {
 	{
     	if(!droppedElement.isDirectory())
     	{
+			monitor.subTask(droppedElement.getName());
     		log.debug("File dropped");
     		if(droppedElement.getName().contains(".DS_Store"))
     		{
