@@ -232,10 +232,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         			progressDialog.open();
 					progressDialog.run(false, false, new IRunnableWithProgress() {
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {	        		
-			        		monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, selectedFiles.length);
+			        		monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, selectedFiles.length+2);
+			        		monitor.worked(1);
 			        		
 			        		if(fileDropHandler == null)
 			        			fileDropHandler = new FileDropHandler();
+			        		monitor.worked(1);
+			        		
 			        		fileDropHandler.processData(selectedFiles, path.getParent(), parentFolderFinal, monitor);
 			        		
 			        		monitor.done();
@@ -295,10 +298,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	            			progressDialog.open();
 							progressDialog.run(false, false, new IRunnableWithProgress() {
 								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, currentSelection.size());
+									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, currentSelection.size()+2);
+									monitor.worked(1);
 									
 									if(decryptHandler == null)
 										decryptHandler = new DecryptHandler();
+									monitor.worked(1);
+									
 									decryptHandler.processData(currentSelection, path, monitor);
 									
 									monitor.done();
@@ -337,10 +343,13 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		        			progressDialog.open();
 							progressDialog.run(false, false, new IRunnableWithProgress() {
 								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, 1);
+									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, 3);
+									monitor.worked(1);
 									
 									if(decryptHandler == null)
 										decryptHandler = new DecryptHandler();
+									monitor.worked(1);
+									
 									decryptHandler.processData((DroppedElement)currentSelection.getFirstElement(), monitor);
 									
 									monitor.done();

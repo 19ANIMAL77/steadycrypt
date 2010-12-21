@@ -108,10 +108,13 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
         		progressDialog.open();
 				progressDialog.run(false, false, new IRunnableWithProgress() {
 					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {	        		
-						monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, droppedFileInformation.length);
-		        		
+						monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, droppedFileInformation.length+2);
+						monitor.worked(1);
+						
 		        		if(fileDropHandler == null)
 							fileDropHandler = new FileDropHandler();
+		        		monitor.worked(1);
+		        		
 						fileDropHandler.processData(droppedFileInformation, dragOverFolder, monitor);
 	                    	    		        		
 		        		monitor.done();
