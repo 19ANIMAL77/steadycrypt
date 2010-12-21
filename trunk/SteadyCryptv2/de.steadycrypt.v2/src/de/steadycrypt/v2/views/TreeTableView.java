@@ -211,7 +211,12 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         	public void run()
         	{
         		FileDialog fileDialog = new FileDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.MULTI);
-        		final File path = new File(fileDialog.open());
+        		String tempPath = fileDialog.open();
+        		
+        		if(tempPath == null)
+        			return;
+        		
+        		final File path = new File(tempPath);
         		final String[] selectedFiles = fileDialog.getFileNames();
         		
         		EncryptedFolderDob parentFolder = root;
