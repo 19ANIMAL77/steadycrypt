@@ -141,7 +141,6 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         toolBarManager.add(newFolderAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(exportSelectionAction);
-//        toolBarManager.add(exportSelectionToOrigPathAction);
         toolBarManager.add(deleteSelectionAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(expandAllAction);
@@ -234,7 +233,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {	        		
 			        		monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, selectedFiles.length+2);
 			        		monitor.worked(1);
-			        		
+
+							monitor.subTask(Messages.TableView_ProgressMonitor_SubTast_Handler);
 			        		if(fileDropHandler == null)
 			        			fileDropHandler = new FileDropHandler();
 			        		monitor.worked(1);
@@ -300,7 +300,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, currentSelection.size()+2);
 									monitor.worked(1);
-									
+
+									monitor.subTask(Messages.TableView_ProgressMonitor_SubTast_Handler);
 									if(decryptHandler == null)
 										decryptHandler = new DecryptHandler();
 									monitor.worked(1);
@@ -345,7 +346,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 								public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 									monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Decrypt, 3);
 									monitor.worked(1);
-									
+
+									monitor.subTask(Messages.TableView_ProgressMonitor_SubTast_Handler);
 									if(decryptHandler == null)
 										decryptHandler = new DecryptHandler();
 									monitor.worked(1);
@@ -392,10 +394,14 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	            			progressDialog.open();
 	    					progressDialog.run(false, false, new IRunnableWithProgress() {
 	    						public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {	        		
-	    							monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Delete, currentSelection.size());
-		    		        		
+	    							monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Delete, currentSelection.size()+2);
+	    							monitor.worked(1);
+
+	    							monitor.subTask(Messages.TableView_ProgressMonitor_SubTast_Handler);
 	    							if(deleteFileHandler == null)
 	    								deleteFileHandler = new DeleteFileHandler();
+	    							monitor.worked(1);
+	    							
 		    		        		deleteFileHandler.processData(currentSelection, monitor);
 		    	                    	    		        		
 		    		        		monitor.done();

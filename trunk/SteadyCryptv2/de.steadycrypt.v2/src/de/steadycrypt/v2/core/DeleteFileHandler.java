@@ -25,12 +25,15 @@ public class DeleteFileHandler {
 	
 	private static Logger log = Logger.getLogger(DeleteFileHandler.class);
 	
+	private IProgressMonitor monitor;
+	
 	private EncryptedFolderDao encryptedFolderDao = new EncryptedFolderDao();
 	private EncryptedFileDao encryptedFileDao = new EncryptedFileDao();
 	
 	@SuppressWarnings("unchecked")
 	public void processData(TreeSelection filesToDelete, IProgressMonitor monitor)
 	{
+		this.monitor = monitor;
 		Iterator<DroppedElement> droppedElementsIterator = filesToDelete.iterator();
 		
 		while(droppedElementsIterator.hasNext())
@@ -48,6 +51,7 @@ public class DeleteFileHandler {
 	{
 		if(elementToDelete instanceof EncryptedFileDob)
 		{
+			monitor.subTask(elementToDelete.getName());
 			EncryptedFileDob fileToDelete = (EncryptedFileDob)elementToDelete;
 			log.debug("EncryptedFile handed over");
 			

@@ -111,6 +111,7 @@ public class TreeDropTargetAdapter extends DropTargetAdapter {
 						monitor.beginTask(Messages.TableView_ProgressMonitorDialog_Encrypt, droppedFileInformation.length+2);
 						monitor.worked(1);
 						
+						monitor.subTask(Messages.TableView_ProgressMonitor_SubTast_Handler);						
 		        		if(fileDropHandler == null)
 							fileDropHandler = new FileDropHandler();
 		        		monitor.worked(1);

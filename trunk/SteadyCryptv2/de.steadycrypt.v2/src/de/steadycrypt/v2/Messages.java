@@ -45,6 +45,7 @@ public class Messages extends NLS
     public static String TableView_ProgressMonitorDialog_Encrypt;
     public static String TableView_ProgressMonitorDialog_Decrypt;
     public static String TableView_ProgressMonitorDialog_Delete;
+    public static String TableView_ProgressMonitor_SubTast_Handler;
 
     public static String TableView_ExportFileDialog_Title;
     public static String TableView_NewFolderDialog_Title;
