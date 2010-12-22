@@ -665,11 +665,22 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 		treeViewer.addFilter(searchFilter);
 		treeViewer.addFilter(dataTypeFilter);
 		treeViewer.addFilter(encryptionDateFilter);
-		if(SideBarView.fileNameFilterString.length() == 0 && SideBarView.encryptionDateFilterString.equalsIgnoreCase(Messages.Filter_NONE) 
+		if(SideBarView.fileNameFilterString.length() == 0 
+				&& SideBarView.encryptionDateFilterString.equalsIgnoreCase(Messages.Filter_NONE) 
 				&& SideBarView.fileTypeFilterString.equalsIgnoreCase(Messages.Filter_NONE))
-			collapseAllAction.run();
-		else
+		{
+			collapseAllAction.run();	
+		}
+		else if(SideBarView.fileNameFilterString.length() == 1
+				&& SideBarView.encryptionDateFilterString.equalsIgnoreCase(Messages.Filter_NONE) 
+				&& SideBarView.fileTypeFilterString.equalsIgnoreCase(Messages.Filter_NONE))
+		{
+			// do nothing
+		} 
+		else 
+		{
 			treeViewer.expandAll();
+		}
 	}
 
 	public void setFocus() {}
