@@ -37,14 +37,14 @@ public class SteadyTreeTableLabelProvider implements ITableLabelProvider {
 	                break;
 	            case NAME:
 	            	//TODO: Konfigurierbar machen?
-	                text = ((EncryptedFileDob)element).getName().substring(0, ((EncryptedFileDob)element).getName().lastIndexOf("."));
+	                text = ((EncryptedFileDob)element).getName().lastIndexOf(".") <= 0 ? ((EncryptedFileDob)element).getName() : ((EncryptedFileDob)element).getName().substring(0, ((EncryptedFileDob)element).getName().lastIndexOf("."));
 	                break;
 	            case SIZE:
 	                BigDecimal size = new BigDecimal(((EncryptedFileDob)element).getSize()/1024);
 	                text = size.compareTo(new BigDecimal(1000)) > 0 ? size.divide(new BigDecimal(1024)).setScale(2,BigDecimal.ROUND_HALF_UP).toString() +" MB" : size.setScale(0,BigDecimal.ROUND_HALF_UP).toString() + " KB";
 	                break;
 	            case TYPE:
-	                text = ((EncryptedFileDob)element).getType() + Messages.FILE;
+	                text = ((EncryptedFileDob)element).getType().equalsIgnoreCase("") ? "" : ((EncryptedFileDob)element).getType() + Messages.FILE;
 	                break;
 	                
 	            default:

@@ -96,8 +96,11 @@ public class EncryptedFile extends DroppedElement {
 	
 	public String defineFileType()
 	{
-		String ext = (this.name.lastIndexOf(".")==-1)?"":this.name.substring(this.name.lastIndexOf(".")+1,this.name.length());
-
+		String ext = "";
+		if(this.name.lastIndexOf(".") > 0) {
+			ext = this.name.substring(this.name.lastIndexOf(".")+1,this.name.length());
+		}
+		
 		return ext.toLowerCase();
 	}
 
