@@ -1,9 +1,9 @@
 #labels Featured
 = Impressum =
 
-*Marvin Hoffmann & Jörg Harr
-*Allmandring 26C
-*70569 Stuttgart
-
-*Kontakt: info [ at ] steadycrypt.de
-*Tel.: 0 1 5 2 / 5 6 3 6 4 6 9 8
+|| Marvin Hoffmann & Jörg Harr|| 
+|| Allmandring 26C|| 
+|| 70569 Stuttgart|| 
+|| || 
+|| Kontakt: info /at/ steadycrypt.de|| 
+|| Tel.: 0 1 5 2 / 5 6 3 6 4 6 9 8|| 
