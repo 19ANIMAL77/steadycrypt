@@ -1,0 +1,13 @@
+#labels f
+= Installation Guide =
+
+|| deutsch // Windows ||
+|| Entsprechende Datei downloaden, entpacken und SteadyCrypt Ordner an beliebige Stelle kopieren. Empfohlen wird: C:\Program Files zum Beispiel. Wie eine portable Anwendung, keine aufwändige Installation nötig.||
+|| Anschliessend SteadyCrypt.exe ausführen. Beim ersten Start wird ein Passwort festgelegt, was fortan für den Zugriff auf die Daten verwendet wird. ||
+|| fertig. ||
+
+
+|| english // Windows ||
+|| Download SteadyCrypt, unzip and copy it to C:\Program Files for example. Its like a portable application, no further installation is neccesary.||
+|| Now start SteadyCrypt.exe. At your first start, you have to choose your password. Until now, this password is your access to all encrpyted files. ||
+|| done. ||
