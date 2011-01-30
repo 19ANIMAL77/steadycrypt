@@ -1,14 +1,10 @@
 #labels Featured
 
+= Impressum =
 
-= Introduction =
+Marvin Hoffmann & Jörg Harr
+Allmandring 26C
+70569 Stuttgart
 
-Add your content here.
-
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Kontakt: info [ at ] steadycrypt.de
+Tel.: 0 1 5 2 / 5 6 3 6 4 6 9 8
