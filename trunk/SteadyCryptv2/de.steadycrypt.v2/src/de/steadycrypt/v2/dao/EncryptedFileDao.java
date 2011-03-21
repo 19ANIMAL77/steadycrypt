@@ -45,6 +45,9 @@ public class EncryptedFileDao {
 				files.add(new EncryptedFileDob(rs.getInt("id"), rs.getString("name"), rs.getString("type"), rs.getLong("size"), rs.getDate("encryptiondate"),
 						rs.getString("originalpath"), rs.getString("encryptedfilename")));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
@@ -72,6 +75,9 @@ public class EncryptedFileDao {
 				files.add(new EncryptedFileDob(rs.getInt("id"), rs.getString("name"), rs.getString("type"), rs.getLong("size"), rs.getDate("encryptiondate"),
 						rs.getString("originalpath"), rs.getString("encryptedfilename")));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
@@ -95,6 +101,9 @@ public class EncryptedFileDao {
 				files.add(new EncryptedFileDob(rs.getInt("id"), rs.getString("name"), rs.getString("type"), rs.getLong("size"), rs.getDate("encryptiondate"),
 						rs.getString("originalpath"), rs.getString("encryptedfilename")));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
@@ -130,6 +139,7 @@ public class EncryptedFileDao {
 				encryptedFileDob = new EncryptedFileDob(rs.getInt(1), encryptedFile);
 			}
 			
+			rs.close();
 			pStmt.close();
 			connection.commit();
 		}
@@ -168,6 +178,8 @@ public class EncryptedFileDao {
 				{
 					encryptedFileDobs.add(new EncryptedFileDob(rs.getInt(1), encryptedFile));
 				}
+				
+				rs.close();
 			}
 			
 			pStmt.close();
@@ -201,6 +213,7 @@ public class EncryptedFileDao {
 			
 			successful = pStmt.executeUpdate() > 0 ? true : false;
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -234,6 +247,7 @@ public class EncryptedFileDao {
 				successful = pStmt.executeUpdate() > 0 ? true : false;
 			}
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -257,6 +271,7 @@ public class EncryptedFileDao {
 			
 			successful = pStmt.executeUpdate() > 0 ? true : false;
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -285,6 +300,7 @@ public class EncryptedFileDao {
 				if (!successful) break;
 			}
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -308,6 +324,9 @@ public class EncryptedFileDao {
 			{
 				fileTypes.add(rs.getString("type"));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{

@@ -42,6 +42,9 @@ public class EncryptedFolderDao {
 			{
 				folders.add(new EncryptedFolderDob(rs.getInt("id"), rs.getString("name"), rs.getDate("encryptiondate"), rs.getString("originalpath")));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
@@ -68,6 +71,9 @@ public class EncryptedFolderDao {
 			{
 				folders.add(new EncryptedFolderDob(rs.getInt("id"), rs.getString("name"), rs.getDate("encryptiondate"), rs.getString("originalpath")));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
@@ -90,6 +96,9 @@ public class EncryptedFolderDao {
 			{
 				folders.add(new EncryptedFolderDob(rs.getInt("id"), rs.getString("name"), rs.getDate("encryptiondate"), rs.getString("originalpath")));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
@@ -122,6 +131,7 @@ public class EncryptedFolderDao {
 				encryptedFolderDob = new EncryptedFolderDob(rs.getInt(1), encryptedFolder);
 			}
 			
+			rs.close();
 			pStmt.close();
 			connection.commit();
 		}
@@ -150,6 +160,7 @@ public class EncryptedFolderDao {
 			
 			successful = pStmt.executeUpdate() > 0 ? true : false;
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -180,6 +191,7 @@ public class EncryptedFolderDao {
 				successful = pStmt.executeUpdate() > 0 ? true : false;
 			}
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -203,6 +215,7 @@ public class EncryptedFolderDao {
 			
 			successful = pStmt.executeUpdate() > 0 ? true : false;
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -231,6 +244,7 @@ public class EncryptedFolderDao {
 				if (!successful) break;
 			}
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
