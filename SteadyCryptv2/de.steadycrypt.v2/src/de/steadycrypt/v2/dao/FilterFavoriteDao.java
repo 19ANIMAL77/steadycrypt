@@ -41,6 +41,9 @@ public class FilterFavoriteDao {
 			{
 				favorites.add(new FilterFavoriteDob(rs.getInt("id"), rs.getString("name"), rs.getString("filename"), rs.getString("filetype"), rs.getString("encryptionperiod")));
 			}
+			
+			rs.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
@@ -73,6 +76,7 @@ public class FilterFavoriteDao {
 				filterFavoriteDob = new FilterFavoriteDob(rs.getInt(1), filterFavorite);
 			}
 			
+			rs.close();
 			pStmt.close();
 			connection.commit();
 		}
@@ -101,6 +105,7 @@ public class FilterFavoriteDao {
 			
 			successful = pStmt.executeUpdate() > 0 ? true : false;
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -124,6 +129,7 @@ public class FilterFavoriteDao {
 			
 			successful = pStmt.executeUpdate() > 0 ? true : false;
 			
+			pStmt.close();
 			connection.commit();
 		}
 		catch (SQLException e)
@@ -151,6 +157,9 @@ public class FilterFavoriteDao {
 			ResultSet rs = pStmt.executeQuery();
 			
 			found = rs.next();
+			
+			rs.close();
+			pStmt.close();
 		}
 		catch (SQLException e)
 		{
