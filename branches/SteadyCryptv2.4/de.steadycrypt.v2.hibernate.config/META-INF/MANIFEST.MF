@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Hibernate_Config
+Bundle-SymbolicName: de.steadycrypt.v2.hibernate.config
+Bundle-Version: 1.0.0.1
+Fragment-Host: de.steadycrypt.v2.hibernate;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

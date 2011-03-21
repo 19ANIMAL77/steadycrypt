@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.splashHandlers">
+      <splashHandler
+            class="de.steadycrypt.v2.splashHandlers.InteractiveSplashHandler"
+            id="de.steadycrypt.v2.splashHandlers.interactive">
+      </splashHandler>
+      <splashHandlerProductBinding
+            productId="de.steadycrypt.v2.product"
+            splashId="de.steadycrypt.v2.splashHandlers.interactive">
+      </splashHandlerProductBinding>
+   </extension>
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="de.steadycrypt.v2.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="de.steadycrypt.v2.application"
+            name="SteadyCrypt.de">
+         <property
+               name="appName"
+               value="SteadyCrypt.de">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+      </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="Default Perspective"
+            class="de.steadycrypt.v2.SteadyPerspective"
+            id="de.steadycrypt.v2.steadyPerspective">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="de.steadycrypt.v2.views.TreeTableView"
+            icon="icons/app_icon_16.gif"
+            id="de.steadycrypt.v2.view.treeTable"
+            name="TreeTable"
+            restorable="true">
+      </view>
+      <view
+            class="de.steadycrypt.v2.views.SideBarView"
+            icon="icons/app_icon_16.gif"
+            id="de.steadycrypt.v2.view.sideBar"
+            name="SideBar"
+            restorable="true">
+      </view>
+   </extension>
+
+</plugin>
