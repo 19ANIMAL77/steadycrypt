@@ -278,7 +278,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
 	        		}
 	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue().trim(), new Date(System.currentTimeMillis()), "", parentFolder)));
-    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue()));
+    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue().trim()));
 	        		treeViewer.refresh();
         		}
         	}

@@ -65,6 +65,7 @@ public class Messages extends NLS
     public static String SideBarView_DateFilterExplanation;
     public static String SideBarView_Favorites;
     public static String SideBarView_SaveFavorite;
+    public static String SideBarView_SaveFavorite_Title;
     public static String SideBarView_SaveFavoriteButton;
     public static String SideBarView_ClearFilters;
     public static String SideBarView_ClearFiltersButton;
