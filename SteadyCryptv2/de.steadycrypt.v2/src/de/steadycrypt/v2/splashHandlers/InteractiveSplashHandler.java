@@ -25,6 +25,7 @@ import org.eclipse.ui.splash.AbstractSplashHandler;
 
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.core.DbManager;
+import de.steadycrypt.v2.core.KeyManager;
 import de.steadycrypt.v2.core.PasswordInterpreter;
 
 /**
@@ -203,6 +204,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 			
 			// Create sc-files directory
 			scDirectory.mkdir();
+			KeyManager.writeKeyToDB();
 			// do login
 			fAuthenticated = true;
 		} else {
