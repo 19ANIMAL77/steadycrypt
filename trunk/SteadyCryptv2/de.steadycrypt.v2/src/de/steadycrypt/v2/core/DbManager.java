@@ -6,13 +6,13 @@
 
 package de.steadycrypt.v2.core;
 
-import org.apache.log4j.Logger;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+
+import org.apache.log4j.Logger;
 
 public class DbManager {
 	
@@ -132,8 +132,8 @@ public class DbManager {
         // Creating table "keys" which contains the SecretKey object(s)
         sql = new StringBuilder();
 	        sql.append("CREATE TABLE SteadyKey (");
-	        sql.append("STEADYKEY_ID bigint NOT NULL GENERATED ALWAYS AS IDENTITY,");
-	        sql.append("SECRETKEY varchar(255) for bit data,");
+	        sql.append("STEADYKEY_ID int,");
+	        sql.append("SECRETKEY blob(1M),");
 	        sql.append("PRIMARY KEY (STEADYKEY_ID))");
 	    s.execute(sql.toString());
         log.info("Created table KEYS");

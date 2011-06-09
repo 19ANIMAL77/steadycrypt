@@ -6,28 +6,29 @@
 
 package de.steadycrypt.v2.core;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
 
 import javax.crypto.SecretKey;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
 
 public class KeyManager {
 	
-	private SteadyKey steadykey = null;
+	private static SteadyKey steadykey = null;
+	
 	private static Logger log = Logger.getLogger(KeyManager.class);
 	private static KeyManager INSTANCE = null;
 	
-	final EntityManagerFactory emf = Persistence.createEntityManagerFactory("hibernate");
-	final EntityManager em = emf.createEntityManager();
+	private static final int STEADYKEY_ID = 42;
+	private static final String WRITE_OBJECT_SQL = "INSERT INTO SteadyKey(STEADYKEY_ID, SECRETKEY) VALUES (?, ?)";
+	private static final String READ_OBJECT_SQL = "SELECT SECRETKEY FROM SteadyKey WHERE STEADYKEY_ID = ?";
 	
 	private KeyManager(){
 		log.debug("KeyManager instantiated");
@@ -52,51 +53,94 @@ public class KeyManager {
 	}
 	
 	/**
-	 * When starting SteadyCrypt for the first time, create a new key and save it to table SteadyKey via Hibernate.
+	 * When starting SteadyCrypt for the first time, create a new key and save it to table SteadyKey.
 	 */
-	public void writeKeyToDB() {
+	public static void writeKeyToDB() {
 		
 		final SteadyKey steadyKey = new SteadyKey();
-		em.persist(steadyKey);
+		
+		try {
+			KeyManager.writeJavaObject(DbManager.getConnection(), steadyKey);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		KeyManager.steadykey = steadyKey;
 				
 	}
 	
 	/**
-	 * Read SteadyKey-object from database and store in private steadyKey attribute.
+	 * Write object into datebase.
+	 * @param conn
+	 * @param SteadyKey
+	 * @throws Exception
 	 */
-	@SuppressWarnings("rawtypes")
-	public void readKeyFromDB() throws SQLException {
-		
-		final EntityTransaction tx = em.getTransaction();
-		tx.begin();
+	public static void writeJavaObject(Connection conn, SteadyKey key) throws Exception {
 
-		Connection conn = DbManager.getConnection();
-		Statement s = conn.createStatement();
-		ResultSet rs = s.executeQuery("SELECT * FROM SteadyKey");
+		PreparedStatement pstmt = conn.prepareStatement(WRITE_OBJECT_SQL);
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(out);
+		oos.writeObject(key);
+		InputStream inputStream = new ByteArrayInputStream(out.toByteArray());
+
+		// set input parameters
+		pstmt.setInt(1, STEADYKEY_ID);
+		pstmt.setBlob(2, inputStream);
+		pstmt.executeUpdate();
+
+		pstmt.close();
+		conn.commit();
+		
+		System.out.println("writeJavaObject: done serializing: " + key.getClass().getName());
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param id
+	 * @return SteadyKey
+	 * @throws Exception
+	 */
+	private static void readJavaObject(Connection conn, int id) throws Exception {
+		
+		PreparedStatement pstmt = conn.prepareStatement(READ_OBJECT_SQL);
+		pstmt.setInt(1, id);
+		ResultSet rs = pstmt.executeQuery();
 		
 		if(!rs.next()) {
-			writeKeyToDB();
-		}		
-		
-		final List keys = em.createQuery("select sk from SteadyKey as sk").getResultList();
-		System.out.println(keys.size() + " key(s) found");
-		for (final Object sk : keys) {
-			steadykey = (SteadyKey) sk;
+			log.error("No Key-Object found in SteadyKey table");
+			// InteractiveSplashHandler checks "isFirstStart"
+			return;
 		}
 		
-		tx.commit();
-		em.close();
-		emf.close();		
+		InputStream is = rs.getBinaryStream(1);
+		
+		ObjectInputStream ois = null;
+
+		ois = new ObjectInputStream(is);
+		
+		KeyManager.steadykey = (SteadyKey) ois.readObject();
+
+		rs.close();
+		pstmt.close();
+		conn.commit();
+		
+		System.out.println("readJavaObject: done de-serializing: " + KeyManager.steadykey.getClass().getName());
 	}
 	
 	public SecretKey getKey() {
 		
-		if (steadykey == null) {
-			try { readKeyFromDB(); }
-			catch (SQLException sqle) { DbManager.printSQLException(sqle); }
+		if (KeyManager.steadykey == null) {
+			
+			try {
+				readJavaObject(DbManager.getConnection(), STEADYKEY_ID);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
 		}
 		
-		return steadykey.getKey();
+		return KeyManager.steadykey.getKey();
 	}
-	
 }
