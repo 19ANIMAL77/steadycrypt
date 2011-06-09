@@ -20,6 +20,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -29,6 +30,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -58,6 +60,7 @@ import de.steadycrypt.v2.Activator;
 import de.steadycrypt.v2.Messages;
 import de.steadycrypt.v2.bob.FilterFavorite;
 import de.steadycrypt.v2.bob.dob.FilterFavoriteDob;
+import de.steadycrypt.v2.core.SteadyInputValidator;
 import de.steadycrypt.v2.dao.EncryptedFileDao;
 import de.steadycrypt.v2.dao.FilterFavoriteDao;
 import de.steadycrypt.v2.views.model.SideBarListener;
@@ -83,7 +86,6 @@ public class SideBarView extends ViewPart {
     private Action clearFiltersAction;
     
     private Text txtSearchField;
-    private Text txtSaveFavorite;
     private static Combo comboFileTypes;
     private Combo comboEncryptionDate;
     private Button saveButton;
@@ -158,23 +160,20 @@ public class SideBarView extends ViewPart {
 		comboEncryptionDate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		initializeEncryptionDateFilter();
 
-		// Save Filter Part - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		// Save / Reset Filter Part - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		
         Label horizontalSeparator = new Label(filterComposite, SWT.SEPARATOR | SWT.HORIZONTAL);
         horizontalSeparator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true, 2, 1));
         horizontalSeparator.setVisible(false);
 		
-		final Label lblSaveFavorite = new Label(filterComposite, SWT.FLAT);
-		lblSaveFavorite.setText(Messages.SideBarView_SaveFavorite);
-		lblSaveFavorite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-				
-		txtSaveFavorite = new Text(filterComposite, SWT.BORDER);
-		txtSaveFavorite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		
 		saveButton = new Button(filterComposite, SWT.FLAT);
 		saveButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		saveButton.setText(Messages.SideBarView_SaveFavoriteButton);
 		saveButton.setImage(Activator.getImageDescriptor("icons/favorite-add.png").createImage());
+		
+		clearButton = new Button(filterComposite, SWT.FLAT);
+		clearButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		clearButton.setText(Messages.SideBarView_ClearFiltersButton);
 		
 		// Favorites Section - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -232,10 +231,6 @@ public class SideBarView extends ViewPart {
         
         tableViewer.setInput(favorites.toArray());
 		
-		clearButton = new Button(favoritesComposite, SWT.FLAT);
-		clearButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-		clearButton.setText(Messages.SideBarView_ClearFiltersButton);
-		
 		deleteButton = new Button(favoritesComposite, SWT.FLAT);
 		deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		deleteButton.setText(Messages.SideBarView_DeleteFavoriteButton);
@@ -251,39 +246,42 @@ public class SideBarView extends ViewPart {
 	{
 		// to save current filter settings to favorites - name needs to be specified, if selected name exists, confirmation is required
     	saveFavoriteAction = new Action() {
-			public void run() {	
-				if(!(txtSaveFavorite.getText().length() > 0))
-				{
-					MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_ErrorDialog_Title, Messages.SideBarView_ErrorDialog_MissingName);
-				}
-				else
-				{
-					if(filterFavoriteDao.allreadyExists(txtSaveFavorite.getText()))
-					{
-						if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_WarningDialog_Title, NLS.bind(Messages.SideBarView_WarningDialog_Override, txtSaveFavorite.getText())))
-						{
-							FilterFavoriteDob filterToUpdate = null;
-							for(FilterFavoriteDob filterFavorite : favorites)
-							{
-								if(filterFavorite.getName().equalsIgnoreCase(txtSaveFavorite.getText()))
-								{
-									filterFavorite.setFilename(txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null);
-									filterFavorite.setFiletype(comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText());
-									filterFavorite.setEncryptionPeriod(comboEncryptionDate.getText().equals(Messages.Filter_NONE) ? null : eP.toString());
-									
-									filterToUpdate = filterFavorite;
-								}
-							}
-							filterFavoriteDao.updateFavorite(filterToUpdate);
-						}
-					}
-					else
-					{
-						favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(txtSaveFavorite.getText(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText(), comboEncryptionDate.getText().equals(Messages.Filter_NONE) ? null : eP.toString())));
-					}
-					statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Added, txtSaveFavorite.getText()));
-					tableViewer.refresh();
-				}
+			public void run()
+			{
+        		InputDialog saveFavoriteDialog = new InputDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_SaveFavorite_Title, Messages.SideBarView_SaveFavorite, "", new SteadyInputValidator());
+        		if(saveFavoriteDialog.open() == Window.OK) {
+            		
+        			if(filterFavoriteDao.allreadyExists(saveFavoriteDialog.getValue().trim()))
+    				{
+    					if(MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Messages.SideBarView_WarningDialog_Title, NLS.bind(Messages.SideBarView_WarningDialog_Override, saveFavoriteDialog.getValue().trim())))
+    					{
+    						FilterFavoriteDob filterToUpdate = null;
+    						for(FilterFavoriteDob filterFavorite : favorites)
+    						{
+    							if(filterFavorite.getName().equalsIgnoreCase(saveFavoriteDialog.getValue().trim()))
+    							{
+    								filterFavorite.setFilename(txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null);
+    								filterFavorite.setFiletype(comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText());
+    								filterFavorite.setEncryptionPeriod(comboEncryptionDate.getText().equals(Messages.Filter_NONE) ? null : eP.toString());
+    								
+    								filterToUpdate = filterFavorite;
+    							}
+    						}
+    						filterFavoriteDao.updateFavorite(filterToUpdate);
+    					}
+    					else
+    					{
+    						saveFavoriteAction.run();
+    					}
+    				}
+    				else
+    				{
+    					favorites.add(filterFavoriteDao.addFavorite(new FilterFavorite(saveFavoriteDialog.getValue().trim(), txtSearchField.getText().length() > 0 ? txtSearchField.getText() : null, comboFileTypes.getText().equals(Messages.Filter_NONE) ? null : comboFileTypes.getText(), comboEncryptionDate.getText().equals(Messages.Filter_NONE) ? null : eP.toString())));
+    				}
+    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_Added, saveFavoriteDialog.getValue().trim()));
+    				tableViewer.refresh();
+        			
+        		}
         	}
         };
         
@@ -335,7 +333,6 @@ public class SideBarView extends ViewPart {
 				}
 				encryptionDateFilterString = comboEncryptionDate.getText();
 				calculateEncryptionDateFilter();
-				txtSaveFavorite.setText(filter.getName());
                 fireSideBarEvent();
         	}
         };
@@ -376,8 +373,6 @@ public class SideBarView extends ViewPart {
     	clearFiltersAction = new Action() {
 			public void run()
 			{
-				// clear favorite name text field
-				txtSaveFavorite.setText("");
 				// clear filename filter
 				txtSearchField.setText("");
 				fileNameFilterString = txtSearchField.getText();
