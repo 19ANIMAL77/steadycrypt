@@ -24,7 +24,7 @@ public class EncryptedFileDao {
 	private final String INSERT_FILE = "INSERT INTO file (name, type, size, encryptiondate, originalpath, encryptedfilename, containingfolderid) VALUES (?, ?, ?, ?, ?, ?, ?)";
 	private final String UPDATE_FILE = "UPDATE file SET name=?, type=?, size=?, encryptiondate=?, originalpath=?, encryptedfilename=?, containingfolderid=? WHERE id=?";
 	private final String SELECT_FILE = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file ORDER BY name";
-	private final String SELECT_FILE_FOR_FOLDER = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file WHERE containingfolderid=";
+	private final String SELECT_FILE_FOR_FOLDER = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file WHERE containingfolderid=? ORDER BY name";
 	private final String SELECT_ROOT_FILES = "SELECT id, name, type, size, encryptiondate, originalpath, encryptedfilename FROM file WHERE containingfolderid=0  ORDER BY name";
 	private final String DELETE_FILE = "DELETE FROM file WHERE id=?";
 	private final String SELECT_FILE_TYPES = "SELECT DISTINCT type FROM file ORDER BY type";
@@ -63,12 +63,11 @@ public class EncryptedFileDao {
 		try
 		{
 			Connection connection = DbManager.getConnection();
-			Statement stmt = connection.createStatement();
-			StringBuilder sql = new StringBuilder();
-			sql.append(SELECT_FILE_FOR_FOLDER);
-			sql.append(folder.getId());
-			sql.append(" ORDER BY name");
-			ResultSet rs = stmt.executeQuery(sql.toString());
+			PreparedStatement pStmt = connection.prepareStatement(SELECT_FILE_FOR_FOLDER);
+			
+			pStmt.setInt(1, folder.getId());
+			
+			ResultSet rs = pStmt.executeQuery();
 			
 			while(rs.next())
 			{
@@ -77,7 +76,7 @@ public class EncryptedFileDao {
 			}
 			
 			rs.close();
-			stmt.close();
+			pStmt.close();
 		}
 		catch (SQLException e)
 		{
