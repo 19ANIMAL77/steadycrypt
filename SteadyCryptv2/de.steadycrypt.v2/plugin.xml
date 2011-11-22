@@ -35,6 +35,10 @@
                name="preferenceCustomization"
                value="plugin_customization.ini">
          </property>
+         <property
+               name="windowImages"
+               value="icons/steady_16_32bit.png,icons/steady_32_32bit.png,icons/steady_48_32bit.png">
+         </property>
       </product>
    </extension>
    <extension
