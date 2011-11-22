@@ -21,7 +21,7 @@ public class SteadyKey implements Serializable {
 		
 		/** 
 		 * Provides a container for the SecretKey object. This is necessary
-		 * to persist the key object into the derby by using Hibernate.
+		 * to persist the key object into the derby.
 		 * Now it is possible to annotations. It is not possible to add them in the SecretKey class because
 		 * its hidden in the library. Extending SecretKey is not possible either.
 		 */
