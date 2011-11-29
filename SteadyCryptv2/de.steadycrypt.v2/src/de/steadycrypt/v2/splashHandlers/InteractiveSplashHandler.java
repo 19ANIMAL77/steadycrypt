@@ -324,6 +324,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		fButtonCancel = new Button(fCompositeLogin, SWT.FLAT);
 		fButtonCancel.setText(Messages.InteractiveSplashHandler_Cancel);
 		// Configure layout data
+		
 		GridData data = new GridData(SWT.FILL, SWT.NONE, false, false);
 		fButtonCancel.setLayoutData(data);
 	}
@@ -359,7 +360,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	 */
 	private void createUILabelBlank() {
 		Label label = new Label(fCompositeLogin, SWT.NONE);
-		label.setLayoutData(new GridData(SWT.NONE, SWT.NONE, false, false, 3, 1));
+		label.setLayoutData(new GridData(SWT.NONE, SWT.NONE, false, false, 2, 1));
 		label.setVisible(false);
 	}
 
@@ -371,7 +372,8 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		fTextPassword = new Text(fCompositeLogin, SWT.PASSWORD | SWT.BORDER);
 		// Configure layout data
 		GridData data = new GridData(SWT.FILL, SWT.FILL, false, false);
-		data.horizontalSpan = 2;
+//		data.horizontalSpan = 2;
+
 		fTextPassword.setLayoutData(data);		
 		fTextPassword.setFocus();
 	}
@@ -384,7 +386,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		fTextPasswordValidate = new Text(fCompositeLogin, SWT.PASSWORD | SWT.BORDER);
 		// Configure layout data
 		GridData data = new GridData(SWT.FILL, SWT.FILL, false, false);
-		data.horizontalSpan = 2;
+//		data.horizontalSpan = 2;
 		fTextPasswordValidate.setLayoutData(data);		
 	}
 
@@ -430,7 +432,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void createUICompositeLogin() {
 		// Create the composite
 		fCompositeLogin = new Composite(getSplash(), SWT.BORDER);
-		GridLayout layout = new GridLayout(F_COLUMN_COUNT, true);
+		GridLayout layout = new GridLayout(3, true);
 		fCompositeLogin.setLayout(layout);		
 	}
 
