@@ -55,7 +55,7 @@ public class DeleteFileHandler {
 			EncryptedFileDob fileToDelete = (EncryptedFileDob)elementToDelete;
 			log.debug("EncryptedFile handed over");
 			
-			File file = new File(Messages.getScFolder()+(fileToDelete).getFile());
+			File file = new File(Messages.getScFolder()+(fileToDelete).getScFileName());
 			boolean success = file.delete();
 			log.debug("scFile deleted");
 			
