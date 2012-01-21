@@ -29,12 +29,12 @@ import de.steadycrypt.v2.core.KeyManager;
 import de.steadycrypt.v2.core.PasswordInterpreter;
 
 /**
- * @since 3.3
- * 
+ * Splash-Handler
+ * Providing Authentication-Screen for SteadyCrypt Application
  */
 public class InteractiveSplashHandler extends AbstractSplashHandler {
 	
-	private final static int F_COLUMN_COUNT = 4;
+	private final static int F_COLUMN_COUNT = 3;
 	private final static int MIN_PASSWORD_LENGTH = 7;
 	private static int loginCount = 1;
 	
@@ -324,7 +324,6 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		fButtonCancel = new Button(fCompositeLogin, SWT.FLAT);
 		fButtonCancel.setText(Messages.InteractiveSplashHandler_Cancel);
 		// Configure layout data
-		
 		GridData data = new GridData(SWT.FILL, SWT.NONE, false, false);
 		fButtonCancel.setLayoutData(data);
 	}
@@ -360,7 +359,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	 */
 	private void createUILabelBlank() {
 		Label label = new Label(fCompositeLogin, SWT.NONE);
-		label.setLayoutData(new GridData(SWT.NONE, SWT.NONE, false, false, 2, 1));
+		label.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, false, F_COLUMN_COUNT-1, 1));
 		label.setVisible(false);
 	}
 
@@ -371,9 +370,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		// Create the text widget
 		fTextPassword = new Text(fCompositeLogin, SWT.PASSWORD | SWT.BORDER);
 		// Configure layout data
-		GridData data = new GridData(SWT.FILL, SWT.FILL, false, false);
-//		data.horizontalSpan = 2;
-
+		GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
 		fTextPassword.setLayoutData(data);		
 		fTextPassword.setFocus();
 	}
@@ -385,8 +382,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		// Create the text widget
 		fTextPasswordValidate = new Text(fCompositeLogin, SWT.PASSWORD | SWT.BORDER);
 		// Configure layout data
-		GridData data = new GridData(SWT.FILL, SWT.FILL, false, false);
-//		data.horizontalSpan = 2;
+		GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
 		fTextPasswordValidate.setLayoutData(data);		
 	}
 
@@ -399,7 +395,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		label.setText("&"+Messages.InteractiveSplashHandler_Password); //$NON-NLS-1$
 		label.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
 		// Configure layout data
-		GridData data = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
+		GridData data = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
 		label.setLayoutData(data);					
 	}
 
@@ -412,7 +408,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 		label.setText("&"+Messages.InteractiveSplashHandler_PasswordValidate); //$NON-NLS-1$
 		label.setForeground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
 		// Configure layout data
-		GridData data = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
+		GridData data = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
 		label.setLayoutData(data);					
 	}
 	
@@ -432,7 +428,7 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	private void createUICompositeLogin() {
 		// Create the composite
 		fCompositeLogin = new Composite(getSplash(), SWT.BORDER);
-		GridLayout layout = new GridLayout(3, true);
+		GridLayout layout = new GridLayout(F_COLUMN_COUNT, false);
 		fCompositeLogin.setLayout(layout);		
 	}
 
