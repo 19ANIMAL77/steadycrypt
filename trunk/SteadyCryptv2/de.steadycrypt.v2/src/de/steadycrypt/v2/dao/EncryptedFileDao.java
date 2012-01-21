@@ -126,7 +126,7 @@ public class EncryptedFileDao {
 			pStmt.setLong(3, encryptedFile.getSize());
 			pStmt.setDate(4, encryptedFile.getDate());
 			pStmt.setString(5, encryptedFile.getPath());
-			pStmt.setString(6, encryptedFile.getFile());
+			pStmt.setString(6, encryptedFile.getScFileName());
 			pStmt.setInt(7, encryptedFile.getParent().getId());
 			
 			pStmt.execute();
@@ -166,7 +166,7 @@ public class EncryptedFileDao {
 				pStmt.setLong(3, encryptedFile.getSize());
 				pStmt.setDate(4, encryptedFile.getDate());
 				pStmt.setString(5, encryptedFile.getPath());
-				pStmt.setString(6, encryptedFile.getFile());
+				pStmt.setString(6, encryptedFile.getScFileName());
 				pStmt.setInt(7, encryptedFile.getParent().getId());
 				
 				pStmt.execute();
@@ -206,7 +206,7 @@ public class EncryptedFileDao {
 			pStmt.setLong(3, encryptedFile.getSize());
 			pStmt.setDate(4, encryptedFile.getDate());
 			pStmt.setString(5, encryptedFile.getPath());
-			pStmt.setString(6, encryptedFile.getFile());
+			pStmt.setString(6, encryptedFile.getScFileName());
 			pStmt.setInt(7, encryptedFile.getParent().getId());
 			pStmt.setInt(8, encryptedFile.getId());
 			
@@ -239,7 +239,7 @@ public class EncryptedFileDao {
 				pStmt.setLong(3, encryptedFile.getSize());
 				pStmt.setDate(4, encryptedFile.getDate());
 				pStmt.setString(5, encryptedFile.getPath());
-				pStmt.setString(6, encryptedFile.getFile());
+				pStmt.setString(6, encryptedFile.getScFileName());
 				pStmt.setInt(7, encryptedFile.getParent().getId());
 				pStmt.setInt(8, encryptedFile.getId());
 				

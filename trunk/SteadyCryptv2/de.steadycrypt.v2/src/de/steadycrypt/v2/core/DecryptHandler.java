@@ -113,7 +113,7 @@ public class DecryptHandler {
 			crypter.decrypt(fileToDecrypt, destination);
 			log.debug("File decrypted");
 			
-			File file = new File(Messages.getScFolder()+(fileToDecrypt).getFile());
+			File file = new File(Messages.getScFolder()+(fileToDecrypt).getScFileName());
 			boolean success = file.delete();
 			log.debug("scFile deleted");
 			

@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
@@ -58,9 +58,6 @@ public class Crypter
 		}
 	}
 	
-	// Buffer used to transport the bytes from one stream to another
-	byte[] buf = new byte[1024];
-	
 	/**
 	 * Encrypt the file from inputstream and write the new one into the outputstream
 	 * 
@@ -70,19 +67,21 @@ public class Crypter
 	{
 		EncryptedFile encryptedFile = new EncryptedFile(currentFile, parent);
 		
-		InputStream input = new FileInputStream(encryptedFile.getPath());
-		OutputStream output = new FileOutputStream(Messages.getScFolder()+encryptedFile.getFile());
-	
-		output = new CipherOutputStream(output, ecipher);
+		FileInputStream inStream = new FileInputStream(currentFile);
+		FileChannel inChannel = inStream.getChannel();
+		ByteBuffer buffer = ByteBuffer.allocate(1024);
+		CipherOutputStream outStream = new CipherOutputStream(new FileOutputStream(Messages.getScFolder()+encryptedFile.getScFileName()), ecipher);
 		
 		int numRead = 0;
-		while ((numRead = input.read(buf)) >= 0)
+		
+		while ((numRead = inChannel.read(buffer)) >= 0)
 		{
-			output.write(buf, 0, numRead);
+			outStream.write(buffer.array(), 0, numRead);
+			buffer.clear();
 		}
 		
-		input.close();
-		output.close();
+		inStream.close();
+		outStream.close();
 		
 		return encryptedFile;
 	}
@@ -126,18 +125,19 @@ public class Crypter
 			}
 		}
 		
-		InputStream input = new FileInputStream(Messages.getScFolder()+currentFile.getFile());
-		OutputStream output = new FileOutputStream(outputFile);
-	
-		input = new CipherInputStream(input, dcipher);
+		CipherInputStream inStream = new CipherInputStream(new FileInputStream(Messages.getScFolder()+currentFile.getScFileName()), dcipher);
+		FileOutputStream outStream = new FileOutputStream(outputFile);
+		FileChannel outChannel = outStream.getChannel();
+		byte[] buf = new byte[1024];
 		
 		int numRead = 0;
-		while ((numRead = input.read(buf)) >= 0)
+		
+		while ((numRead = inStream.read(buf)) >= 0)
 		{
-			output.write(buf, 0, numRead);
+			outChannel.write(ByteBuffer.wrap(buf, 0, numRead));
 		}
 		
-		input.close();
-		output.close();
+		inStream.close();
+		outStream.close();
 	}
 }

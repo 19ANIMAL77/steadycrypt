@@ -22,7 +22,7 @@ public class EncryptedFileDob extends EncryptedFile{
 	public EncryptedFileDob(int id, EncryptedFile encryptedFile)
 	{
 		super(encryptedFile.getName(), encryptedFile.getType(), encryptedFile.getSize(),
-				encryptedFile.getDate(), encryptedFile.getPath(), encryptedFile.getFile(),
+				encryptedFile.getDate(), encryptedFile.getPath(), encryptedFile.getScFileName(),
 				encryptedFile.getParent());
 		this.id = id;
 	}

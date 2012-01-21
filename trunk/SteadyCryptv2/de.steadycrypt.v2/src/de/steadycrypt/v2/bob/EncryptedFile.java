@@ -15,7 +15,7 @@ public class EncryptedFile extends DroppedElement {
 
 	private String type;
 	private Long size;
-	private String file;
+	private String scFileName;
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	
@@ -29,7 +29,7 @@ public class EncryptedFile extends DroppedElement {
 		super(newFile.getName(), new Date(System.currentTimeMillis()), newFile.getPath().replace("\\", "/"), parent);
 		this.type = defineFileType();
 		this.size = newFile.length();
-		this.file = System.nanoTime()+".sc";
+		this.scFileName = System.nanoTime()+".sc";
 	}
 
 	/**
@@ -39,14 +39,14 @@ public class EncryptedFile extends DroppedElement {
 	 * @param size
 	 * @param date
 	 * @param path
-	 * @param file
+	 * @param scFileName
 	 */
-	public EncryptedFile(String name, String type, long size, Date date, String path, String file)
+	public EncryptedFile(String name, String type, long size, Date date, String path, String scFileName)
 	{
 		super(name, date, path);
 		this.type = type;
 		this.size = size;
-		this.file = file;
+		this.scFileName = scFileName;
 	}
 
 	/**
@@ -56,15 +56,15 @@ public class EncryptedFile extends DroppedElement {
 	 * @param size
 	 * @param date
 	 * @param path
-	 * @param file
+	 * @param scFileName
 	 * @param parent
 	 */
-	public EncryptedFile(String name, String type, long size, Date date, String path, String file, EncryptedFolderDob parent)
+	public EncryptedFile(String name, String type, long size, Date date, String path, String scFileName, EncryptedFolderDob parent)
 	{
 		super(name, date, path, parent);
 		this.type = type;
 		this.size = size;
-		this.file = file;
+		this.scFileName = scFileName;
 	}
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,13 +85,13 @@ public class EncryptedFile extends DroppedElement {
 		this.size = size;
 	}
 	
-	public String getFile()
+	public String getScFileName()
 	{
-		return file;
+		return scFileName;
 	}
 	
-	public void setFile(String file) {
-		this.file = file;
+	public void setScFileName(String scFileName) {
+		this.scFileName = scFileName;
 	}
 	
 	public String defineFileType()
