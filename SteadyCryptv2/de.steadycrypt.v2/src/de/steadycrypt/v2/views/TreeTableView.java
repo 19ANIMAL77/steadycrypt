@@ -226,7 +226,10 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         			if(selectedElement instanceof EncryptedFileDob)
         				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
         			else if(selectedElement instanceof EncryptedFolderDob)
+        			{
         				parentFolder = (EncryptedFolderDob)selectedElement;
+        				treeViewer.expandToLevel(((TreeSelection)treeViewer.getSelection()).getFirstElement(), 1);
+        			}
         		}
         		
         		final EncryptedFolderDob parentFolderFinal = parentFolder;
@@ -278,7 +281,15 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 	        				parentFolder = ((EncryptedFileDob)selectedElement).getParent();
 	        		}
 	        		parentFolder.addFolder(encryptedFolderDao.addFolder(new EncryptedFolder(newFolderDialog.getValue().trim(), new Date(System.currentTimeMillis()), "", parentFolder)));
-    				statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue().trim()));
+	        		
+	        		if(!treeViewer.getSelection().isEmpty()) {
+		        		DroppedElement selectedElement = (DroppedElement)((TreeSelection)treeViewer.getSelection()).getFirstElement();
+		        		
+		        		if(selectedElement instanceof EncryptedFolderDob)
+	        				treeViewer.expandToLevel(((TreeSelection)treeViewer.getSelection()).getFirstElement(), 1);
+	        		}
+        			
+	        		statusline.setMessage(Activator.getImageDescriptor("icons/info.png").createImage(), NLS.bind(Messages.StatusLine_FolderCreated, newFolderDialog.getValue().trim()));
 	        		treeViewer.refresh();
         		}
         	}
