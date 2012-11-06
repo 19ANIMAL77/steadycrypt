@@ -40,7 +40,11 @@ public class Messages extends NLS
     public static String TableView_NewFolder_Tooltip;
     public static String TableView_Rename;
     public static String TableView_ExpandAll_Tooltip;
+    public static String TableView_ExpandChildren;
+    public static String TableView_ExpandChildren_Tooltip;
     public static String TableView_CollapseAll_Tooltip;
+    public static String TableView_CollapseChildren;
+    public static String TableView_CollapseChildren_Tooltip;
 
     public static String TableView_ProgressMonitorDialog_Encrypt;
     public static String TableView_ProgressMonitorDialog_Decrypt;

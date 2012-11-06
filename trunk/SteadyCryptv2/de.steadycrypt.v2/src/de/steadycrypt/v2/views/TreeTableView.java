@@ -94,7 +94,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
     private Action deleteSelectionAction;
     private Action renameAction;
     private Action expandAllAction;
+    private Action expandChildrenAction;
     private Action collapseAllAction;
+    private Action collapseChildrenAction;
 
     private FileDropHandler fileDropHandler;
 	private DecryptHandler decryptHandler;
@@ -141,6 +143,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         toolBarManager.add(newFolderAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(exportSelectionAction);
+        toolBarManager.add(renameAction);
         toolBarManager.add(deleteSelectionAction);
         toolBarManager.add(new Separator("static"));
         toolBarManager.add(expandAllAction);
@@ -471,8 +474,9 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         		}
         	}
         };
-        
+
         renameAction.setText(Messages.TableView_Rename);
+        renameAction.setToolTipText(Messages.TableView_Rename);
         renameAction.setImageDescriptor(Activator.getImageDescriptor("icons/rename.png"));
         renameAction.setEnabled(false);
         
@@ -486,18 +490,42 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         expandAllAction.setToolTipText(Messages.TableView_ExpandAll_Tooltip);
         expandAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
         
+        expandChildrenAction = new Action() {
+        	public void run()
+        	{
+        		treeViewer.expandToLevel(((TreeSelection)treeViewer.getSelection()).getFirstElement(), TreeViewer.ALL_LEVELS);
+    		}
+        };
+
+        expandChildrenAction.setText(Messages.TableView_ExpandChildren);
+        expandChildrenAction.setToolTipText(Messages.TableView_ExpandChildren_Tooltip);
+        expandChildrenAction.setImageDescriptor(Activator.getImageDescriptor("icons/expandall.gif"));
+        expandChildrenAction.setEnabled(false);
+        
         collapseAllAction = new Action() {
         	public void run()
         	{
-        		for(TreeItem item : treeViewer.getTree().getItems()) {
-        			if(item.getItems().length > 0)
-        				treeViewer.collapseToLevel(item.getData(), 1);
-        		}
+//        		for(TreeItem item : treeViewer.getTree().getItems()) {
+//        			if(item.getItems().length > 0)
+        				treeViewer.collapseAll();
+//        		}
         	}
         };
         
         collapseAllAction.setToolTipText(Messages.TableView_CollapseAll_Tooltip);
         collapseAllAction.setImageDescriptor(Activator.getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+        
+        collapseChildrenAction = new Action() {
+        	public void run()
+        	{
+        		treeViewer.collapseToLevel(((TreeSelection)treeViewer.getSelection()).getFirstElement(), TreeViewer.ALL_LEVELS);
+    		}
+        };
+
+        collapseChildrenAction.setText(Messages.TableView_CollapseChildren);
+        collapseChildrenAction.setToolTipText(Messages.TableView_CollapseChildren_Tooltip);
+        collapseChildrenAction.setImageDescriptor(Activator.getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+        collapseChildrenAction.setEnabled(false);
     }
     
     /**
@@ -526,6 +554,20 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 				exportSelectionToOrigPathAction.setEnabled(currentSelection.size() == 1 ? true : false);
 				deleteSelectionAction.setEnabled(currentSelection.size() > 0 ? true : false);
 				renameAction.setEnabled(currentSelection.size() > 0 ? true : false);
+				expandChildrenAction.setEnabled(false);
+				collapseChildrenAction.setEnabled(false);
+				
+				//activate exand/collapse children actions if an element is selected and the element is a folder 
+			    for (Iterator<?> iteratorCurrent = currentSelection.iterator(); iteratorCurrent.hasNext();) 
+			    {
+			        elementCurrent = (DroppedElement) iteratorCurrent.next();
+
+			        if(elementCurrent instanceof EncryptedFolderDob)
+			        {
+			        	expandChildrenAction.setEnabled(true);
+			        	collapseChildrenAction.setEnabled(true);
+			        }
+			    }
 				
 				if (!oldSelection.isEmpty() && (currentSelection.size() > oldSelection.size()))
 				{
@@ -614,6 +656,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
             manager.add(exportSelectionToOrigPathAction);
             manager.add(renameAction);
             manager.add(deleteSelectionAction);
+            manager.add(expandChildrenAction);
+            manager.add(collapseChildrenAction);
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             }
         };
