@@ -53,7 +53,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
@@ -505,10 +504,7 @@ public class TreeTableView extends ViewPart implements SideBarListener {
         collapseAllAction = new Action() {
         	public void run()
         	{
-//        		for(TreeItem item : treeViewer.getTree().getItems()) {
-//        			if(item.getItems().length > 0)
-        				treeViewer.collapseAll();
-//        		}
+        		treeViewer.collapseAll();
         	}
         };
         
