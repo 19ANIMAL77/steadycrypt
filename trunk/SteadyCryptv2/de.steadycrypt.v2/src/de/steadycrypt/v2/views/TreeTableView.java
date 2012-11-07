@@ -565,6 +565,8 @@ public class TreeTableView extends ViewPart implements SideBarListener {
 			        }
 			    }
 				
+			    
+			    //multi-selection only on same level
 				if (!oldSelection.isEmpty() && (currentSelection.size() > oldSelection.size()))
 				{
 				    // or iterate over all elements
