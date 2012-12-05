@@ -5,4 +5,4 @@
 || Please use E-Mail to get in touch with us! || 
 || We will answer as soon as possible, thanks.|| 
 || ||
-|| Contact: info (at) steadycrypt.de|| 
+|| Contact: mailto:info@steadycrypt.de|| 
